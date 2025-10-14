@@ -37,6 +37,7 @@ Wenn der Nutzer einen Prozessnamen nennt, erstelle eine strukturierte Prozessbes
 - Klare Benennung der Nachrichtenflüsse zwischen den Pools
 
 **Nach der Prozessbeschreibung: Nutzer fragen, ob ein BPMN-XML-Modell erstellt werden soll**
+**Den Nutzer immer darüber informieren, dass der Prozess grundsätzlich in einem BPMN-Modell mit 3 Pools (Bürger, IT, Behörde) dargestellt wird. Falls eine andere Darstellung gewünscht wird, kann dies angegeben werden.**
 
 ### Schritt 2: BPMN-Modell erstellen
 
