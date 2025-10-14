@@ -35,7 +35,7 @@
 | Sorgeerklärung beurkunden                                              |        |
 | Antrag auf Betreuungsgeld bearbeiten                                   |        |
 | Antrag auf Elterngeld bearbeiten                                       |   X    |
-| Plätze für Kinder in Tageseinrichtungen vermitteln                     |        |
+| Plätze für Kinder in Tageseinrichtungen vermitteln                     |   X    |
 | Elternbeiträge für Kinder in Kindertageseinrichtungen erheben          |        |
 | Kinder zu einer geeigneten Tagespflegeperson vermitteln                |        |
 | Schulzahnärztliche Untersuchungen durchführen                          |        |
