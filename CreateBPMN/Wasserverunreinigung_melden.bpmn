@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GovModeler"
+  exporterVersion="1.0" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+
+  <!-- ===================================================
+       1)   Kollaboration mit zwei Pools & Message-Flows
+       =================================================== -->
+  <bpmn:collaboration id="Collab_Wasserverunreinigung">
+    <!-- Pool A (Bürger) -->
+    <bpmn:participant id="Participant_Buerger"
+                      name="Buerger"
+                      processRef="Process_Buerger" />
+
+    <!-- Pool B (Umweltamt) -->
+    <bpmn:participant id="Participant_Umweltamt"
+                      name="Umweltamt"
+                      processRef="Process_Umweltamt" />
+
+    <!-- Message-Flow: Wasserverunreinigung melden -->
+    <bpmn:messageFlow id="MsgFlow_Meldung"
+                      name="Wasserverunreinigung melden"
+                      sourceRef="Task_Meldung_abgeben"
+                      targetRef="StartEvent_Meldung_eingegangen" />
+
+    <!-- Message-Flow: Nachfrage nach zusätzlichen Informationen -->
+    <bpmn:messageFlow id="MsgFlow_Nachfrage"
+                      name="Nachfrage nach Informationen"
+                      sourceRef="Task_Vollstaendigkeit_pruefen"
+                      targetRef="Task_Zusatzinfos_bereitstellen" />
+
+    <!-- Message-Flow: Zusätzliche Informationen bereitstellen -->
+    <bpmn:messageFlow id="MsgFlow_Zusatzinfos"
+                      name="Zusaetzliche Informationen"
+                      sourceRef="Task_Zusatzinfos_bereitstellen"
+                      targetRef="Task_Informationen_entgegennehmen" />
+
+    <!-- Message-Flow: Eingangsbestätigung -->
+    <bpmn:messageFlow id="MsgFlow_Eingangsbestaetigung"
+                      name="Eingangsbestaetigung"
+                      sourceRef="Task_Eingangsbestaetigung_versenden"
+                      targetRef="Task_Bestaetigung_erhalten" />
+
+    <!-- Message-Flow: Bescheid versenden -->
+    <bpmn:messageFlow id="MsgFlow_Bescheid"
+                      name="Bescheid ueber Massnahmen"
+                      sourceRef="Task_Bescheid_versenden"
+                      targetRef="Task_Bescheid_erhalten" />
+  </bpmn:collaboration>
+
+  <!-- ===================================================
+       2)   Prozess Pool A (Bürger)
+       =================================================== -->
+  <bpmn:process id="Process_Buerger"
+                name="Buerger Prozess"
+                isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_Verunreinigung_festgestellt" name="Wasserverunreinigung festgestellt">
+      <bpmn:outgoing>Flow_Start_Meldung</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:task id="Task_Meldung_abgeben" name="Wasserverunreinigung melden">
+      <bpmn:incoming>Flow_Start_Meldung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Meldung_Zusatzinfos</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Zusatzinfos_bereitstellen" name="Zusaetzliche Informationen bereitstellen">
+      <bpmn:incoming>Flow_Meldung_Zusatzinfos</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zusatzinfos_Bestaetigung</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Bestaetigung_erhalten" name="Eingangsbestaetigung erhalten">
+      <bpmn:incoming>Flow_Zusatzinfos_Bestaetigung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bestaetigung_Bescheid</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Bescheid_erhalten" name="Bescheid erhalten">
+      <bpmn:incoming>Flow_Bestaetigung_Bescheid</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bescheid_Ende</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="EndEvent_Buerger_Ende" name="Prozess beendet">
+      <bpmn:incoming>Flow_Bescheid_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_Start_Meldung"
+                       sourceRef="StartEvent_Verunreinigung_festgestellt"
+                       targetRef="Task_Meldung_abgeben" />
+
+    <bpmn:sequenceFlow id="Flow_Meldung_Zusatzinfos"
+                       sourceRef="Task_Meldung_abgeben"
+                       targetRef="Task_Zusatzinfos_bereitstellen" />
+
+    <bpmn:sequenceFlow id="Flow_Zusatzinfos_Bestaetigung"
+                       sourceRef="Task_Zusatzinfos_bereitstellen"
+                       targetRef="Task_Bestaetigung_erhalten" />
+
+    <bpmn:sequenceFlow id="Flow_Bestaetigung_Bescheid"
+                       sourceRef="Task_Bestaetigung_erhalten"
+                       targetRef="Task_Bescheid_erhalten" />
+
+    <bpmn:sequenceFlow id="Flow_Bescheid_Ende"
+                       sourceRef="Task_Bescheid_erhalten"
+                       targetRef="EndEvent_Buerger_Ende" />
+  </bpmn:process>
+
+  <!-- ===================================================
+       3)   Prozess Pool B (Umweltamt)
+       =================================================== -->
+  <bpmn:process id="Process_Umweltamt"
+                name="Umweltamt Prozess"
+                isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_Meldung_eingegangen" name="Meldung eingegangen">
+      <bpmn:outgoing>Flow_Meldung_Zustaendigkeit</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:task id="Task_Zustaendigkeit_pruefen" name="Zustaendigkeit pruefen">
+      <bpmn:incoming>Flow_Meldung_Zustaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zustaendigkeit_Vollstaendigkeit</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Vollstaendigkeit_pruefen" name="Vollstaendigkeit pruefen">
+      <bpmn:incoming>Flow_Zustaendigkeit_Vollstaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Vollstaendigkeit_Informationen</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Informationen_entgegennehmen" name="Zusaetzliche Informationen entgegennehmen">
+      <bpmn:incoming>Flow_Vollstaendigkeit_Informationen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Informationen_Eingangsbestaetigung</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Eingangsbestaetigung_versenden" name="Eingangsbestaetigung versenden">
+      <bpmn:incoming>Flow_Informationen_Eingangsbestaetigung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Eingangsbestaetigung_Untersuchung</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Untersuchung_planen" name="Vor-Ort-Untersuchung planen">
+      <bpmn:incoming>Flow_Eingangsbestaetigung_Untersuchung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Untersuchung_Proben</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Proben_entnehmen" name="Wasserproben entnehmen">
+      <bpmn:incoming>Flow_Untersuchung_Proben</bpmn:incoming>
+      <bpmn:outgoing>Flow_Proben_Labor</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Labor_veranlassen" name="Laboranalyse veranlassen">
+      <bpmn:incoming>Flow_Proben_Labor</bpmn:incoming>
+      <bpmn:outgoing>Flow_Labor_Bewertung</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Ergebnisse_bewerten" name="Analyseergebnisse bewerten">
+      <bpmn:incoming>Flow_Labor_Bewertung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bewertung_Massnahmen</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Massnahmen_festlegen" name="Massnahmen festlegen">
+      <bpmn:incoming>Flow_Bewertung_Massnahmen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Massnahmen_Bescheid</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Bescheid_erstellen" name="Bescheid erstellen">
+      <bpmn:incoming>Flow_Massnahmen_Bescheid</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bescheid_Versenden</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Bescheid_versenden" name="Bescheid versenden">
+      <bpmn:incoming>Flow_Bescheid_Versenden</bpmn:incoming>
+      <bpmn:outgoing>Flow_Versenden_Ende</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="EndEvent_Umweltamt_Ende" name="Bearbeitung abgeschlossen">
+      <bpmn:incoming>Flow_Versenden_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_Meldung_Zustaendigkeit"
+                       sourceRef="StartEvent_Meldung_eingegangen"
+                       targetRef="Task_Zustaendigkeit_pruefen" />
+
+    <bpmn:sequenceFlow id="Flow_Zustaendigkeit_Vollstaendigkeit"
+                       sourceRef="Task_Zustaendigkeit_pruefen"
+                       targetRef="Task_Vollstaendigkeit_pruefen" />
+
+    <bpmn:sequenceFlow id="Flow_Vollstaendigkeit_Informationen"
+                       sourceRef="Task_Vollstaendigkeit_pruefen"
+                       targetRef="Task_Informationen_entgegennehmen" />
+
+    <bpmn:sequenceFlow id="Flow_Informationen_Eingangsbestaetigung"
+                       sourceRef="Task_Informationen_entgegennehmen"
+                       targetRef="Task_Eingangsbestaetigung_versenden" />
+
+    <bpmn:sequenceFlow id="Flow_Eingangsbestaetigung_Untersuchung"
+                       sourceRef="Task_Eingangsbestaetigung_versenden"
+                       targetRef="Task_Untersuchung_planen" />
+
+    <bpmn:sequenceFlow id="Flow_Untersuchung_Proben"
+                       sourceRef="Task_Untersuchung_planen"
+                       targetRef="Task_Proben_entnehmen" />
+
+    <bpmn:sequenceFlow id="Flow_Proben_Labor"
+                       sourceRef="Task_Proben_entnehmen"
+                       targetRef="Task_Labor_veranlassen" />
+
+    <bpmn:sequenceFlow id="Flow_Labor_Bewertung"
+                       sourceRef="Task_Labor_veranlassen"
+                       targetRef="Task_Ergebnisse_bewerten" />
+
+    <bpmn:sequenceFlow id="Flow_Bewertung_Massnahmen"
+                       sourceRef="Task_Ergebnisse_bewerten"
+                       targetRef="Task_Massnahmen_festlegen" />
+
+    <bpmn:sequenceFlow id="Flow_Massnahmen_Bescheid"
+                       sourceRef="Task_Massnahmen_festlegen"
+                       targetRef="Task_Bescheid_erstellen" />
+
+    <bpmn:sequenceFlow id="Flow_Bescheid_Versenden"
+                       sourceRef="Task_Bescheid_erstellen"
+                       targetRef="Task_Bescheid_versenden" />
+
+    <bpmn:sequenceFlow id="Flow_Versenden_Ende"
+                       sourceRef="Task_Bescheid_versenden"
+                       targetRef="EndEvent_Umweltamt_Ende" />
+  </bpmn:process>
+
+  <!-- ===================================================
+       4)   Diagram Interchange (BPMN-DI)
+       =================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Wasserverunreinigung">
+    <bpmndi:BPMNPlane id="BPMNPlane_Wasserverunreinigung" bpmnElement="Collab_Wasserverunreinigung">
+
+      <!-- ===== Pool-Shapes ===== -->
+      <bpmndi:BPMNShape id="Participant_Buerger_di"
+                        bpmnElement="Participant_Buerger"
+                        isHorizontal="true">
+        <dc:Bounds x="80" y="80" width="1700" height="250" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Participant_Umweltamt_di"
+                        bpmnElement="Participant_Umweltamt"
+                        isHorizontal="true">
+        <dc:Bounds x="80" y="360" width="1700" height="400" />
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Shapes Pool A (Bürger) ===== -->
+      <bpmndi:BPMNShape id="StartEvent_Verunreinigung_festgestellt_di" bpmnElement="StartEvent_Verunreinigung_festgestellt">
+        <dc:Bounds x="120" y="190" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Meldung_abgeben_di" bpmnElement="Task_Meldung_abgeben">
+        <dc:Bounds x="200" y="168" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Zusatzinfos_bereitstellen_di" bpmnElement="Task_Zusatzinfos_bereitstellen">
+        <dc:Bounds x="550" y="168" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Bestaetigung_erhalten_di" bpmnElement="Task_Bestaetigung_erhalten">
+        <dc:Bounds x="800" y="168" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Bescheid_erhalten_di" bpmnElement="Task_Bescheid_erhalten">
+        <dc:Bounds x="1500" y="168" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_Buerger_Ende_di" bpmnElement="EndEvent_Buerger_Ende">
+        <dc:Bounds x="1650" y="190" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Shapes Pool B (Umweltamt) ===== -->
+      <bpmndi:BPMNShape id="StartEvent_Meldung_eingegangen_di" bpmnElement="StartEvent_Meldung_eingegangen">
+        <dc:Bounds x="232" y="470" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Zustaendigkeit_pruefen_di" bpmnElement="Task_Zustaendigkeit_pruefen">
+        <dc:Bounds x="300" y="448" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Vollstaendigkeit_pruefen_di" bpmnElement="Task_Vollstaendigkeit_pruefen">
+        <dc:Bounds x="430" y="448" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Informationen_entgegennehmen_di" bpmnElement="Task_Informationen_entgegennehmen">
+        <dc:Bounds x="580" y="448" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Eingangsbestaetigung_versenden_di" bpmnElement="Task_Eingangsbestaetigung_versenden">
+        <dc:Bounds x="720" y="448" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Untersuchung_planen_di" bpmnElement="Task_Untersuchung_planen">
+        <dc:Bounds x="860" y="448" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Proben_entnehmen_di" bpmnElement="Task_Proben_entnehmen">
+        <dc:Bounds x="1000" y="448" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Labor_veranlassen_di" bpmnElement="Task_Labor_veranlassen">
+        <dc:Bounds x="1140" y="448" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Ergebnisse_bewerten_di" bpmnElement="Task_Ergebnisse_bewerten">
+        <dc:Bounds x="1280" y="448" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Massnahmen_festlegen_di" bpmnElement="Task_Massnahmen_festlegen">
+        <dc:Bounds x="1420" y="448" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Bescheid_erstellen_di" bpmnElement="Task_Bescheid_erstellen">
+        <dc:Bounds x="1560" y="448" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Bescheid_versenden_di" bpmnElement="Task_Bescheid_versenden">
+        <dc:Bounds x="1500" y="580" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_Umweltamt_Ende_di" bpmnElement="EndEvent_Umweltamt_Ende">
+        <dc:Bounds x="1650" y="602" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Sequence-Flow-Edges Pool A (Bürger) ===== -->
+      <bpmndi:BPMNEdge id="Flow_Start_Meldung_di" bpmnElement="Flow_Start_Meldung">
+        <di:waypoint x="156" y="208" />
+        <di:waypoint x="200" y="208" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Meldung_Zusatzinfos_di" bpmnElement="Flow_Meldung_Zusatzinfos">
+        <di:waypoint x="300" y="208" />
+        <di:waypoint x="550" y="208" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Zusatzinfos_Bestaetigung_di" bpmnElement="Flow_Zusatzinfos_Bestaetigung">
+        <di:waypoint x="650" y="208" />
+        <di:waypoint x="800" y="208" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Bestaetigung_Bescheid_di" bpmnElement="Flow_Bestaetigung_Bescheid">
+        <di:waypoint x="900" y="208" />
+        <di:waypoint x="1500" y="208" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Bescheid_Ende_di" bpmnElement="Flow_Bescheid_Ende">
+        <di:waypoint x="1600" y="208" />
+        <di:waypoint x="1650" y="208" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== Sequence-Flow-Edges Pool B (Umweltamt) ===== -->
+      <bpmndi:BPMNEdge id="Flow_Meldung_Zustaendigkeit_di" bpmnElement="Flow_Meldung_Zustaendigkeit">
+        <di:waypoint x="268" y="488" />
+        <di:waypoint x="300" y="488" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Zustaendigkeit_Vollstaendigkeit_di" bpmnElement="Flow_Zustaendigkeit_Vollstaendigkeit">
+        <di:waypoint x="400" y="488" />
+        <di:waypoint x="430" y="488" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Vollstaendigkeit_Informationen_di" bpmnElement="Flow_Vollstaendigkeit_Informationen">
+        <di:waypoint x="530" y="488" />
+        <di:waypoint x="580" y="488" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Informationen_Eingangsbestaetigung_di" bpmnElement="Flow_Informationen_Eingangsbestaetigung">
+        <di:waypoint x="680" y="488" />
+        <di:waypoint x="720" y="488" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Eingangsbestaetigung_Untersuchung_di" bpmnElement="Flow_Eingangsbestaetigung_Untersuchung">
+        <di:waypoint x="820" y="488" />
+        <di:waypoint x="860" y="488" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Untersuchung_Proben_di" bpmnElement="Flow_Untersuchung_Proben">
+        <di:waypoint x="960" y="488" />
+        <di:waypoint x="1000" y="488" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Proben_Labor_di" bpmnElement="Flow_Proben_Labor">
+        <di:waypoint x="1100" y="488" />
+        <di:waypoint x="1140" y="488" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Labor_Bewertung_di" bpmnElement="Flow_Labor_Bewertung">
+        <di:waypoint x="1240" y="488" />
+        <di:waypoint x="1280" y="488" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Bewertung_Massnahmen_di" bpmnElement="Flow_Bewertung_Massnahmen">
+        <di:waypoint x="1380" y="488" />
+        <di:waypoint x="1420" y="488" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Massnahmen_Bescheid_di" bpmnElement="Flow_Massnahmen_Bescheid">
+        <di:waypoint x="1520" y="488" />
+        <di:waypoint x="1560" y="488" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Bescheid_Versenden_di" bpmnElement="Flow_Bescheid_Versenden">
+        <di:waypoint x="1610" y="528" />
+        <di:waypoint x="1610" y="554" />
+        <di:waypoint x="1550" y="554" />
+        <di:waypoint x="1550" y="580" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Versenden_Ende_di" bpmnElement="Flow_Versenden_Ende">
+        <di:waypoint x="1600" y="620" />
+        <di:waypoint x="1650" y="620" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== Message-Flow-Edges ===== -->
+      <bpmndi:BPMNEdge id="MsgFlow_Meldung_di" bpmnElement="MsgFlow_Meldung">
+        <di:waypoint x="250" y="248" />
+        <di:waypoint x="250" y="470" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="MsgFlow_Nachfrage_di" bpmnElement="MsgFlow_Nachfrage">
+        <di:waypoint x="480" y="448" />
+        <di:waypoint x="480" y="330" />
+        <di:waypoint x="600" y="330" />
+        <di:waypoint x="600" y="248" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="MsgFlow_Zusatzinfos_di" bpmnElement="MsgFlow_Zusatzinfos">
+        <di:waypoint x="600" y="248" />
+        <di:waypoint x="600" y="350" />
+        <di:waypoint x="630" y="350" />
+        <di:waypoint x="630" y="448" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="MsgFlow_Eingangsbestaetigung_di" bpmnElement="MsgFlow_Eingangsbestaetigung">
+        <di:waypoint x="770" y="448" />
+        <di:waypoint x="770" y="340" />
+        <di:waypoint x="850" y="340" />
+        <di:waypoint x="850" y="248" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="MsgFlow_Bescheid_di" bpmnElement="MsgFlow_Bescheid">
+        <di:waypoint x="1550" y="580" />
+        <di:waypoint x="1550" y="248" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

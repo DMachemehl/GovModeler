@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0"
+  modeler:executionPlatform="Camunda Platform"
+  modeler:executionPlatformVersion="7.20.0">
+
+  <!-- =====================================================
+       COLLABORATION - Haupt-Container für Prozess-Interaktion
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_Personalausweis_Verlaengerung">
+    
+    <!-- Participant: Bürger/Antragsteller -->
+    <bpmn:participant id="Participant_Buerger"
+                      name="Buerger"
+                      processRef="Process_Buerger" />
+    
+    <!-- Participant: Behörde/Amt -->
+    <bpmn:participant id="Participant_Buergeramt"
+                      name="Buergeramt"
+                      processRef="Process_Buergeramt" />
+    
+    <!-- Message Flows zwischen Participanten -->
+    <bpmn:messageFlow id="MsgFlow_Antrag"
+                      name="Verlaengerungsantrag"
+                      sourceRef="Task_Antrag_stellen"
+                      targetRef="StartEvent_Antrag_eingegangen" />
+    
+    <bpmn:messageFlow id="MsgFlow_Abholung"
+                      name="Abholinformation"
+                      sourceRef="Task_Abholinformation_versenden"
+                      targetRef="Event_Abholung_erhalten" />
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       BÜRGER PROZESS - Standard Antragsteller-Prozess
+       ===================================================== -->
+  <bpmn:process id="Process_Buerger"
+                name="Personalausweis_Verlaengerung_Buerger"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Buerger" name="Personalausweis-Verlaengerung notwendig">
+      <bpmn:outgoing>Flow_Start_Antrag</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Antrag stellen -->
+    <bpmn:userTask id="Task_Antrag_stellen" name="Verlaengerungsantrag stellen">
+      <bpmn:incoming>Flow_Start_Antrag</bpmn:incoming>
+      <bpmn:outgoing>Flow_Antrag_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Abholung -->
+    <bpmn:intermediateCatchEvent id="Event_Abholung_erhalten" name="Abholinformation erhalten">
+      <bpmn:incoming>Flow_Antrag_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Abholung_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Abholung" messageRef="Message_Abholung" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Buerger" name="Prozess abgeschlossen">
+      <bpmn:incoming>Flow_Abholung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Bürger -->
+    <bpmn:sequenceFlow id="Flow_Start_Antrag"
+                       sourceRef="StartEvent_Buerger"
+                       targetRef="Task_Antrag_stellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Antrag_Warten"
+                       sourceRef="Task_Antrag_stellen"
+                       targetRef="Event_Abholung_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Abholung_Ende"
+                       sourceRef="Event_Abholung_erhalten"
+                       targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       BEHÖRDEN PROZESS - Standard Bearbeitungs-Prozess
+       ===================================================== -->
+  <bpmn:process id="Process_Buergeramt"
+                name="Personalausweis_Verlaengerung_Buergeramt"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Antrag_eingegangen" name="Verlaengerungsantrag eingegangen">
+      <bpmn:outgoing>Flow_Start_Zustaendigkeit</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Service Task: Automatische Prüfungen -->
+    <bpmn:serviceTask id="Task_Zustaendigkeit_pruefen" name="Zustaendigkeit pruefen">
+      <bpmn:incoming>Flow_Start_Zustaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zustaendigkeit_Vollstaendigkeit</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:serviceTask id="Task_Vollstaendigkeit_pruefen" name="Vollstaendigkeit pruefen">
+      <bpmn:incoming>Flow_Zustaendigkeit_Vollstaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Vollstaendigkeit_Biometrie</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- User Tasks: Sachbearbeitung -->
+    <bpmn:userTask id="Task_Biometrie_erfassen" name="Biometrische Daten erfassen">
+      <bpmn:incoming>Flow_Vollstaendigkeit_Biometrie</bpmn:incoming>
+      <bpmn:outgoing>Flow_Biometrie_Erfassung</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="Task_Antrag_erfassen" name="Antrag digital erfassen">
+      <bpmn:incoming>Flow_Biometrie_Erfassung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Erfassung_Bestellung</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Service Task: Bestellung -->
+    <bpmn:serviceTask id="Task_Ausweis_bestellen" name="Personalausweis bestellen">
+      <bpmn:incoming>Flow_Erfassung_Bestellung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bestellung_Abholung</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Task: Benachrichtigung -->
+    <bpmn:userTask id="Task_Abholinformation_versenden" name="Abholinformation versenden">
+      <bpmn:incoming>Flow_Bestellung_Abholung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Abholung_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Buergeramt" name="Prozess abgeschlossen">
+      <bpmn:incoming>Flow_Abholung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Behörde -->
+    <bpmn:sequenceFlow id="Flow_Start_Zustaendigkeit"
+                       sourceRef="StartEvent_Antrag_eingegangen"
+                       targetRef="Task_Zustaendigkeit_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zustaendigkeit_Vollstaendigkeit"
+                       sourceRef="Task_Zustaendigkeit_pruefen"
+                       targetRef="Task_Vollstaendigkeit_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Vollstaendigkeit_Biometrie"
+                       sourceRef="Task_Vollstaendigkeit_pruefen"
+                       targetRef="Task_Biometrie_erfassen" />
+    
+    <bpmn:sequenceFlow id="Flow_Biometrie_Erfassung"
+                       sourceRef="Task_Biometrie_erfassen"
+                       targetRef="Task_Antrag_erfassen" />
+    
+    <bpmn:sequenceFlow id="Flow_Erfassung_Bestellung"
+                       sourceRef="Task_Antrag_erfassen"
+                       targetRef="Task_Ausweis_bestellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Bestellung_Abholung"
+                       sourceRef="Task_Ausweis_bestellen"
+                       targetRef="Task_Abholinformation_versenden" />
+    
+    <bpmn:sequenceFlow id="Flow_Abholung_Ende"
+                       sourceRef="Task_Abholinformation_versenden"
+                       targetRef="EndEvent_Buergeramt" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       MESSAGE DEFINITIONEN
+       ===================================================== -->
+  <bpmn:message id="Message_Abholung" name="Abholinformation" />
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG - Basiert auf Guidelines
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Personalausweis_Verlaengerung">
+    <bpmndi:BPMNPlane id="BPMNPlane_Personalausweis_Verlaengerung" bpmnElement="Collab_Personalausweis_Verlaengerung">
+      
+      <!-- ===============================
+           POOL: BÜRGER
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="900" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="195" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Bürger Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="225" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Antrag_stellen_di" bpmnElement="Task_Antrag_stellen">
+        <dc:Bounds x="320" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Abholung_erhalten_di" bpmnElement="Event_Abholung_erhalten">
+        <dc:Bounds x="480" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="460" y="225" width="76" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="580" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="558" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===============================
+           POOL: BÜRGERAMT
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Buergeramt_di" bpmnElement="Participant_Buergeramt" isHorizontal="true">
+        <dc:Bounds x="160" y="380" width="900" height="300" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="515" width="20" height="70" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Bürgeramt Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Antrag_eingegangen_di" bpmnElement="StartEvent_Antrag_eingegangen">
+        <dc:Bounds x="222" y="492" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="535" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Zustaendigkeit_pruefen_di" bpmnElement="Task_Zustaendigkeit_pruefen">
+        <dc:Bounds x="320" y="470" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Vollstaendigkeit_pruefen_di" bpmnElement="Task_Vollstaendigkeit_pruefen">
+        <dc:Bounds x="470" y="470" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Biometrie_erfassen_di" bpmnElement="Task_Biometrie_erfassen">
+        <dc:Bounds x="620" y="470" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Antrag_erfassen_di" bpmnElement="Task_Antrag_erfassen">
+        <dc:Bounds x="770" y="470" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Ausweis_bestellen_di" bpmnElement="Task_Ausweis_bestellen">
+        <dc:Bounds x="320" y="580" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Abholinformation_versenden_di" bpmnElement="Task_Abholinformation_versenden">
+        <dc:Bounds x="470" y="580" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Buergeramt_di" bpmnElement="EndEvent_Buergeramt">
+        <dc:Bounds x="622" y="602" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="600" y="645" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===============================
+           SEQUENCE FLOWS - BÜRGER
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_Start_Antrag_di" bpmnElement="Flow_Start_Antrag">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="320" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Antrag_Warten_di" bpmnElement="Flow_Antrag_Warten">
+        <di:waypoint x="420" y="200" />
+        <di:waypoint x="480" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Abholung_Ende_di" bpmnElement="Flow_Abholung_Ende">
+        <di:waypoint x="516" y="200" />
+        <di:waypoint x="580" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           SEQUENCE FLOWS - BÜRGERAMT
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_Start_Zustaendigkeit_di" bpmnElement="Flow_Start_Zustaendigkeit">
+        <di:waypoint x="258" y="510" />
+        <di:waypoint x="320" y="510" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zustaendigkeit_Vollstaendigkeit_di" bpmnElement="Flow_Zustaendigkeit_Vollstaendigkeit">
+        <di:waypoint x="420" y="510" />
+        <di:waypoint x="470" y="510" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Vollstaendigkeit_Biometrie_di" bpmnElement="Flow_Vollstaendigkeit_Biometrie">
+        <di:waypoint x="570" y="510" />
+        <di:waypoint x="620" y="510" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Biometrie_Erfassung_di" bpmnElement="Flow_Biometrie_Erfassung">
+        <di:waypoint x="720" y="510" />
+        <di:waypoint x="770" y="510" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Erfassung_Bestellung_di" bpmnElement="Flow_Erfassung_Bestellung">
+        <di:waypoint x="820" y="550" />
+        <di:waypoint x="820" y="620" />
+        <di:waypoint x="420" y="620" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Bestellung_Abholung_di" bpmnElement="Flow_Bestellung_Abholung">
+        <di:waypoint x="420" y="620" />
+        <di:waypoint x="470" y="620" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Abholung_Ende_Amt_di" bpmnElement="Flow_Abholung_Ende">
+        <di:waypoint x="570" y="620" />
+        <di:waypoint x="622" y="620" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           MESSAGE FLOWS
+           =============================== -->
+      <bpmndi:BPMNEdge id="MsgFlow_Antrag_di" bpmnElement="MsgFlow_Antrag">
+        <di:waypoint x="370" y="240" />
+        <di:waypoint x="370" y="389" />
+        <di:waypoint x="240" y="389" />
+        <di:waypoint x="240" y="492" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="270" y="369" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Abholung_di" bpmnElement="MsgFlow_Abholung">
+        <di:waypoint x="520" y="580" />
+        <di:waypoint x="520" y="389" />
+        <di:waypoint x="498" y="389" />
+        <di:waypoint x="498" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="480" y="369" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

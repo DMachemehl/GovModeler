@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" targetNamespace="http://example.com/bpmn" exporter="GitHub-Copilot-GovModeler" exporterVersion="2.0" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collab_Fuehrerschein_beantragen">
+    <bpmn:participant id="Participant_Buerger" name="Bürger" processRef="Process_Buerger" />
+    <bpmn:participant id="Participant_IT" name="IT" processRef="Process_IT" />
+    <bpmn:participant id="Participant_Fuehrerscheinstelle" name="Führerscheinstelle" processRef="Process_Fuehrerscheinstelle" />
+    <bpmn:messageFlow id="MsgFlow_Fuehrerscheinantrag" name="Führerscheinantrag" sourceRef="Task_Fuehrerscheinantrag_stellen" targetRef="StartEvent_Fuehrerscheinantrag_eingegangen" />
+    <bpmn:messageFlow id="MsgFlow_Fuehrerschein" name="Führerschein" sourceRef="Task_Fuehrerschein_aushaendigen" targetRef="Event_Fuehrerschein_erhalten" />
+    <bpmn:messageFlow id="MsgFlow_IT_Anfrage" name="Prüfungsanfrage" sourceRef="Task_IT_abfragen" targetRef="StartEvent_IT_Anfrage_erhalten" />
+    <bpmn:messageFlow id="MsgFlow_IT_Antwort" name="Positive Freigabe" sourceRef="Task_IT_Antwort_senden" targetRef="Event_IT_Antwort_erhalten" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Buerger" name="Fuehrerschein_Buerger" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Buerger" name="Führerscheinbedarf festgestellt">
+      <bpmn:outgoing>Flow_Start_Fuehrerscheinantrag</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_Fuehrerscheinantrag_stellen" name="Führerscheinantrag vollständig stellen">
+      <bpmn:incoming>Flow_Start_Fuehrerscheinantrag</bpmn:incoming>
+      <bpmn:outgoing>Flow_Fuehrerscheinantrag_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:intermediateCatchEvent id="Event_Fuehrerschein_erhalten" name="Führerschein erhalten">
+      <bpmn:incoming>Flow_Fuehrerscheinantrag_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Fuehrerschein_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Fuehrerschein" messageRef="Message_Fuehrerschein" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="EndEvent_Buerger" name="Prozess erfolgreich abgeschlossen">
+      <bpmn:incoming>Flow_Fuehrerschein_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_Fuehrerscheinantrag" sourceRef="StartEvent_Buerger" targetRef="Task_Fuehrerscheinantrag_stellen" />
+    <bpmn:sequenceFlow id="Flow_Fuehrerscheinantrag_Warten" sourceRef="Task_Fuehrerscheinantrag_stellen" targetRef="Event_Fuehrerschein_erhalten" />
+    <bpmn:sequenceFlow id="Flow_Fuehrerschein_Ende" sourceRef="Event_Fuehrerschein_erhalten" targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+  <bpmn:process id="Process_Fuehrerscheinstelle" name="Fuehrerschein_Fuehrerscheinstelle" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Fuehrerscheinantrag_eingegangen" name="Vollständiger Führerscheinantrag eingegangen">
+      <bpmn:outgoing>Flow_Start_Vollstaendigkeit</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_Vollstaendigkeit_bestaetigen" name="Vollständigkeit und Berechtigung bestätigt">
+      <bpmn:incoming>Flow_Start_Vollstaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Vollstaendigkeit_IT</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_IT_abfragen" name="IT-System für Prüfung abfragen">
+      <bpmn:incoming>Flow_Vollstaendigkeit_IT</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:intermediateCatchEvent id="Event_IT_Antwort_erhalten" name="Positive IT-Antwort mit Freigabe erhalten">
+      <bpmn:incoming>Flow_IT_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Produktion</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_IT_Antwort" messageRef="Message_IT_Antwort" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:serviceTask id="Task_Fuehrerschein_produzieren" name="Führerschein produzieren">
+      <bpmn:incoming>Flow_IT_Produktion</bpmn:incoming>
+      <bpmn:outgoing>Flow_Produktion_Aushaendigung</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_Fuehrerschein_aushaendigen" name="Führerschein aushändigen">
+      <bpmn:incoming>Flow_Produktion_Aushaendigung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Aushaendigung_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_Fuehrerscheinstelle" name="Führerschein erfolgreich ausgehändigt">
+      <bpmn:incoming>Flow_Aushaendigung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_Vollstaendigkeit" sourceRef="StartEvent_Fuehrerscheinantrag_eingegangen" targetRef="Task_Vollstaendigkeit_bestaetigen" />
+    <bpmn:sequenceFlow id="Flow_Vollstaendigkeit_IT" sourceRef="Task_Vollstaendigkeit_bestaetigen" targetRef="Task_IT_abfragen" />
+    <bpmn:sequenceFlow id="Flow_IT_Warten" sourceRef="Task_IT_abfragen" targetRef="Event_IT_Antwort_erhalten" />
+    <bpmn:sequenceFlow id="Flow_IT_Produktion" sourceRef="Event_IT_Antwort_erhalten" targetRef="Task_Fuehrerschein_produzieren" />
+    <bpmn:sequenceFlow id="Flow_Produktion_Aushaendigung" sourceRef="Task_Fuehrerschein_produzieren" targetRef="Task_Fuehrerschein_aushaendigen" />
+    <bpmn:sequenceFlow id="Flow_Aushaendigung_Ende" sourceRef="Task_Fuehrerschein_aushaendigen" targetRef="EndEvent_Fuehrerscheinstelle" />
+  </bpmn:process>
+  <bpmn:process id="Process_IT" name="IT_Prozess" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_IT_Anfrage_erhalten" name="Prüfungsanfrage erhalten">
+      <bpmn:outgoing>Flow_IT_Start_Verarbeitung</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_IT_Daten_verarbeiten" name="Daten erfolgreich verarbeiten">
+      <bpmn:incoming>Flow_IT_Start_Verarbeitung</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Verarbeitung_Freigabe</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_IT_Freigabe_bereitstellen" name="Freigabeergebnis bereitstellen">
+      <bpmn:incoming>Flow_IT_Verarbeitung_Freigabe</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Freigabe_Antwort</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_IT_Antwort_senden" name="Erfolgreiche Antwort senden">
+      <bpmn:incoming>Flow_IT_Freigabe_Antwort</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Antwort_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent_IT" name="Prüfung erfolgreich abgeschlossen">
+      <bpmn:incoming>Flow_IT_Antwort_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_IT_Start_Verarbeitung" sourceRef="StartEvent_IT_Anfrage_erhalten" targetRef="Task_IT_Daten_verarbeiten" />
+    <bpmn:sequenceFlow id="Flow_IT_Verarbeitung_Freigabe" sourceRef="Task_IT_Daten_verarbeiten" targetRef="Task_IT_Freigabe_bereitstellen" />
+    <bpmn:sequenceFlow id="Flow_IT_Freigabe_Antwort" sourceRef="Task_IT_Freigabe_bereitstellen" targetRef="Task_IT_Antwort_senden" />
+    <bpmn:sequenceFlow id="Flow_IT_Antwort_Ende" sourceRef="Task_IT_Antwort_senden" targetRef="EndEvent_IT" />
+  </bpmn:process>
+  <bpmn:message id="Message_Fuehrerschein" name="Führerschein" />
+  <bpmn:message id="Message_IT_Anfrage" name="IT-Anfrage" />
+  <bpmn:message id="Message_IT_Antwort" name="IT-Antwort" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Fuehrerschein_beantragen">
+    <bpmndi:BPMNPlane id="BPMNPlane_Fuehrerschein_beantragen" bpmnElement="Collab_Fuehrerschein_beantragen">
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="200" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="170" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="160" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="203" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Fuehrerscheinantrag_stellen_di" bpmnElement="Task_Fuehrerscheinantrag_stellen">
+        <dc:Bounds x="310" y="138" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Fuehrerschein_erhalten_di" bpmnElement="Event_Fuehrerschein_erhalten">
+        <dc:Bounds x="470" y="160" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="455" y="122.5" width="65" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="572" y="160" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="550" y="203" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_Fuehrerscheinantrag_di" bpmnElement="Flow_Start_Fuehrerscheinantrag">
+        <di:waypoint x="258" y="178" />
+        <di:waypoint x="310" y="178" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Fuehrerscheinantrag_Warten_di" bpmnElement="Flow_Fuehrerscheinantrag_Warten">
+        <di:waypoint x="410" y="178" />
+        <di:waypoint x="470" y="178" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Fuehrerschein_Ende_di" bpmnElement="Flow_Fuehrerschein_Ende">
+        <di:waypoint x="506" y="178" />
+        <di:waypoint x="572" y="178" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="320" width="1200" height="200" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="410" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_IT_Anfrage_erhalten_di" bpmnElement="StartEvent_IT_Anfrage_erhalten">
+        <dc:Bounds x="502" y="402" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="479" y="364.5" width="82" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_IT_Daten_verarbeiten_di" bpmnElement="Task_IT_Daten_verarbeiten">
+        <dc:Bounds x="580" y="380" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_IT_Freigabe_bereitstellen_di" bpmnElement="Task_IT_Freigabe_bereitstellen">
+        <dc:Bounds x="720" y="380" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_IT_Antwort_senden_di" bpmnElement="Task_IT_Antwort_senden">
+        <dc:Bounds x="600" y="380" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_IT_di" bpmnElement="EndEvent_IT">
+        <dc:Bounds x="882" y="402" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="860" y="445" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_IT_Start_Verarbeitung_di" bpmnElement="Flow_IT_Start_Verarbeitung">
+        <di:waypoint x="538" y="420" />
+        <di:waypoint x="580" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Verarbeitung_Freigabe_di" bpmnElement="Flow_IT_Verarbeitung_Freigabe">
+        <di:waypoint x="680" y="420" />
+        <di:waypoint x="720" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Freigabe_Antwort_di" bpmnElement="Flow_IT_Freigabe_Antwort">
+        <di:waypoint x="770" y="460" />
+        <di:waypoint x="770" y="500" />
+        <di:waypoint x="650" y="500" />
+        <di:waypoint x="650" y="460" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Antwort_Ende_di" bpmnElement="Flow_IT_Antwort_Ende">
+        <di:waypoint x="700" y="420" />
+        <di:waypoint x="882" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Participant_Fuehrerscheinstelle_di" bpmnElement="Participant_Fuehrerscheinstelle" isHorizontal="true">
+        <dc:Bounds x="160" y="560" width="1200" height="200" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="650" width="20" height="100" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Fuehrerscheinantrag_eingegangen_di" bpmnElement="StartEvent_Fuehrerscheinantrag_eingegangen">
+        <dc:Bounds x="342" y="652" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="318" y="695" width="85" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Vollstaendigkeit_bestaetigen_di" bpmnElement="Task_Vollstaendigkeit_bestaetigen">
+        <dc:Bounds x="420" y="630" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_IT_abfragen_di" bpmnElement="Task_IT_abfragen">
+        <dc:Bounds x="470" y="630" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_IT_Antwort_erhalten_di" bpmnElement="Event_IT_Antwort_erhalten">
+        <dc:Bounds x="632" y="652" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="607" y="695" width="87" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Fuehrerschein_produzieren_di" bpmnElement="Task_Fuehrerschein_produzieren">
+        <dc:Bounds x="750" y="630" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Fuehrerschein_aushaendigen_di" bpmnElement="Task_Fuehrerschein_aushaendigen">
+        <dc:Bounds x="438" y="630" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Fuehrerscheinstelle_di" bpmnElement="EndEvent_Fuehrerscheinstelle">
+        <dc:Bounds x="572" y="652" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="556" y="695" width="68" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_Vollstaendigkeit_di" bpmnElement="Flow_Start_Vollstaendigkeit">
+        <di:waypoint x="378" y="670" />
+        <di:waypoint x="420" y="670" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Vollstaendigkeit_IT_di" bpmnElement="Flow_Vollstaendigkeit_IT">
+        <di:waypoint x="520" y="670" />
+        <di:waypoint x="470" y="670" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Warten_di" bpmnElement="Flow_IT_Warten">
+        <di:waypoint x="570" y="670" />
+        <di:waypoint x="632" y="670" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Produktion_di" bpmnElement="Flow_IT_Produktion">
+        <di:waypoint x="668" y="670" />
+        <di:waypoint x="750" y="670" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Produktion_Aushaendigung_di" bpmnElement="Flow_Produktion_Aushaendigung">
+        <di:waypoint x="800" y="630" />
+        <di:waypoint x="800" y="590" />
+        <di:waypoint x="488" y="590" />
+        <di:waypoint x="488" y="630" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Aushaendigung_Ende_di" bpmnElement="Flow_Aushaendigung_Ende">
+        <di:waypoint x="538" y="670" />
+        <di:waypoint x="572" y="670" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Fuehrerscheinantrag_di" bpmnElement="MsgFlow_Fuehrerscheinantrag">
+        <di:waypoint x="360" y="218" />
+        <di:waypoint x="360" y="652" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="268" y="430" width="85" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Fuehrerschein_di" bpmnElement="MsgFlow_Fuehrerschein">
+        <di:waypoint x="488" y="630" />
+        <di:waypoint x="488" y="196" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="445" y="430" width="65" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_IT_Anfrage_di" bpmnElement="MsgFlow_IT_Anfrage">
+        <di:waypoint x="520" y="630" />
+        <di:waypoint x="520" y="438" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="477" y="530" width="82" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_IT_Antwort_di" bpmnElement="MsgFlow_IT_Antwort">
+        <di:waypoint x="650" y="460" />
+        <di:waypoint x="650" y="652" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="607" y="549" width="86" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

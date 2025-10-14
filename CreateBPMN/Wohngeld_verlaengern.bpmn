@@ -1,0 +1,388 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0"
+  modeler:executionPlatform="Camunda Platform"
+  modeler:executionPlatformVersion="7.20.0">
+
+  <!-- COLLABORATION -->
+  <bpmn:collaboration id="Collab_Wohngeld_verlaengern">
+    
+    <bpmn:participant id="Participant_Buerger"
+                      name="Bürger"
+                      processRef="Process_Buerger" />
+    
+    <bpmn:participant id="Participant_IT"
+                      name="IT"
+                      processRef="Process_IT" />
+    
+    <bpmn:participant id="Participant_Wohngeldstelle"
+                      name="Wohngeldstelle"
+                      processRef="Process_Wohngeldstelle" />
+    
+    <!-- Message Flows -->
+    <bpmn:messageFlow id="MsgFlow_Verlaengerungsantrag"
+                      name="Verlängerungsantrag"
+                      sourceRef="Task_Verlaengerungsantrag_stellen"
+                      targetRef="StartEvent_Verlaengerungsantrag_eingegangen" />
+    
+    <bpmn:messageFlow id="MsgFlow_Wohngeldbescheid"
+                      name="Verlängerter Wohngeldbescheid"
+                      sourceRef="Task_Wohngeldbescheid_erstellen"
+                      targetRef="Event_Wohngeldbescheid_erhalten" />
+                      
+    <bpmn:messageFlow id="MsgFlow_IT_Anfrage"
+                      name="Datenabfrage"
+                      sourceRef="Task_IT_System_abfragen"
+                      targetRef="StartEvent_IT_Anfrage_erhalten" />
+                      
+    <bpmn:messageFlow id="MsgFlow_IT_Antwort"
+                      name="Aktuelle Daten"
+                      sourceRef="Task_IT_Daten_bereitstellen"
+                      targetRef="Event_IT_Antwort_erhalten" />
+  </bpmn:collaboration>
+
+  <!-- BÜRGER PROZESS -->
+  <bpmn:process id="Process_Buerger" name="Wohngeld_verlaengern_Buerger" isExecutable="true">
+    
+    <bpmn:startEvent id="StartEvent_Buerger" name="Wohngeld läuft ab">
+      <bpmn:outgoing>Flow_Start_Verlaengerungsantrag</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <bpmn:userTask id="Task_Verlaengerungsantrag_stellen" name="Verlängerungsantrag vollständig stellen">
+      <bpmn:incoming>Flow_Start_Verlaengerungsantrag</bpmn:incoming>
+      <bpmn:outgoing>Flow_Verlaengerungsantrag_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:intermediateCatchEvent id="Event_Wohngeldbescheid_erhalten" name="Verlängerten Wohngeldbescheid erhalten">
+      <bpmn:incoming>Flow_Verlaengerungsantrag_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Wohngeldbescheid_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Wohngeldbescheid" messageRef="Message_Wohngeldbescheid" />
+    </bpmn:intermediateCatchEvent>
+    
+    <bpmn:endEvent id="EndEvent_Buerger" name="Wohngeld erfolgreich verlängert">
+      <bpmn:incoming>Flow_Wohngeldbescheid_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Bürger -->
+    <bpmn:sequenceFlow id="Flow_Start_Verlaengerungsantrag" sourceRef="StartEvent_Buerger" targetRef="Task_Verlaengerungsantrag_stellen" />
+    <bpmn:sequenceFlow id="Flow_Verlaengerungsantrag_Warten" sourceRef="Task_Verlaengerungsantrag_stellen" targetRef="Event_Wohngeldbescheid_erhalten" />
+    <bpmn:sequenceFlow id="Flow_Wohngeldbescheid_Ende" sourceRef="Event_Wohngeldbescheid_erhalten" targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+
+  <!-- WOHNGELDSTELLE PROZESS -->
+  <bpmn:process id="Process_Wohngeldstelle" name="Wohngeld_verlaengern_Wohngeldstelle" isExecutable="true">
+    
+    <bpmn:startEvent id="StartEvent_Verlaengerungsantrag_eingegangen" name="Verlängerungsantrag eingegangen">
+      <bpmn:outgoing>Flow_Start_Pruefung</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <bpmn:serviceTask id="Task_Antrag_pruefen" name="Antrag auf Vollständigkeit prüfen">
+      <bpmn:incoming>Flow_Start_Pruefung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Pruefung_IT</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:userTask id="Task_IT_System_abfragen" name="IT-System für aktuelle Daten abfragen">
+      <bpmn:incoming>Flow_Pruefung_IT</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:intermediateCatchEvent id="Event_IT_Antwort_erhalten" name="Aktuelle Daten erhalten">
+      <bpmn:incoming>Flow_IT_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Berechnung</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_IT_Antwort" messageRef="Message_IT_Antwort" />
+    </bpmn:intermediateCatchEvent>
+    
+    <bpmn:serviceTask id="Task_Wohngeld_berechnen" name="Wohngeld neu berechnen">
+      <bpmn:incoming>Flow_IT_Berechnung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Berechnung_Bescheid</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:userTask id="Task_Wohngeldbescheid_erstellen" name="Verlängerten Wohngeldbescheid erstellen">
+      <bpmn:incoming>Flow_Berechnung_Bescheid</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bescheid_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:endEvent id="EndEvent_Wohngeldstelle" name="Verlängerung erfolgreich bearbeitet">
+      <bpmn:incoming>Flow_Bescheid_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Wohngeldstelle -->
+    <bpmn:sequenceFlow id="Flow_Start_Pruefung" sourceRef="StartEvent_Verlaengerungsantrag_eingegangen" targetRef="Task_Antrag_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Pruefung_IT" sourceRef="Task_Antrag_pruefen" targetRef="Task_IT_System_abfragen" />
+    <bpmn:sequenceFlow id="Flow_IT_Warten" sourceRef="Task_IT_System_abfragen" targetRef="Event_IT_Antwort_erhalten" />
+    <bpmn:sequenceFlow id="Flow_IT_Berechnung" sourceRef="Event_IT_Antwort_erhalten" targetRef="Task_Wohngeld_berechnen" />
+    <bpmn:sequenceFlow id="Flow_Berechnung_Bescheid" sourceRef="Task_Wohngeld_berechnen" targetRef="Task_Wohngeldbescheid_erstellen" />
+    <bpmn:sequenceFlow id="Flow_Bescheid_Ende" sourceRef="Task_Wohngeldbescheid_erstellen" targetRef="EndEvent_Wohngeldstelle" />
+  </bpmn:process>
+
+  <!-- IT PROZESS -->
+  <bpmn:process id="Process_IT" name="IT_Prozess" isExecutable="true">
+    
+    <bpmn:startEvent id="StartEvent_IT_Anfrage_erhalten" name="Datenabfrage erhalten">
+      <bpmn:outgoing>Flow_IT_Start_Abfrage</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <bpmn:serviceTask id="Task_IT_Daten_abrufen" name="Aktuelle Daten abrufen">
+      <bpmn:incoming>Flow_IT_Start_Abfrage</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Abrufen_Validieren</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:serviceTask id="Task_IT_Daten_validieren" name="Daten validieren und aufbereiten">
+      <bpmn:incoming>Flow_IT_Abrufen_Validieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Validieren_Bereitstellen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:serviceTask id="Task_IT_Daten_bereitstellen" name="Validierte Daten bereitstellen">
+      <bpmn:incoming>Flow_IT_Validieren_Bereitstellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Bereitstellen_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:endEvent id="EndEvent_IT" name="Datenabfrage erfolgreich abgeschlossen">
+      <bpmn:incoming>Flow_IT_Bereitstellen_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - IT -->
+    <bpmn:sequenceFlow id="Flow_IT_Start_Abfrage" sourceRef="StartEvent_IT_Anfrage_erhalten" targetRef="Task_IT_Daten_abrufen" />
+    <bpmn:sequenceFlow id="Flow_IT_Abrufen_Validieren" sourceRef="Task_IT_Daten_abrufen" targetRef="Task_IT_Daten_validieren" />
+    <bpmn:sequenceFlow id="Flow_IT_Validieren_Bereitstellen" sourceRef="Task_IT_Daten_validieren" targetRef="Task_IT_Daten_bereitstellen" />
+    <bpmn:sequenceFlow id="Flow_IT_Bereitstellen_Ende" sourceRef="Task_IT_Daten_bereitstellen" targetRef="EndEvent_IT" />
+  </bpmn:process>
+
+  <!-- MESSAGE DEFINITIONEN -->
+  <bpmn:message id="Message_Wohngeldbescheid" name="Wohngeldbescheid" />
+  <bpmn:message id="Message_IT_Anfrage" name="IT-Anfrage" />
+  <bpmn:message id="Message_IT_Antwort" name="IT-Antwort" />
+
+  <!-- BPMN-DI VISUALISIERUNG -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Wohngeld_verlaengern">
+    <bpmndi:BPMNPlane id="BPMNPlane_Wohngeld_verlaengern" bpmnElement="Collab_Wohngeld_verlaengern">
+      
+      <!-- POOL: BÜRGER -->
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="900" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="200" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="225" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Verlaengerungsantrag_stellen_di" bpmnElement="Task_Verlaengerungsantrag_stellen">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Wohngeldbescheid_erhalten_di" bpmnElement="Event_Wohngeldbescheid_erhalten">
+        <dc:Bounds x="470" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="445" y="225" width="86" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="572" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="550" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- POOL: IT -->
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="900" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="490" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="StartEvent_IT_Anfrage_erhalten_di" bpmnElement="StartEvent_IT_Anfrage_erhalten">
+        <dc:Bounds x="222" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="520" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_IT_Daten_abrufen_di" bpmnElement="Task_IT_Daten_abrufen">
+        <dc:Bounds x="310" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_IT_Daten_validieren_di" bpmnElement="Task_IT_Daten_validieren">
+        <dc:Bounds x="470" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_IT_Daten_bereitstellen_di" bpmnElement="Task_IT_Daten_bereitstellen">
+        <dc:Bounds x="630" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_IT_di" bpmnElement="EndEvent_IT">
+        <dc:Bounds x="792" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="770" y="520" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- POOL: WOHNGELDSTELLE -->
+      <bpmndi:BPMNShape id="Participant_Wohngeldstelle_di" bpmnElement="Participant_Wohngeldstelle" isHorizontal="true">
+        <dc:Bounds x="160" y="660" width="900" height="400" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="850" width="20" height="80" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="StartEvent_Verlaengerungsantrag_eingegangen_di" bpmnElement="StartEvent_Verlaengerungsantrag_eingegangen">
+        <dc:Bounds x="342" y="762" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="318" y="805" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Antrag_pruefen_di" bpmnElement="Task_Antrag_pruefen">
+        <dc:Bounds x="310" y="860" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_IT_System_abfragen_di" bpmnElement="Task_IT_System_abfragen">
+        <dc:Bounds x="190" y="740" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_IT_Antwort_erhalten_di" bpmnElement="Event_IT_Antwort_erhalten">
+        <dc:Bounds x="662" y="762" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="637" y="805" width="86" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Wohngeld_berechnen_di" bpmnElement="Task_Wohngeld_berechnen">
+        <dc:Bounds x="630" y="860" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Wohngeldbescheid_erstellen_di" bpmnElement="Task_Wohngeldbescheid_erstellen">
+        <dc:Bounds x="438" y="740" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Wohngeldstelle_di" bpmnElement="EndEvent_Wohngeldstelle">
+        <dc:Bounds x="572" y="862" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="550" y="905" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- SEQUENCE FLOWS - BÜRGER -->
+      <bpmndi:BPMNEdge id="Flow_Start_Verlaengerungsantrag_di" bpmnElement="Flow_Start_Verlaengerungsantrag">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Verlaengerungsantrag_Warten_di" bpmnElement="Flow_Verlaengerungsantrag_Warten">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="470" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Wohngeldbescheid_Ende_di" bpmnElement="Flow_Wohngeldbescheid_Ende">
+        <di:waypoint x="506" y="200" />
+        <di:waypoint x="572" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- SEQUENCE FLOWS - WOHNGELDSTELLE -->
+      <bpmndi:BPMNEdge id="Flow_Start_Pruefung_di" bpmnElement="Flow_Start_Pruefung">
+        <di:waypoint x="360" y="798" />
+        <di:waypoint x="360" y="860" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Pruefung_IT_di" bpmnElement="Flow_Pruefung_IT">
+        <di:waypoint x="310" y="900" />
+        <di:waypoint x="240" y="900" />
+        <di:waypoint x="240" y="820" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Warten_di" bpmnElement="Flow_IT_Warten">
+        <di:waypoint x="290" y="780" />
+        <di:waypoint x="662" y="780" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Berechnung_di" bpmnElement="Flow_IT_Berechnung">
+        <di:waypoint x="680" y="798" />
+        <di:waypoint x="680" y="860" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Berechnung_Bescheid_di" bpmnElement="Flow_Berechnung_Bescheid">
+        <di:waypoint x="630" y="900" />
+        <di:waypoint x="488" y="900" />
+        <di:waypoint x="488" y="820" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Bescheid_Ende_di" bpmnElement="Flow_Bescheid_Ende">
+        <di:waypoint x="538" y="780" />
+        <di:waypoint x="590" y="780" />
+        <di:waypoint x="590" y="862" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- SEQUENCE FLOWS - IT -->
+      <bpmndi:BPMNEdge id="Flow_IT_Start_Abfrage_di" bpmnElement="Flow_IT_Start_Abfrage">
+        <di:waypoint x="258" y="495" />
+        <di:waypoint x="310" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Abrufen_Validieren_di" bpmnElement="Flow_IT_Abrufen_Validieren">
+        <di:waypoint x="410" y="495" />
+        <di:waypoint x="470" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Validieren_Bereitstellen_di" bpmnElement="Flow_IT_Validieren_Bereitstellen">
+        <di:waypoint x="570" y="495" />
+        <di:waypoint x="630" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Bereitstellen_Ende_di" bpmnElement="Flow_IT_Bereitstellen_Ende">
+        <di:waypoint x="730" y="495" />
+        <di:waypoint x="792" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- MESSAGE FLOWS -->
+      <bpmndi:BPMNEdge id="MsgFlow_Verlaengerungsantrag_di" bpmnElement="MsgFlow_Verlaengerungsantrag">
+        <di:waypoint x="360" y="240" />
+        <di:waypoint x="360" y="762" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="268" y="490" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Wohngeldbescheid_di" bpmnElement="MsgFlow_Wohngeldbescheid">
+        <di:waypoint x="488" y="740" />
+        <di:waypoint x="488" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="410" y="470" width="76" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_IT_Anfrage_di" bpmnElement="MsgFlow_IT_Anfrage">
+        <di:waypoint x="240" y="740" />
+        <di:waypoint x="240" y="513" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="197" y="620" width="66" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_IT_Antwort_di" bpmnElement="MsgFlow_IT_Antwort">
+        <di:waypoint x="680" y="535" />
+        <di:waypoint x="680" y="762" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="637" y="640" width="72" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

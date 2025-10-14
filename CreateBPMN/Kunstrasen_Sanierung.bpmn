@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collaboration_Kunstrasen_Sanierung">
+    <bpmn:participant id="Participant_Buerger" name="Buerger" processRef="Process_Buerger" />
+    <bpmn:participant id="Participant_Sportamt" name="Sportamt" processRef="Process_Sportamt" />
+    <bpmn:messageFlow id="MessageFlow_Information" sourceRef="Task_Ueber_Sanierung_informieren" targetRef="Task_Information_erhalten" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Buerger" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Buerger" name="Sanierungsbedarf bemerkt">
+      <bpmn:outgoing>Flow_Buerger_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_Information_erhalten" name="Information ueber Sanierung erhalten">
+      <bpmn:incoming>Flow_Buerger_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Buerger" name="Sanierte Anlage nutzen">
+      <bpmn:incoming>Flow_Buerger_2</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Buerger_1" sourceRef="StartEvent_Buerger" targetRef="Task_Information_erhalten" />
+    <bpmn:sequenceFlow id="Flow_Buerger_2" sourceRef="Task_Information_erhalten" targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+  <bpmn:process id="Process_Sportamt" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Sanierungsbedarf" name="Sanierungsbedarf am Kunstrasen festgestellt">
+      <bpmn:outgoing>Flow_Org_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_Zustand_bewerten" name="Zustand des Kunstrasens bewerten">
+      <bpmn:incoming>Flow_Org_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Sanierungsumfang_ermitteln" name="Sanierungsumfang ermitteln">
+      <bpmn:incoming>Flow_Org_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Budget_pruefen" name="Budget pruefen">
+      <bpmn:incoming>Flow_Org_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_5</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Leistungsverzeichnis_erstellen" name="Leistungsverzeichnis erstellen">
+      <bpmn:incoming>Flow_Org_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_6</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Ausschreibung_vorbereiten" name="Ausschreibung vorbereiten">
+      <bpmn:incoming>Flow_Org_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_7</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Ausschreibung_veroeffentlichen" name="Ausschreibung veroeffentlichen">
+      <bpmn:incoming>Flow_Org_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_8</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Angebote_sammeln" name="Angebote sammeln">
+      <bpmn:incoming>Flow_Org_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_9</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Angebote_pruefen" name="Angebote pruefen">
+      <bpmn:incoming>Flow_Org_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_10</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Auftrag_vergeben" name="Auftrag vergeben">
+      <bpmn:incoming>Flow_Org_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_11</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Sanierungsarbeiten_koordinieren" name="Sanierungsarbeiten koordinieren">
+      <bpmn:incoming>Flow_Org_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_12</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Abnahme_durchfuehren" name="Abnahme durchfuehren">
+      <bpmn:incoming>Flow_Org_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_13</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Rechnung_pruefen" name="Rechnung pruefen">
+      <bpmn:incoming>Flow_Org_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_14</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Zahlung_veranlassen" name="Zahlung veranlassen">
+      <bpmn:incoming>Flow_Org_14</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_15</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Ueber_Sanierung_informieren" name="Buerger ueber abgeschlossene Sanierung informieren">
+      <bpmn:incoming>Flow_Org_15</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_16</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Org" name="Kunstrasen saniert">
+      <bpmn:incoming>Flow_Org_16</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Org_1" sourceRef="StartEvent_Sanierungsbedarf" targetRef="Task_Zustand_bewerten" />
+    <bpmn:sequenceFlow id="Flow_Org_2" sourceRef="Task_Zustand_bewerten" targetRef="Task_Sanierungsumfang_ermitteln" />
+    <bpmn:sequenceFlow id="Flow_Org_3" sourceRef="Task_Sanierungsumfang_ermitteln" targetRef="Task_Kostenrahmen_schaetzen" />
+    <bpmn:sequenceFlow id="Flow_Org_4" sourceRef="Task_Kostenrahmen_schaetzen" targetRef="Task_Budget_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Org_5" sourceRef="Task_Budget_pruefen" targetRef="Task_Leistungsverzeichnis_erstellen" />
+    <bpmn:sequenceFlow id="Flow_Org_6" sourceRef="Task_Leistungsverzeichnis_erstellen" targetRef="Task_Ausschreibung_vorbereiten" />
+    <bpmn:sequenceFlow id="Flow_Org_7" sourceRef="Task_Ausschreibung_vorbereiten" targetRef="Task_Ausschreibung_veroeffentlichen" />
+    <bpmn:sequenceFlow id="Flow_Org_8" sourceRef="Task_Ausschreibung_veroeffentlichen" targetRef="Task_Angebote_sammeln" />
+    <bpmn:sequenceFlow id="Flow_Org_9" sourceRef="Task_Angebote_sammeln" targetRef="Task_Angebote_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Org_10" sourceRef="Task_Angebote_pruefen" targetRef="Task_Auftrag_vergeben" />
+    <bpmn:sequenceFlow id="Flow_Org_11" sourceRef="Task_Auftrag_vergeben" targetRef="Task_Sanierungsarbeiten_koordinieren" />
+    <bpmn:sequenceFlow id="Flow_Org_12" sourceRef="Task_Sanierungsarbeiten_koordinieren" targetRef="Task_Abnahme_durchfuehren" />
+    <bpmn:sequenceFlow id="Flow_Org_13" sourceRef="Task_Abnahme_durchfuehren" targetRef="Task_Rechnung_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Org_14" sourceRef="Task_Rechnung_pruefen" targetRef="Task_Zahlung_veranlassen" />
+    <bpmn:sequenceFlow id="Flow_Org_15" sourceRef="Task_Zahlung_veranlassen" targetRef="Task_Ueber_Sanierung_informieren" />
+    <bpmn:sequenceFlow id="Flow_Org_16" sourceRef="Task_Ueber_Sanierung_informieren" targetRef="EndEvent_Org" />
+    <bpmn:task id="Task_Kostenrahmen_schaetzen" name="Kostenrahmen schaetzen">
+      <bpmn:incoming>Flow_Org_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_4</bpmn:outgoing>
+    </bpmn:task>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_Kunstrasen_Sanierung">
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1600" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="212" y="187" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="186" y="230" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Information_erhalten_di" bpmnElement="Task_Information_erhalten">
+        <dc:Bounds x="1500" y="165" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="1652" y="187" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1632" y="230" width="76" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Buerger_1_di" bpmnElement="Flow_Buerger_1">
+        <di:waypoint x="248" y="205" />
+        <di:waypoint x="1500" y="205" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Buerger_2_di" bpmnElement="Flow_Buerger_2">
+        <di:waypoint x="1600" y="205" />
+        <di:waypoint x="1652" y="205" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Participant_Sportamt_di" bpmnElement="Participant_Sportamt" isHorizontal="true">
+        <dc:Bounds x="160" y="380" width="1600" height="500" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Sanierungsbedarf_di" bpmnElement="StartEvent_Sanierungsbedarf">
+        <dc:Bounds x="212" y="462" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="186" y="505" width="88" height="53" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Zustand_bewerten_di" bpmnElement="Task_Zustand_bewerten">
+        <dc:Bounds x="300" y="440" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Sanierungsumfang_ermitteln_di" bpmnElement="Task_Sanierungsumfang_ermitteln">
+        <dc:Bounds x="450" y="440" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Budget_pruefen_di" bpmnElement="Task_Budget_pruefen">
+        <dc:Bounds x="750" y="440" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Leistungsverzeichnis_erstellen_di" bpmnElement="Task_Leistungsverzeichnis_erstellen">
+        <dc:Bounds x="900" y="440" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Ausschreibung_vorbereiten_di" bpmnElement="Task_Ausschreibung_vorbereiten">
+        <dc:Bounds x="1050" y="440" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Ausschreibung_veroeffentlichen_di" bpmnElement="Task_Ausschreibung_veroeffentlichen">
+        <dc:Bounds x="1200" y="440" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Angebote_sammeln_di" bpmnElement="Task_Angebote_sammeln">
+        <dc:Bounds x="1350" y="440" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Angebote_pruefen_di" bpmnElement="Task_Angebote_pruefen">
+        <dc:Bounds x="1500" y="440" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Auftrag_vergeben_di" bpmnElement="Task_Auftrag_vergeben">
+        <dc:Bounds x="300" y="580" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Sanierungsarbeiten_koordinieren_di" bpmnElement="Task_Sanierungsarbeiten_koordinieren">
+        <dc:Bounds x="450" y="580" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Abnahme_durchfuehren_di" bpmnElement="Task_Abnahme_durchfuehren">
+        <dc:Bounds x="600" y="580" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Rechnung_pruefen_di" bpmnElement="Task_Rechnung_pruefen">
+        <dc:Bounds x="750" y="580" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Zahlung_veranlassen_di" bpmnElement="Task_Zahlung_veranlassen">
+        <dc:Bounds x="900" y="580" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Ueber_Sanierung_informieren_di" bpmnElement="Task_Ueber_Sanierung_informieren">
+        <dc:Bounds x="1050" y="580" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Org_di" bpmnElement="EndEvent_Org">
+        <dc:Bounds x="1232" y="602" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1218" y="645" width="64" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Kostenrahmen_schaetzen_di" bpmnElement="Task_Kostenrahmen_schaetzen">
+        <dc:Bounds x="600" y="430" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Org_1_di" bpmnElement="Flow_Org_1">
+        <di:waypoint x="248" y="480" />
+        <di:waypoint x="300" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_2_di" bpmnElement="Flow_Org_2">
+        <di:waypoint x="400" y="480" />
+        <di:waypoint x="450" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_3_di" bpmnElement="Flow_Org_3">
+        <di:waypoint x="550" y="480" />
+        <di:waypoint x="575" y="480" />
+        <di:waypoint x="575" y="470" />
+        <di:waypoint x="600" y="470" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_4_di" bpmnElement="Flow_Org_4">
+        <di:waypoint x="700" y="470" />
+        <di:waypoint x="725" y="470" />
+        <di:waypoint x="725" y="480" />
+        <di:waypoint x="750" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_5_di" bpmnElement="Flow_Org_5">
+        <di:waypoint x="850" y="480" />
+        <di:waypoint x="900" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_6_di" bpmnElement="Flow_Org_6">
+        <di:waypoint x="1000" y="480" />
+        <di:waypoint x="1050" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_7_di" bpmnElement="Flow_Org_7">
+        <di:waypoint x="1150" y="480" />
+        <di:waypoint x="1200" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_8_di" bpmnElement="Flow_Org_8">
+        <di:waypoint x="1300" y="480" />
+        <di:waypoint x="1350" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_9_di" bpmnElement="Flow_Org_9">
+        <di:waypoint x="1450" y="480" />
+        <di:waypoint x="1500" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_10_di" bpmnElement="Flow_Org_10">
+        <di:waypoint x="1550" y="520" />
+        <di:waypoint x="1550" y="550" />
+        <di:waypoint x="350" y="550" />
+        <di:waypoint x="350" y="580" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_11_di" bpmnElement="Flow_Org_11">
+        <di:waypoint x="400" y="620" />
+        <di:waypoint x="450" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_12_di" bpmnElement="Flow_Org_12">
+        <di:waypoint x="550" y="620" />
+        <di:waypoint x="600" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_13_di" bpmnElement="Flow_Org_13">
+        <di:waypoint x="700" y="620" />
+        <di:waypoint x="750" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_14_di" bpmnElement="Flow_Org_14">
+        <di:waypoint x="850" y="620" />
+        <di:waypoint x="900" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_15_di" bpmnElement="Flow_Org_15">
+        <di:waypoint x="1000" y="620" />
+        <di:waypoint x="1050" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_16_di" bpmnElement="Flow_Org_16">
+        <di:waypoint x="1150" y="620" />
+        <di:waypoint x="1232" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MessageFlow_Information_di" bpmnElement="MessageFlow_Information">
+        <di:waypoint x="1100" y="580" />
+        <di:waypoint x="1100" y="360" />
+        <di:waypoint x="1550" y="360" />
+        <di:waypoint x="1550" y="245" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

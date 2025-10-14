@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  targetNamespace="http://example.com/bpmn"
+  exporter="ChatGPT-Template"
+  exporterVersion="1.0" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.4.0">
+
+  <!-- ===================================================
+       1)   Kollaboration mit zwei Pools & Message-Flows
+       =================================================== -->
+  <bpmn:collaboration id="Collab_Kirchenaustritt">
+    <!-- Pool A (Bürger) -->
+    <bpmn:participant id="Participant_Buerger"
+                      name="Buerger"
+                      processRef="Process_Buerger" />
+
+    <!-- Pool B (Standesamt) -->
+    <bpmn:participant id="Participant_Standesamt"
+                      name="Standesamt"
+                      processRef="Process_Standesamt" />
+
+    <!-- Message-Flow: Antrag stellen → Antrag eingegangen -->
+    <bpmn:messageFlow id="MsgFlow_Antrag_stellen"
+                      name="Antrag auf Kirchenaustritt"
+                      sourceRef="Task_Antrag_stellen"
+                      targetRef="StartEvent_Antrag_eingegangen" />
+
+    <!-- Message-Flow: Bestätigung erstellen → Bestätigung erhalten -->
+    <bpmn:messageFlow id="MsgFlow_Bestaetigung"
+                      name="Austrittsbescheid"
+                      sourceRef="Task_Bestaetigung_erstellen"
+                      targetRef="Task_Bestaetigung_erhalten" />
+  </bpmn:collaboration>
+
+  <!-- ===================================================
+       2)   Prozess Pool A (Bürger)
+       =================================================== -->
+  <bpmn:process id="Process_Buerger"
+                name="Buerger Prozess"
+                isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_Kirchenaustritt_gewuenscht" name="Kirchenaustritt gewuenscht">
+      <bpmn:outgoing>Flow_Start_Antrag_stellen</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:task id="Task_Antrag_stellen" name="Antrag stellen">
+      <bpmn:incoming>Flow_Start_Antrag_stellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Antrag_Bestaetigung</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Bestaetigung_erhalten" name="Bestaetigung erhalten">
+      <bpmn:incoming>Flow_Antrag_Bestaetigung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bestaetigung_Ende</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="EndEvent_Buerger_Ende" name="Kirchenaustritt erhalten">
+      <bpmn:incoming>Flow_Bestaetigung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_Start_Antrag_stellen"
+                       sourceRef="StartEvent_Kirchenaustritt_gewuenscht"
+                       targetRef="Task_Antrag_stellen" />
+
+    <bpmn:sequenceFlow id="Flow_Antrag_Bestaetigung"
+                       sourceRef="Task_Antrag_stellen"
+                       targetRef="Task_Bestaetigung_erhalten" />
+
+    <bpmn:sequenceFlow id="Flow_Bestaetigung_Ende"
+                       sourceRef="Task_Bestaetigung_erhalten"
+                       targetRef="EndEvent_Buerger_Ende" />
+  </bpmn:process>
+
+  <!-- ===================================================
+       3)   Prozess Pool B (Standesamt)
+       =================================================== -->
+  <bpmn:process id="Process_Standesamt"
+                name="Standesamt Prozess"
+                isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_Antrag_eingegangen" name="Antrag auf Kirchenaustritt eingegangen">
+      <bpmn:outgoing>Flow_Start_Zustaendigkeit</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:task id="Task_Zustaendigkeit_pruefen" name="Zustaendigkeit pruefen">
+      <bpmn:incoming>Flow_Start_Zustaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zustaendigkeit_Berechtigung</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Berechtigung_pruefen" name="Berechtigung pruefen">
+      <bpmn:incoming>Flow_Zustaendigkeit_Berechtigung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Berechtigung_Bearbeiten</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Kirchenaustritt_bearbeiten" name="Kirchenaustritt bearbeiten">
+      <bpmn:incoming>Flow_Berechtigung_Bearbeiten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bearbeiten_Bestaetigung</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Bestaetigung_erstellen" name="Bestaetigung erstellen">
+      <bpmn:incoming>Flow_Bearbeiten_Bestaetigung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bestaetigung_Ende_Standesamt</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="EndEvent_Kirchenaustritt_vollzogen" name="Kirchenaustritt vollzogen">
+      <bpmn:incoming>Flow_Bestaetigung_Ende_Standesamt</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_Start_Zustaendigkeit"
+                       sourceRef="StartEvent_Antrag_eingegangen"
+                       targetRef="Task_Zustaendigkeit_pruefen" />
+
+    <bpmn:sequenceFlow id="Flow_Zustaendigkeit_Berechtigung"
+                       sourceRef="Task_Zustaendigkeit_pruefen"
+                       targetRef="Task_Berechtigung_pruefen" />
+
+    <bpmn:sequenceFlow id="Flow_Berechtigung_Bearbeiten"
+                       sourceRef="Task_Berechtigung_pruefen"
+                       targetRef="Task_Kirchenaustritt_bearbeiten" />
+
+    <bpmn:sequenceFlow id="Flow_Bearbeiten_Bestaetigung"
+                       sourceRef="Task_Kirchenaustritt_bearbeiten"
+                       targetRef="Task_Bestaetigung_erstellen" />
+
+    <bpmn:sequenceFlow id="Flow_Bestaetigung_Ende_Standesamt"
+                       sourceRef="Task_Bestaetigung_erstellen"
+                       targetRef="EndEvent_Kirchenaustritt_vollzogen" />
+  </bpmn:process>
+
+  <!-- ===================================================
+       4)   Diagram Interchange (BPMN-DI)
+       =================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Kirchenaustritt">
+    <bpmndi:BPMNPlane id="BPMNPlane_Kirchenaustritt" bpmnElement="Collab_Kirchenaustritt">
+
+      <!-- ===== Pool-Shapes ===== -->
+      <bpmndi:BPMNShape id="Participant_Buerger_di"
+                        bpmnElement="Participant_Buerger"
+                        isHorizontal="true">
+        <dc:Bounds x="100" y="100" width="900" height="250" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Participant_Standesamt_di"
+                        bpmnElement="Participant_Standesamt"
+                        isHorizontal="true">
+        <dc:Bounds x="100" y="380" width="900" height="400" />
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Shapes Pool A (Bürger) ===== -->
+      <bpmndi:BPMNShape id="StartEvent_Kirchenaustritt_gewuenscht_di" bpmnElement="StartEvent_Kirchenaustritt_gewuenscht">
+        <dc:Bounds x="150" y="200" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Antrag_stellen_di" bpmnElement="Task_Antrag_stellen">
+        <dc:Bounds x="250" y="180" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Bestaetigung_erhalten_di" bpmnElement="Task_Bestaetigung_erhalten">
+        <dc:Bounds x="750" y="180" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_Buerger_Ende_di" bpmnElement="EndEvent_Buerger_Ende">
+        <dc:Bounds x="900" y="200" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Shapes Pool B (Standesamt) ===== -->
+      <bpmndi:BPMNShape id="StartEvent_Antrag_eingegangen_di" bpmnElement="StartEvent_Antrag_eingegangen">
+        <dc:Bounds x="150" y="500" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Zustaendigkeit_pruefen_di" bpmnElement="Task_Zustaendigkeit_pruefen">
+        <dc:Bounds x="230" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Berechtigung_pruefen_di" bpmnElement="Task_Berechtigung_pruefen">
+        <dc:Bounds x="380" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Kirchenaustritt_bearbeiten_di" bpmnElement="Task_Kirchenaustritt_bearbeiten">
+        <dc:Bounds x="530" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Bestaetigung_erstellen_di" bpmnElement="Task_Bestaetigung_erstellen">
+        <dc:Bounds x="680" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_Kirchenaustritt_vollzogen_di" bpmnElement="EndEvent_Kirchenaustritt_vollzogen">
+        <dc:Bounds x="830" y="500" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Sequence-Flow-Edges Pool A (Bürger) ===== -->
+      <bpmndi:BPMNEdge id="Flow_Start_Antrag_stellen_di" bpmnElement="Flow_Start_Antrag_stellen">
+        <di:waypoint x="186" y="218" />
+        <di:waypoint x="250" y="218" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Antrag_Bestaetigung_di" bpmnElement="Flow_Antrag_Bestaetigung">
+        <di:waypoint x="350" y="220" />
+        <di:waypoint x="750" y="220" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Bestaetigung_Ende_di" bpmnElement="Flow_Bestaetigung_Ende">
+        <di:waypoint x="850" y="218" />
+        <di:waypoint x="900" y="218" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== Sequence-Flow-Edges Pool B (Standesamt) ===== -->
+      <bpmndi:BPMNEdge id="Flow_Start_Zustaendigkeit_di" bpmnElement="Flow_Start_Zustaendigkeit">
+        <di:waypoint x="186" y="518" />
+        <di:waypoint x="230" y="518" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Zustaendigkeit_Berechtigung_di" bpmnElement="Flow_Zustaendigkeit_Berechtigung">
+        <di:waypoint x="330" y="520" />
+        <di:waypoint x="380" y="520" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Berechtigung_Bearbeiten_di" bpmnElement="Flow_Berechtigung_Bearbeiten">
+        <di:waypoint x="480" y="520" />
+        <di:waypoint x="530" y="520" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Bearbeiten_Bestaetigung_di" bpmnElement="Flow_Bearbeiten_Bestaetigung">
+        <di:waypoint x="630" y="520" />
+        <di:waypoint x="680" y="520" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Bestaetigung_Ende_Standesamt_di" bpmnElement="Flow_Bestaetigung_Ende_Standesamt">
+        <di:waypoint x="780" y="518" />
+        <di:waypoint x="830" y="518" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== Message-Flow-Edges ===== -->
+      <bpmndi:BPMNEdge id="MsgFlow_Antrag_stellen_di" bpmnElement="MsgFlow_Antrag_stellen">
+        <di:waypoint x="300" y="260" />
+        <di:waypoint x="300" y="400" />
+        <di:waypoint x="168" y="400" />
+        <di:waypoint x="168" y="500" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="MsgFlow_Bestaetigung_di" bpmnElement="MsgFlow_Bestaetigung">
+        <di:waypoint x="730" y="480" />
+        <di:waypoint x="730" y="400" />
+        <di:waypoint x="800" y="400" />
+        <di:waypoint x="800" y="260" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

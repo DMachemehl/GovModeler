@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.4.0">
+  <bpmn:collaboration id="Collaboration_Arbeitszeitaenderung">
+    <bpmn:participant id="Participant_Mitarbeiter" name="Mitarbeiter" processRef="Process_Mitarbeiter" />
+    <bpmn:participant id="Participant_Personalverwaltung" name="Personalverwaltung" processRef="Process_Personalverwaltung" />
+    <bpmn:messageFlow id="MessageFlow_Antrag" sourceRef="Task_Antrag_stellen" targetRef="StartEvent_Antrag_eingegangen" />
+    <bpmn:messageFlow id="MessageFlow_Bescheid" sourceRef="Task_Bescheid_versenden" targetRef="Task_Bescheid_erhalten" />
+  </bpmn:collaboration>
+  
+  <bpmn:process id="Process_Mitarbeiter" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Mitarbeiter" name="Arbeitszeitaenderung benoetigt">
+      <bpmn:outgoing>Flow_Mitarbeiter_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_Antrag_stellen" name="Antrag auf Arbeitszeitaenderung stellen">
+      <bpmn:incoming>Flow_Mitarbeiter_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_Mitarbeiter_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Bescheid_erhalten" name="Genehmigungsbescheid erhalten">
+      <bpmn:incoming>Flow_Mitarbeiter_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_Mitarbeiter_3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Mitarbeiter" name="Neue Arbeitszeit erhalten">
+      <bpmn:incoming>Flow_Mitarbeiter_3</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Mitarbeiter_1" sourceRef="StartEvent_Mitarbeiter" targetRef="Task_Antrag_stellen" />
+    <bpmn:sequenceFlow id="Flow_Mitarbeiter_2" sourceRef="Task_Antrag_stellen" targetRef="Task_Bescheid_erhalten" />
+    <bpmn:sequenceFlow id="Flow_Mitarbeiter_3" sourceRef="Task_Bescheid_erhalten" targetRef="EndEvent_Mitarbeiter" />
+  </bpmn:process>
+  
+  <bpmn:process id="Process_Personalverwaltung" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Antrag_eingegangen" name="Antrag auf Arbeitszeitaenderung eingegangen">
+      <bpmn:outgoing>Flow_Org_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_Zustaendigkeit_pruefen" name="Zustaendigkeit pruefen">
+      <bpmn:incoming>Flow_Org_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Vollstaendigkeit_pruefen" name="Vollstaendigkeit der Angaben pruefen">
+      <bpmn:incoming>Flow_Org_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Antragsteller_identifizieren" name="Antragsteller identifizieren">
+      <bpmn:incoming>Flow_Org_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_4</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Berechtigung_pruefen" name="Berechtigung zur Antragstellung pruefen">
+      <bpmn:incoming>Flow_Org_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_5</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Arbeitsvertrag_pruefen" name="Arbeitsvertrag pruefen">
+      <bpmn:incoming>Flow_Org_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_6</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Betriebliche_Belange_pruefen" name="Betriebliche Belange pruefen">
+      <bpmn:incoming>Flow_Org_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_7</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Personalrechtliche_Bestimmungen_pruefen" name="Personalrechtliche Bestimmungen pruefen">
+      <bpmn:incoming>Flow_Org_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_8</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Antrag_bewerten" name="Antrag bewerten">
+      <bpmn:incoming>Flow_Org_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_9</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Genehmigung_erteilen" name="Genehmigung erteilen">
+      <bpmn:incoming>Flow_Org_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_10</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Arbeitsvertrag_aendern" name="Arbeitsvertrag aendern">
+      <bpmn:incoming>Flow_Org_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_11</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Personalsystem_aktualisieren" name="Personalsystem aktualisieren">
+      <bpmn:incoming>Flow_Org_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_12</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Vorgesetzte_informieren" name="Vorgesetzte informieren">
+      <bpmn:incoming>Flow_Org_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_13</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Bescheid_erstellen" name="Bescheid erstellen">
+      <bpmn:incoming>Flow_Org_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_14</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Bescheid_versenden" name="Bescheid versenden">
+      <bpmn:incoming>Flow_Org_14</bpmn:incoming>
+      <bpmn:outgoing>Flow_Org_15</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Org" name="Arbeitszeitaenderung umgesetzt">
+      <bpmn:incoming>Flow_Org_15</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Org_1" sourceRef="StartEvent_Antrag_eingegangen" targetRef="Task_Zustaendigkeit_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Org_2" sourceRef="Task_Zustaendigkeit_pruefen" targetRef="Task_Vollstaendigkeit_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Org_3" sourceRef="Task_Vollstaendigkeit_pruefen" targetRef="Task_Antragsteller_identifizieren" />
+    <bpmn:sequenceFlow id="Flow_Org_4" sourceRef="Task_Antragsteller_identifizieren" targetRef="Task_Berechtigung_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Org_5" sourceRef="Task_Berechtigung_pruefen" targetRef="Task_Arbeitsvertrag_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Org_6" sourceRef="Task_Arbeitsvertrag_pruefen" targetRef="Task_Betriebliche_Belange_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Org_7" sourceRef="Task_Betriebliche_Belange_pruefen" targetRef="Task_Personalrechtliche_Bestimmungen_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Org_8" sourceRef="Task_Personalrechtliche_Bestimmungen_pruefen" targetRef="Task_Antrag_bewerten" />
+    <bpmn:sequenceFlow id="Flow_Org_9" sourceRef="Task_Antrag_bewerten" targetRef="Task_Genehmigung_erteilen" />
+    <bpmn:sequenceFlow id="Flow_Org_10" sourceRef="Task_Genehmigung_erteilen" targetRef="Task_Arbeitsvertrag_aendern" />
+    <bpmn:sequenceFlow id="Flow_Org_11" sourceRef="Task_Arbeitsvertrag_aendern" targetRef="Task_Personalsystem_aktualisieren" />
+    <bpmn:sequenceFlow id="Flow_Org_12" sourceRef="Task_Personalsystem_aktualisieren" targetRef="Task_Vorgesetzte_informieren" />
+    <bpmn:sequenceFlow id="Flow_Org_13" sourceRef="Task_Vorgesetzte_informieren" targetRef="Task_Bescheid_erstellen" />
+    <bpmn:sequenceFlow id="Flow_Org_14" sourceRef="Task_Bescheid_erstellen" targetRef="Task_Bescheid_versenden" />
+    <bpmn:sequenceFlow id="Flow_Org_15" sourceRef="Task_Bescheid_versenden" targetRef="EndEvent_Org" />
+  </bpmn:process>
+  
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_Arbeitszeitaenderung">
+      <!-- Mitarbeiter Pool -->
+      <bpmndi:BPMNShape id="Participant_Mitarbeiter_di" bpmnElement="Participant_Mitarbeiter" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1400" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Mitarbeiter_di" bpmnElement="StartEvent_Mitarbeiter">
+        <dc:Bounds x="212" y="187" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="186" y="230" width="88" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antrag_stellen_di" bpmnElement="Task_Antrag_stellen">
+        <dc:Bounds x="300" y="165" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Bescheid_erhalten_di" bpmnElement="Task_Bescheid_erhalten">
+        <dc:Bounds x="1200" y="165" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Mitarbeiter_di" bpmnElement="EndEvent_Mitarbeiter">
+        <dc:Bounds x="1352" y="187" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1326" y="230" width="88" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <!-- Mitarbeiter Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_Mitarbeiter_1_di" bpmnElement="Flow_Mitarbeiter_1">
+        <di:waypoint x="248" y="205" />
+        <di:waypoint x="300" y="205" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Mitarbeiter_2_di" bpmnElement="Flow_Mitarbeiter_2">
+        <di:waypoint x="400" y="205" />
+        <di:waypoint x="1200" y="205" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Mitarbeiter_3_di" bpmnElement="Flow_Mitarbeiter_3">
+        <di:waypoint x="1300" y="205" />
+        <di:waypoint x="1352" y="205" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- Personalverwaltung Pool -->
+      <bpmndi:BPMNShape id="Participant_Personalverwaltung_di" bpmnElement="Participant_Personalverwaltung" isHorizontal="true">
+        <dc:Bounds x="160" y="380" width="1400" height="500" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Antrag_eingegangen_di" bpmnElement="StartEvent_Antrag_eingegangen">
+        <dc:Bounds x="212" y="462" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="186" y="505" width="88" height="53" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Zustaendigkeit_pruefen_di" bpmnElement="Task_Zustaendigkeit_pruefen">
+        <dc:Bounds x="300" y="440" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Vollstaendigkeit_pruefen_di" bpmnElement="Task_Vollstaendigkeit_pruefen">
+        <dc:Bounds x="450" y="440" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antragsteller_identifizieren_di" bpmnElement="Task_Antragsteller_identifizieren">
+        <dc:Bounds x="600" y="440" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Berechtigung_pruefen_di" bpmnElement="Task_Berechtigung_pruefen">
+        <dc:Bounds x="750" y="440" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Arbeitsvertrag_pruefen_di" bpmnElement="Task_Arbeitsvertrag_pruefen">
+        <dc:Bounds x="900" y="440" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Betriebliche_Belange_pruefen_di" bpmnElement="Task_Betriebliche_Belange_pruefen">
+        <dc:Bounds x="1050" y="440" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Personalrechtliche_Bestimmungen_pruefen_di" bpmnElement="Task_Personalrechtliche_Bestimmungen_pruefen">
+        <dc:Bounds x="1200" y="440" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antrag_bewerten_di" bpmnElement="Task_Antrag_bewerten">
+        <dc:Bounds x="1350" y="440" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Genehmigung_erteilen_di" bpmnElement="Task_Genehmigung_erteilen">
+        <dc:Bounds x="300" y="580" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Arbeitsvertrag_aendern_di" bpmnElement="Task_Arbeitsvertrag_aendern">
+        <dc:Bounds x="450" y="580" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Personalsystem_aktualisieren_di" bpmnElement="Task_Personalsystem_aktualisieren">
+        <dc:Bounds x="600" y="580" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Vorgesetzte_informieren_di" bpmnElement="Task_Vorgesetzte_informieren">
+        <dc:Bounds x="750" y="580" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Bescheid_erstellen_di" bpmnElement="Task_Bescheid_erstellen">
+        <dc:Bounds x="900" y="580" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Bescheid_versenden_di" bpmnElement="Task_Bescheid_versenden">
+        <dc:Bounds x="1050" y="580" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Org_di" bpmnElement="EndEvent_Org">
+        <dc:Bounds x="1232" y="602" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1206" y="645" width="88" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Organisation Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_Org_1_di" bpmnElement="Flow_Org_1">
+        <di:waypoint x="248" y="480" />
+        <di:waypoint x="300" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_2_di" bpmnElement="Flow_Org_2">
+        <di:waypoint x="400" y="480" />
+        <di:waypoint x="450" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_3_di" bpmnElement="Flow_Org_3">
+        <di:waypoint x="550" y="480" />
+        <di:waypoint x="600" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_4_di" bpmnElement="Flow_Org_4">
+        <di:waypoint x="700" y="480" />
+        <di:waypoint x="750" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_5_di" bpmnElement="Flow_Org_5">
+        <di:waypoint x="850" y="480" />
+        <di:waypoint x="900" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_6_di" bpmnElement="Flow_Org_6">
+        <di:waypoint x="1000" y="480" />
+        <di:waypoint x="1050" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_7_di" bpmnElement="Flow_Org_7">
+        <di:waypoint x="1150" y="480" />
+        <di:waypoint x="1200" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_8_di" bpmnElement="Flow_Org_8">
+        <di:waypoint x="1300" y="480" />
+        <di:waypoint x="1350" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_9_di" bpmnElement="Flow_Org_9">
+        <di:waypoint x="1400" y="520" />
+        <di:waypoint x="1400" y="550" />
+        <di:waypoint x="350" y="550" />
+        <di:waypoint x="350" y="580" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_10_di" bpmnElement="Flow_Org_10">
+        <di:waypoint x="400" y="620" />
+        <di:waypoint x="450" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_11_di" bpmnElement="Flow_Org_11">
+        <di:waypoint x="550" y="620" />
+        <di:waypoint x="600" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_12_di" bpmnElement="Flow_Org_12">
+        <di:waypoint x="700" y="620" />
+        <di:waypoint x="750" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_13_di" bpmnElement="Flow_Org_13">
+        <di:waypoint x="850" y="620" />
+        <di:waypoint x="900" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_14_di" bpmnElement="Flow_Org_14">
+        <di:waypoint x="1000" y="620" />
+        <di:waypoint x="1050" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Org_15_di" bpmnElement="Flow_Org_15">
+        <di:waypoint x="1150" y="620" />
+        <di:waypoint x="1232" y="620" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- Message Flows -->
+      <bpmndi:BPMNEdge id="MessageFlow_Antrag_di" bpmnElement="MessageFlow_Antrag">
+        <di:waypoint x="350" y="245" />
+        <di:waypoint x="350" y="360" />
+        <di:waypoint x="230" y="360" />
+        <di:waypoint x="230" y="462" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MessageFlow_Bescheid_di" bpmnElement="MessageFlow_Bescheid">
+        <di:waypoint x="1100" y="580" />
+        <di:waypoint x="1100" y="360" />
+        <di:waypoint x="1250" y="360" />
+        <di:waypoint x="1250" y="245" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
