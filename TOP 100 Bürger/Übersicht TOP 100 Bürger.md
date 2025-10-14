@@ -36,7 +36,7 @@
 | Antrag auf Betreuungsgeld bearbeiten                                   |   X    |
 | Antrag auf Elterngeld bearbeiten                                       |   X    |
 | Plätze für Kinder in Tageseinrichtungen vermitteln                     |   X    |
-| Elternbeiträge für Kinder in Kindertageseinrichtungen erheben          |        |
+| Elternbeiträge für Kinder in Kindertageseinrichtungen erheben          |   X    |
 | Kinder zu einer geeigneten Tagespflegeperson vermitteln                |        |
 | Schulzahnärztliche Untersuchungen durchführen                          |        |
 | Impfung durchführen                                                    |        |

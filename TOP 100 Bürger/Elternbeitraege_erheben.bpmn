@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0"
+  modeler:executionPlatform="Camunda Platform"
+  modeler:executionPlatformVersion="7.20.0">
+
+  <!-- =====================================================
+       COLLABORATION - Elternbeitraege erheben
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_Elternbeitraege_erheben">
+    
+    <!-- Participant: Bürger -->
+    <bpmn:participant id="Participant_Buerger"
+                      name="Buerger"
+                      processRef="Process_Buerger" />
+    
+    <!-- Participant: IT -->
+    <bpmn:participant id="Participant_IT"
+                      name="IT"
+                      processRef="Process_IT" />
+    
+    <!-- Participant: Behörde -->
+    <bpmn:participant id="Participant_Behoerde"
+                      name="Jugendamt"
+                      processRef="Process_Behoerde" />
+    
+    <!-- Message Flows -->
+    <bpmn:messageFlow id="MsgFlow_Einkommensnachweise"
+                      name="Einkommensnachweise"
+                      sourceRef="Task_Einkommensnachweise_einreichen"
+                      targetRef="StartEvent_Kind_aufgenommen" />
+    
+    <bpmn:messageFlow id="MsgFlow_Beitragsbescheid"
+                      name="Beitragsbescheid"
+                      sourceRef="Task_Beitragsbescheid_versenden"
+                      targetRef="Event_Beitragsbescheid_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_IT_Einkommensdaten"
+                      name="Einkommensdaten"
+                      sourceRef="Task_Einkommensdaten_erfassen"
+                      targetRef="StartEvent_IT_Anfrage" />
+    
+    <bpmn:messageFlow id="MsgFlow_IT_Beitragsergebnis"
+                      name="Beitragsergebnis"
+                      sourceRef="Task_Beitragsergebnis_uebermitteln"
+                      targetRef="Event_IT_Antwort_erhalten" />
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       BÜRGER PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Buerger"
+                name="Elternbeitraege_Buerger"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Buerger" name="Kind in Kita aufgenommen">
+      <bpmn:outgoing>Flow_Start_Einkommensnachweise</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Einkommensnachweise einreichen -->
+    <bpmn:userTask id="Task_Einkommensnachweise_einreichen" name="Einkommensnachweise einreichen">
+      <bpmn:incoming>Flow_Start_Einkommensnachweise</bpmn:incoming>
+      <bpmn:outgoing>Flow_Einkommensnachweise_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Beitragsbescheid -->
+    <bpmn:intermediateCatchEvent id="Event_Beitragsbescheid_erhalten" name="Beitragsbescheid erhalten">
+      <bpmn:incoming>Flow_Einkommensnachweise_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Beitragsbescheid_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Beitragsbescheid" messageRef="Message_Beitragsbescheid" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Buerger" name="Elternbeitrag festgesetzt">
+      <bpmn:incoming>Flow_Beitragsbescheid_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Bürger -->
+    <bpmn:sequenceFlow id="Flow_Start_Einkommensnachweise"
+                       sourceRef="StartEvent_Buerger"
+                       targetRef="Task_Einkommensnachweise_einreichen" />
+    
+    <bpmn:sequenceFlow id="Flow_Einkommensnachweise_Warten"
+                       sourceRef="Task_Einkommensnachweise_einreichen"
+                       targetRef="Event_Beitragsbescheid_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Beitragsbescheid_Ende"
+                       sourceRef="Event_Beitragsbescheid_erhalten"
+                       targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       IT PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_IT"
+                name="IT_Prozess"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_IT_Anfrage" name="Einkommensdaten erhalten">
+      <bpmn:outgoing>Flow_IT_Start_Berechnung</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Service Task: Beitrag berechnen -->
+    <bpmn:serviceTask id="Task_Beitrag_berechnen" name="Beitrag berechnen">
+      <bpmn:incoming>Flow_IT_Start_Berechnung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Berechnung_Uebermittlung</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Service Task: Beitragsergebnis übermitteln -->
+    <bpmn:serviceTask id="Task_Beitragsergebnis_uebermitteln" name="Beitragsergebnis uebermitteln">
+      <bpmn:incoming>Flow_Berechnung_Uebermittlung</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Uebermittlung_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_IT" name="Berechnung abgeschlossen">
+      <bpmn:incoming>Flow_IT_Uebermittlung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - IT -->
+    <bpmn:sequenceFlow id="Flow_IT_Start_Berechnung"
+                       sourceRef="StartEvent_IT_Anfrage"
+                       targetRef="Task_Beitrag_berechnen" />
+    
+    <bpmn:sequenceFlow id="Flow_Berechnung_Uebermittlung"
+                       sourceRef="Task_Beitrag_berechnen"
+                       targetRef="Task_Beitragsergebnis_uebermitteln" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Uebermittlung_Ende"
+                       sourceRef="Task_Beitragsergebnis_uebermitteln"
+                       targetRef="EndEvent_IT" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       BEHÖRDEN PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Behoerde"
+                name="Elternbeitraege_Behoerde"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Kind_aufgenommen" name="Kind in Kita aufgenommen">
+      <bpmn:outgoing>Flow_Start_Zustaendigkeit</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Service Task: Zuständigkeit prüfen -->
+    <bpmn:serviceTask id="Task_Zustaendigkeit_pruefen" name="Zustaendigkeit pruefen">
+      <bpmn:incoming>Flow_Start_Zustaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zustaendigkeit_Vollstaendigkeit</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Service Task: Vollständigkeit prüfen -->
+    <bpmn:serviceTask id="Task_Vollstaendigkeit_pruefen" name="Vollstaendigkeit pruefen">
+      <bpmn:incoming>Flow_Zustaendigkeit_Vollstaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Vollstaendigkeit_Erfassung</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- User Task: Einkommensdaten erfassen -->
+    <bpmn:userTask id="Task_Einkommensdaten_erfassen" name="Einkommensdaten erfassen">
+      <bpmn:incoming>Flow_Vollstaendigkeit_Erfassung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Erfassung_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: IT-Antwort -->
+    <bpmn:intermediateCatchEvent id="Event_IT_Antwort_erhalten" name="Beitragsergebnis erhalten">
+      <bpmn:incoming>Flow_Erfassung_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Antwort_Bescheid</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_IT_Antwort" messageRef="Message_IT_Antwort" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- User Task: Beitragsbescheid erstellen -->
+    <bpmn:userTask id="Task_Beitragsbescheid_erstellen" name="Beitragsbescheid erstellen">
+      <bpmn:incoming>Flow_IT_Antwort_Bescheid</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bescheid_Versenden</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Beitragsbescheid versenden -->
+    <bpmn:userTask id="Task_Beitragsbescheid_versenden" name="Beitragsbescheid versenden">
+      <bpmn:incoming>Flow_Bescheid_Versenden</bpmn:incoming>
+      <bpmn:outgoing>Flow_Versenden_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Behoerde" name="Elternbeitrag festgesetzt">
+      <bpmn:incoming>Flow_Versenden_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Behörde -->
+    <bpmn:sequenceFlow id="Flow_Start_Zustaendigkeit"
+                       sourceRef="StartEvent_Kind_aufgenommen"
+                       targetRef="Task_Zustaendigkeit_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zustaendigkeit_Vollstaendigkeit"
+                       sourceRef="Task_Zustaendigkeit_pruefen"
+                       targetRef="Task_Vollstaendigkeit_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Vollstaendigkeit_Erfassung"
+                       sourceRef="Task_Vollstaendigkeit_pruefen"
+                       targetRef="Task_Einkommensdaten_erfassen" />
+    
+    <bpmn:sequenceFlow id="Flow_Erfassung_Warten"
+                       sourceRef="Task_Einkommensdaten_erfassen"
+                       targetRef="Event_IT_Antwort_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Antwort_Bescheid"
+                       sourceRef="Event_IT_Antwort_erhalten"
+                       targetRef="Task_Beitragsbescheid_erstellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Bescheid_Versenden"
+                       sourceRef="Task_Beitragsbescheid_erstellen"
+                       targetRef="Task_Beitragsbescheid_versenden" />
+    
+    <bpmn:sequenceFlow id="Flow_Versenden_Ende"
+                       sourceRef="Task_Beitragsbescheid_versenden"
+                       targetRef="EndEvent_Behoerde" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       MESSAGE DEFINITIONEN
+       ===================================================== -->
+  <bpmn:message id="Message_Einkommensnachweise" name="Einkommensnachweise" />
+  <bpmn:message id="Message_Beitragsbescheid" name="Beitragsbescheid" />
+  <bpmn:message id="Message_IT_Anfrage" name="Einkommensdaten" />
+  <bpmn:message id="Message_IT_Antwort" name="Beitragsergebnis" />
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Elternbeitraege">
+    <bpmndi:BPMNPlane id="BPMNPlane_Elternbeitraege" bpmnElement="Collab_Elternbeitraege_erheben">
+      
+      <!-- ===============================
+           POOL: BÜRGER
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="185" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Bürger Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Einkommensnachweise_einreichen_di" bpmnElement="Task_Einkommensnachweise_einreichen">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Beitragsbescheid_erhalten_di" bpmnElement="Event_Beitragsbescheid_erhalten">
+        <dc:Bounds x="472" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="450" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="562" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="540" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===============================
+           POOL: IT
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="475" width="20" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- IT Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_IT_Anfrage_di" bpmnElement="StartEvent_IT_Anfrage">
+        <dc:Bounds x="472" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="450" y="520" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Beitrag_berechnen_di" bpmnElement="Task_Beitrag_berechnen">
+        <dc:Bounds x="560" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Beitragsergebnis_uebermitteln_di" bpmnElement="Task_Beitragsergebnis_uebermitteln">
+        <dc:Bounds x="710" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_IT_di" bpmnElement="EndEvent_IT">
+        <dc:Bounds x="862" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="840" y="520" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===============================
+           POOL: BEHÖRDE
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Behoerde_di" bpmnElement="Participant_Behoerde" isHorizontal="true">
+        <dc:Bounds x="160" y="660" width="1200" height="300" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="785" width="20" height="80" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Behörde Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Kind_aufgenommen_di" bpmnElement="StartEvent_Kind_aufgenommen">
+        <dc:Bounds x="222" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="825" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Zustaendigkeit_pruefen_di" bpmnElement="Task_Zustaendigkeit_pruefen">
+        <dc:Bounds x="310" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Vollstaendigkeit_pruefen_di" bpmnElement="Task_Vollstaendigkeit_pruefen">
+        <dc:Bounds x="460" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Einkommensdaten_erfassen_di" bpmnElement="Task_Einkommensdaten_erfassen">
+        <dc:Bounds x="610" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_IT_Antwort_erhalten_di" bpmnElement="Event_IT_Antwort_erhalten">
+        <dc:Bounds x="772" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="750" y="825" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Beitragsbescheid_erstellen_di" bpmnElement="Task_Beitragsbescheid_erstellen">
+        <dc:Bounds x="860" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Beitragsbescheid_versenden_di" bpmnElement="Task_Beitragsbescheid_versenden">
+        <dc:Bounds x="1010" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Behoerde_di" bpmnElement="EndEvent_Behoerde">
+        <dc:Bounds x="1162" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1140" y="825" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===============================
+           SEQUENCE FLOWS - BÜRGER
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_Start_Einkommensnachweise_di" bpmnElement="Flow_Start_Einkommensnachweise">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Einkommensnachweise_Warten_di" bpmnElement="Flow_Einkommensnachweise_Warten">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="472" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Beitragsbescheid_Ende_di" bpmnElement="Flow_Beitragsbescheid_Ende">
+        <di:waypoint x="508" y="200" />
+        <di:waypoint x="562" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           SEQUENCE FLOWS - IT
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_IT_Start_Berechnung_di" bpmnElement="Flow_IT_Start_Berechnung">
+        <di:waypoint x="508" y="495" />
+        <di:waypoint x="560" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Berechnung_Uebermittlung_di" bpmnElement="Flow_Berechnung_Uebermittlung">
+        <di:waypoint x="660" y="495" />
+        <di:waypoint x="710" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Uebermittlung_Ende_di" bpmnElement="Flow_IT_Uebermittlung_Ende">
+        <di:waypoint x="810" y="495" />
+        <di:waypoint x="862" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           SEQUENCE FLOWS - BEHÖRDE
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_Start_Zustaendigkeit_di" bpmnElement="Flow_Start_Zustaendigkeit">
+        <di:waypoint x="258" y="800" />
+        <di:waypoint x="310" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zustaendigkeit_Vollstaendigkeit_di" bpmnElement="Flow_Zustaendigkeit_Vollstaendigkeit">
+        <di:waypoint x="410" y="800" />
+        <di:waypoint x="460" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Vollstaendigkeit_Erfassung_di" bpmnElement="Flow_Vollstaendigkeit_Erfassung">
+        <di:waypoint x="560" y="800" />
+        <di:waypoint x="610" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Erfassung_Warten_di" bpmnElement="Flow_Erfassung_Warten">
+        <di:waypoint x="710" y="800" />
+        <di:waypoint x="772" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Antwort_Bescheid_di" bpmnElement="Flow_IT_Antwort_Bescheid">
+        <di:waypoint x="808" y="800" />
+        <di:waypoint x="860" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Bescheid_Versenden_di" bpmnElement="Flow_Bescheid_Versenden">
+        <di:waypoint x="960" y="800" />
+        <di:waypoint x="1010" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Versenden_Ende_di" bpmnElement="Flow_Versenden_Ende">
+        <di:waypoint x="1110" y="800" />
+        <di:waypoint x="1162" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           MESSAGE FLOWS
+           =============================== -->
+      <bpmndi:BPMNEdge id="MsgFlow_Einkommensnachweise_di" bpmnElement="MsgFlow_Einkommensnachweise">
+        <di:waypoint x="360" y="240" />
+        <di:waypoint x="360" y="500" />
+        <di:waypoint x="240" y="500" />
+        <di:waypoint x="240" y="782" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="245" y="485" width="110" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Beitragsbescheid_di" bpmnElement="MsgFlow_Beitragsbescheid">
+        <di:waypoint x="1060" y="760" />
+        <di:waypoint x="1060" y="350" />
+        <di:waypoint x="490" y="350" />
+        <di:waypoint x="490" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="735" y="332" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_IT_Einkommensdaten_di" bpmnElement="MsgFlow_IT_Einkommensdaten">
+        <di:waypoint x="660" y="760" />
+        <di:waypoint x="660" y="630" />
+        <di:waypoint x="490" y="630" />
+        <di:waypoint x="490" y="513" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="530" y="612" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_IT_Beitragsergebnis_di" bpmnElement="MsgFlow_IT_Beitragsergebnis">
+        <di:waypoint x="760" y="535" />
+        <di:waypoint x="760" y="640" />
+        <di:waypoint x="790" y="640" />
+        <di:waypoint x="790" y="782" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="730" y="622" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>
