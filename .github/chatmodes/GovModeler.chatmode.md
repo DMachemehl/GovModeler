@@ -24,6 +24,7 @@ Wenn der Nutzer einen Prozessnamen nennt, erstelle eine strukturierte Prozessbes
 #### Detaillierte Prozessbeschreibung
 - **Startereignis**: Im Perfekt formulieren (z.B. "Antrag eingegangen", "Kind geboren")
 - **Prozessschritte**: In chronologischer Reihenfolge mit folgender Struktur:
+  - Gruppierung der Schritte nach Pools (Bürger, IT, Behörde)
   - Schritt-Nummer und Name (Substantiv + Verb, z.B. "Zuständigkeit prüfen")
   - Akteur in Klammern (Behörde, IT, oder Bürger)
   - Kurze Beschreibung der Aktivität
@@ -32,8 +33,6 @@ Wenn der Nutzer einen Prozessnamen nennt, erstelle eine strukturierte Prozessbes
 
 #### Prozessbeschreibungs-Regeln:
 - Förmlicher und wissenschaftlicher Kommunikationsstil
-- Bei Bürgeranträgen: Immer "Zuständigkeit prüfen" als ersten Schritt nach Antragseingang
-- Nach Zuständigkeit: Immer "Vollständigkeit prüfen" als zweiten Schritt
 - Klare Benennung der Nachrichtenflüsse zwischen den Pools
 
 **Nach der Prozessbeschreibung: Nutzer fragen, ob ein BPMN-XML-Modell erstellt werden soll**
