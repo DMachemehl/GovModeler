@@ -1,0 +1,554 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0"
+  modeler:executionPlatform="Camunda Platform"
+  modeler:executionPlatformVersion="7.20.0">
+
+  <!-- =====================================================
+       COLLABORATION - Sorgeerklärung beurkunden
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_Sorgeerklaerung_beurkunden">
+    
+    <!-- Participant: Bürger -->
+    <bpmn:participant id="Participant_Buerger"
+                      name="Buerger"
+                      processRef="Process_Buerger" />
+    
+    <!-- Participant: IT -->
+    <bpmn:participant id="Participant_IT"
+                      name="IT"
+                      processRef="Process_IT" />
+    
+    <!-- Participant: Behörde -->
+    <bpmn:participant id="Participant_Behoerde"
+                      name="Jugendamt"
+                      processRef="Process_Behoerde" />
+    
+    <!-- Message Flows -->
+    <bpmn:messageFlow id="MsgFlow_Terminanfrage"
+                      name="Terminanfrage"
+                      sourceRef="Task_Termin_vereinbaren"
+                      targetRef="StartEvent_Antrag_eingegangen" />
+    
+    <bpmn:messageFlow id="MsgFlow_Urkunde"
+                      name="Urkunde"
+                      sourceRef="Task_Urkunde_uebergeben"
+                      targetRef="Event_Urkunde_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Personendaten_Anfrage"
+                      name="Personendaten-Anfrage"
+                      sourceRef="Task_Personendaten_abfragen"
+                      targetRef="StartEvent_Anfrage_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Personendaten_Antwort"
+                      name="Personendaten"
+                      sourceRef="Task_Personendaten_bereitstellen"
+                      targetRef="Event_Personendaten_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Sorgerecht_Daten"
+                      name="Sorgerechts-Daten"
+                      sourceRef="Task_Sorgerechtsdaten_uebermitteln"
+                      targetRef="Event_Daten_empfangen" />
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       BÜRGER PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Buerger"
+                name="Sorgeerklaerung_beurkunden_Buerger"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Buerger" name="Sorgeerklaerung benoetigt">
+      <bpmn:outgoing>Flow_Start_Termin</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Termin vereinbaren -->
+    <bpmn:userTask id="Task_Termin_vereinbaren" name="Termin vereinbaren">
+      <bpmn:incoming>Flow_Start_Termin</bpmn:incoming>
+      <bpmn:outgoing>Flow_Termin_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Urkunde erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Urkunde_erhalten" name="Urkunde erhalten">
+      <bpmn:incoming>Flow_Termin_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Urkunde_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Urkunde" messageRef="Message_Urkunde" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Buerger" name="Sorgeerklaerung beurkundet">
+      <bpmn:incoming>Flow_Urkunde_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Bürger -->
+    <bpmn:sequenceFlow id="Flow_Start_Termin"
+                       sourceRef="StartEvent_Buerger"
+                       targetRef="Task_Termin_vereinbaren" />
+    
+    <bpmn:sequenceFlow id="Flow_Termin_Warten"
+                       sourceRef="Task_Termin_vereinbaren"
+                       targetRef="Event_Urkunde_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Urkunde_Ende"
+                       sourceRef="Event_Urkunde_erhalten"
+                       targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       IT PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_IT"
+                name="IT_Prozess"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Anfrage_erhalten" name="Anfrage erhalten">
+      <bpmn:outgoing>Flow_IT_Start_Bereitstellen</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Service Task: Personendaten bereitstellen -->
+    <bpmn:serviceTask id="Task_Personendaten_bereitstellen" name="Personendaten bereitstellen">
+      <bpmn:incoming>Flow_IT_Start_Bereitstellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Bereitstellen_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Intermediate Catch Event: Sorgerechts-Daten empfangen -->
+    <bpmn:intermediateCatchEvent id="Event_Daten_empfangen" name="Daten empfangen">
+      <bpmn:incoming>Flow_IT_Bereitstellen_Ende</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Daten_Speichern</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_SorgerechtsDaten" messageRef="Message_SorgerechtsDaten" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- Service Task: Daten speichern -->
+    <bpmn:serviceTask id="Task_Daten_speichern" name="Daten im Register speichern">
+      <bpmn:incoming>Flow_IT_Daten_Speichern</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Speichern_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_IT" name="Anfrage bearbeitet">
+      <bpmn:incoming>Flow_IT_Speichern_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - IT -->
+    <bpmn:sequenceFlow id="Flow_IT_Start_Bereitstellen"
+                       sourceRef="StartEvent_Anfrage_erhalten"
+                       targetRef="Task_Personendaten_bereitstellen" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Bereitstellen_Ende"
+                       sourceRef="Task_Personendaten_bereitstellen"
+                       targetRef="Event_Daten_empfangen" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Daten_Speichern"
+                       sourceRef="Event_Daten_empfangen"
+                       targetRef="Task_Daten_speichern" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Speichern_Ende"
+                       sourceRef="Task_Daten_speichern"
+                       targetRef="EndEvent_IT" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       BEHÖRDEN PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Behoerde"
+                name="Sorgeerklaerung_beurkunden_Behoerde"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Antrag_eingegangen" name="Antrag eingegangen">
+      <bpmn:outgoing>Flow_Start_Zustaendigkeit</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Service Task: Zuständigkeit prüfen -->
+    <bpmn:serviceTask id="Task_Zustaendigkeit_pruefen" name="Zustaendigkeit pruefen">
+      <bpmn:incoming>Flow_Start_Zustaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zustaendigkeit_Identitaet</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- User Task: Identität prüfen -->
+    <bpmn:userTask id="Task_Identitaet_pruefen" name="Identitaet pruefen">
+      <bpmn:incoming>Flow_Zustaendigkeit_Identitaet</bpmn:incoming>
+      <bpmn:outgoing>Flow_Identitaet_Daten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Personendaten abfragen -->
+    <bpmn:userTask id="Task_Personendaten_abfragen" name="Personendaten abfragen">
+      <bpmn:incoming>Flow_Identitaet_Daten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Daten_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Personendaten erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Personendaten_erhalten" name="Personendaten erhalten">
+      <bpmn:incoming>Flow_Daten_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Daten_Beurkunden</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Personendaten" messageRef="Message_Personendaten" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- User Task: Sorgeerklärung beurkunden -->
+    <bpmn:userTask id="Task_Sorgeerklaerung_beurkunden" name="Sorgeerklaerung beurkunden">
+      <bpmn:incoming>Flow_Daten_Beurkunden</bpmn:incoming>
+      <bpmn:outgoing>Flow_Beurkunden_Ausstellen</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Urkunde ausstellen -->
+    <bpmn:userTask id="Task_Urkunde_ausstellen" name="Urkunde ausstellen">
+      <bpmn:incoming>Flow_Beurkunden_Ausstellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Ausstellen_Uebergeben</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Urkunde übergeben -->
+    <bpmn:userTask id="Task_Urkunde_uebergeben" name="Urkunde uebergeben">
+      <bpmn:incoming>Flow_Ausstellen_Uebergeben</bpmn:incoming>
+      <bpmn:outgoing>Flow_Uebergeben_Uebermitteln</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Sorgerechtsdaten übermitteln -->
+    <bpmn:userTask id="Task_Sorgerechtsdaten_uebermitteln" name="Sorgerechtsdaten uebermitteln">
+      <bpmn:incoming>Flow_Uebergeben_Uebermitteln</bpmn:incoming>
+      <bpmn:outgoing>Flow_Uebermitteln_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Behoerde" name="Sorgeerklaerung beurkundet">
+      <bpmn:incoming>Flow_Uebermitteln_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Behörde -->
+    <bpmn:sequenceFlow id="Flow_Start_Zustaendigkeit"
+                       sourceRef="StartEvent_Antrag_eingegangen"
+                       targetRef="Task_Zustaendigkeit_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zustaendigkeit_Identitaet"
+                       sourceRef="Task_Zustaendigkeit_pruefen"
+                       targetRef="Task_Identitaet_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Identitaet_Daten"
+                       sourceRef="Task_Identitaet_pruefen"
+                       targetRef="Task_Personendaten_abfragen" />
+    
+    <bpmn:sequenceFlow id="Flow_Daten_Warten"
+                       sourceRef="Task_Personendaten_abfragen"
+                       targetRef="Event_Personendaten_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Daten_Beurkunden"
+                       sourceRef="Event_Personendaten_erhalten"
+                       targetRef="Task_Sorgeerklaerung_beurkunden" />
+    
+    <bpmn:sequenceFlow id="Flow_Beurkunden_Ausstellen"
+                       sourceRef="Task_Sorgeerklaerung_beurkunden"
+                       targetRef="Task_Urkunde_ausstellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Ausstellen_Uebergeben"
+                       sourceRef="Task_Urkunde_ausstellen"
+                       targetRef="Task_Urkunde_uebergeben" />
+    
+    <bpmn:sequenceFlow id="Flow_Uebergeben_Uebermitteln"
+                       sourceRef="Task_Urkunde_uebergeben"
+                       targetRef="Task_Sorgerechtsdaten_uebermitteln" />
+    
+    <bpmn:sequenceFlow id="Flow_Uebermitteln_Ende"
+                       sourceRef="Task_Sorgerechtsdaten_uebermitteln"
+                       targetRef="EndEvent_Behoerde" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       MESSAGE DEFINITIONEN
+       ===================================================== -->
+  <bpmn:message id="Message_Terminanfrage" name="Terminanfrage" />
+  <bpmn:message id="Message_Urkunde" name="Urkunde" />
+  <bpmn:message id="Message_Personendaten" name="Personendaten" />
+  <bpmn:message id="Message_SorgerechtsDaten" name="Sorgerechts-Daten" />
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Sorgeerklaerung">
+    <bpmndi:BPMNPlane id="BPMNPlane_Sorgeerklaerung" bpmnElement="Collab_Sorgeerklaerung_beurkunden">
+      
+      <!-- ===============================
+           POOL: BÜRGER
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="190" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Bürger Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Termin_vereinbaren_di" bpmnElement="Task_Termin_vereinbaren">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Urkunde_erhalten_di" bpmnElement="Event_Urkunde_erhalten">
+        <dc:Bounds x="472" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="450" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="562" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="540" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence Flows - Bürger -->
+      <bpmndi:BPMNEdge id="Flow_Start_Termin_di" bpmnElement="Flow_Start_Termin">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Termin_Warten_di" bpmnElement="Flow_Termin_Warten">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="472" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Urkunde_Ende_di" bpmnElement="Flow_Urkunde_Ende">
+        <di:waypoint x="508" y="200" />
+        <di:waypoint x="562" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           POOL: IT
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="480" width="20" height="30" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- IT Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Anfrage_erhalten_di" bpmnElement="StartEvent_Anfrage_erhalten">
+        <dc:Bounds x="222" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="520" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Personendaten_bereitstellen_di" bpmnElement="Task_Personendaten_bereitstellen">
+        <dc:Bounds x="310" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Daten_empfangen_di" bpmnElement="Event_Daten_empfangen">
+        <dc:Bounds x="472" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="450" y="520" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Daten_speichern_di" bpmnElement="Task_Daten_speichern">
+        <dc:Bounds x="570" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_IT_di" bpmnElement="EndEvent_IT">
+        <dc:Bounds x="722" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="700" y="520" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence Flows - IT -->
+      <bpmndi:BPMNEdge id="Flow_IT_Start_Bereitstellen_di" bpmnElement="Flow_IT_Start_Bereitstellen">
+        <di:waypoint x="258" y="495" />
+        <di:waypoint x="310" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Bereitstellen_Ende_di" bpmnElement="Flow_IT_Bereitstellen_Ende">
+        <di:waypoint x="410" y="495" />
+        <di:waypoint x="472" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Daten_Speichern_di" bpmnElement="Flow_IT_Daten_Speichern">
+        <di:waypoint x="508" y="495" />
+        <di:waypoint x="570" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Speichern_Ende_di" bpmnElement="Flow_IT_Speichern_Ende">
+        <di:waypoint x="670" y="495" />
+        <di:waypoint x="722" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           POOL: BEHÖRDE
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Behoerde_di" bpmnElement="Participant_Behoerde" isHorizontal="true">
+        <dc:Bounds x="160" y="660" width="1200" height="300" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="790" width="20" height="80" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Behörde Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Antrag_eingegangen_di" bpmnElement="StartEvent_Antrag_eingegangen">
+        <dc:Bounds x="222" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="825" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Zustaendigkeit_pruefen_di" bpmnElement="Task_Zustaendigkeit_pruefen">
+        <dc:Bounds x="310" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Identitaet_pruefen_di" bpmnElement="Task_Identitaet_pruefen">
+        <dc:Bounds x="470" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Personendaten_abfragen_di" bpmnElement="Task_Personendaten_abfragen">
+        <dc:Bounds x="630" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Personendaten_erhalten_di" bpmnElement="Event_Personendaten_erhalten">
+        <dc:Bounds x="792" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="770" y="825" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Sorgeerklaerung_beurkunden_di" bpmnElement="Task_Sorgeerklaerung_beurkunden">
+        <dc:Bounds x="890" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Urkunde_ausstellen_di" bpmnElement="Task_Urkunde_ausstellen">
+        <dc:Bounds x="310" y="880" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Urkunde_uebergeben_di" bpmnElement="Task_Urkunde_uebergeben">
+        <dc:Bounds x="470" y="880" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Sorgerechtsdaten_uebermitteln_di" bpmnElement="Task_Sorgerechtsdaten_uebermitteln">
+        <dc:Bounds x="630" y="880" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Behoerde_di" bpmnElement="EndEvent_Behoerde">
+        <dc:Bounds x="792" y="902" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="770" y="945" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence Flows - Behörde -->
+      <bpmndi:BPMNEdge id="Flow_Start_Zustaendigkeit_di" bpmnElement="Flow_Start_Zustaendigkeit">
+        <di:waypoint x="258" y="800" />
+        <di:waypoint x="310" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zustaendigkeit_Identitaet_di" bpmnElement="Flow_Zustaendigkeit_Identitaet">
+        <di:waypoint x="410" y="800" />
+        <di:waypoint x="470" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Identitaet_Daten_di" bpmnElement="Flow_Identitaet_Daten">
+        <di:waypoint x="570" y="800" />
+        <di:waypoint x="630" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Daten_Warten_di" bpmnElement="Flow_Daten_Warten">
+        <di:waypoint x="730" y="800" />
+        <di:waypoint x="792" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Daten_Beurkunden_di" bpmnElement="Flow_Daten_Beurkunden">
+        <di:waypoint x="828" y="800" />
+        <di:waypoint x="890" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Beurkunden_Ausstellen_di" bpmnElement="Flow_Beurkunden_Ausstellen">
+        <di:waypoint x="940" y="840" />
+        <di:waypoint x="940" y="920" />
+        <di:waypoint x="410" y="920" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Ausstellen_Uebergeben_di" bpmnElement="Flow_Ausstellen_Uebergeben">
+        <di:waypoint x="410" y="920" />
+        <di:waypoint x="470" y="920" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Uebergeben_Uebermitteln_di" bpmnElement="Flow_Uebergeben_Uebermitteln">
+        <di:waypoint x="570" y="920" />
+        <di:waypoint x="630" y="920" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Uebermitteln_Ende_di" bpmnElement="Flow_Uebermitteln_Ende">
+        <di:waypoint x="730" y="920" />
+        <di:waypoint x="792" y="920" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           MESSAGE FLOWS
+           =============================== -->
+      <bpmndi:BPMNEdge id="MsgFlow_Terminanfrage_di" bpmnElement="MsgFlow_Terminanfrage">
+        <di:waypoint x="360" y="240" />
+        <di:waypoint x="360" y="500" />
+        <di:waypoint x="240" y="500" />
+        <di:waypoint x="240" y="782" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="280" y="480" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Urkunde_di" bpmnElement="MsgFlow_Urkunde">
+        <di:waypoint x="520" y="880" />
+        <di:waypoint x="520" y="550" />
+        <di:waypoint x="490" y="550" />
+        <di:waypoint x="490" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="485" y="530" width="45" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Personendaten_Anfrage_di" bpmnElement="MsgFlow_Personendaten_Anfrage">
+        <di:waypoint x="680" y="760" />
+        <di:waypoint x="680" y="640" />
+        <di:waypoint x="240" y="640" />
+        <di:waypoint x="240" y="513" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="420" y="622" width="120" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Personendaten_Antwort_di" bpmnElement="MsgFlow_Personendaten_Antwort">
+        <di:waypoint x="360" y="535" />
+        <di:waypoint x="360" y="640" />
+        <di:waypoint x="810" y="640" />
+        <di:waypoint x="810" y="782" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="545" y="622" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Sorgerecht_Daten_di" bpmnElement="MsgFlow_Sorgerecht_Daten">
+        <di:waypoint x="680" y="880" />
+        <di:waypoint x="680" y="700" />
+        <di:waypoint x="490" y="700" />
+        <di:waypoint x="490" y="513" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="555" y="682" width="105" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

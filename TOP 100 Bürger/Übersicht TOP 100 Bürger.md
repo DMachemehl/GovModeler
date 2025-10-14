@@ -33,7 +33,7 @@
 | Ausbildungsförderung (BAföG) gewähren                                  |        |
 | Rückzahlung der Ausbildungsförderung nach BaföG bearbeiten             |        |
 | Sorgeerklärung beurkunden                                              |        |
-| Antrag auf Betreuungsgeld bearbeiten                                   |        |
+| Antrag auf Betreuungsgeld bearbeiten                                   |   X    |
 | Antrag auf Elterngeld bearbeiten                                       |   X    |
 | Plätze für Kinder in Tageseinrichtungen vermitteln                     |   X    |
 | Elternbeiträge für Kinder in Kindertageseinrichtungen erheben          |        |
