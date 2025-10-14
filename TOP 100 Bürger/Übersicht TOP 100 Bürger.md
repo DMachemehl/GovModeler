@@ -34,7 +34,7 @@
 | Rückzahlung der Ausbildungsförderung nach BaföG bearbeiten             |        |
 | Sorgeerklärung beurkunden                                              |        |
 | Antrag auf Betreuungsgeld bearbeiten                                   |        |
-| Antrag auf Elterngeld bearbeiten                                       |        |
+| Antrag auf Elterngeld bearbeiten                                       |   X    |
 | Plätze für Kinder in Tageseinrichtungen vermitteln                     |        |
 | Elternbeiträge für Kinder in Kindertageseinrichtungen erheben          |        |
 | Kinder zu einer geeigneten Tagespflegeperson vermitteln                |        |

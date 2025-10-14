@@ -1,0 +1,517 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0"
+  modeler:executionPlatform="Camunda Platform"
+  modeler:executionPlatformVersion="7.20.0">
+
+  <!-- =====================================================
+       COLLABORATION - Kita-Platz-Vermittlung
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_Kita_Platz">
+    
+    <!-- Participant: Bürger/Antragsteller -->
+    <bpmn:participant id="Participant_Buerger"
+                      name="Buerger"
+                      processRef="Process_Buerger" />
+    
+    <!-- Participant: IT -->
+    <bpmn:participant id="Participant_IT"
+                      name="IT"
+                      processRef="Process_IT" />
+    
+    <!-- Participant: Behörde/Amt -->
+    <bpmn:participant id="Participant_Behoerde"
+                      name="Jugendamt"
+                      processRef="Process_Behoerde" />
+    
+    <!-- Message Flows zwischen Participanten -->
+    <bpmn:messageFlow id="MsgFlow_Antrag"
+                      name="Antrag auf Betreuungsplatz"
+                      sourceRef="Task_Antrag_stellen"
+                      targetRef="StartEvent_Antrag_eingegangen" />
+    
+    <bpmn:messageFlow id="MsgFlow_Zuweisung"
+                      name="Platzzuweisung"
+                      sourceRef="Task_Zuweisung_versenden"
+                      targetRef="Event_Zuweisung_erhalten" />
+    
+    <!-- IT Message Flows -->
+    <bpmn:messageFlow id="MsgFlow_IT_Anfrage"
+                      name="Verfuegbarkeitsanfrage"
+                      sourceRef="Task_Verfuegbarkeit_abfragen"
+                      targetRef="StartEvent_IT_Anfrage_erhalten" />
+                      
+    <bpmn:messageFlow id="MsgFlow_IT_Antwort"
+                      name="Verfuegbare Plaetze"
+                      sourceRef="Task_IT_Antwort_senden"
+                      targetRef="Event_IT_Antwort_erhalten" />
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       BÜRGER PROZESS - Kita-Platz beantragen
+       ===================================================== -->
+  <bpmn:process id="Process_Buerger"
+                name="Kita_Platz_Buerger"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Buerger" name="Betreuungsbedarf vorhanden">
+      <bpmn:outgoing>Flow_Start_Antrag</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Antrag stellen -->
+    <bpmn:userTask id="Task_Antrag_stellen" name="Antrag auf Betreuungsplatz stellen">
+      <bpmn:incoming>Flow_Start_Antrag</bpmn:incoming>
+      <bpmn:outgoing>Flow_Antrag_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Zuweisung -->
+    <bpmn:intermediateCatchEvent id="Event_Zuweisung_erhalten" name="Platzzuweisung erhalten">
+      <bpmn:incoming>Flow_Antrag_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zuweisung_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Zuweisung" messageRef="Message_Zuweisung" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Buerger" name="Betreuungsplatz erhalten">
+      <bpmn:incoming>Flow_Zuweisung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Bürger -->
+    <bpmn:sequenceFlow id="Flow_Start_Antrag"
+                       sourceRef="StartEvent_Buerger"
+                       targetRef="Task_Antrag_stellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Antrag_Warten"
+                       sourceRef="Task_Antrag_stellen"
+                       targetRef="Event_Zuweisung_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Zuweisung_Ende"
+                       sourceRef="Event_Zuweisung_erhalten"
+                       targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       BEHÖRDEN PROZESS - Kita-Platz-Vermittlung
+       ===================================================== -->
+  <bpmn:process id="Process_Behoerde"
+                name="Kita_Platz_Behoerde"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Antrag_eingegangen" name="Antrag auf Betreuungsplatz eingegangen">
+      <bpmn:outgoing>Flow_Start_Zustaendigkeit</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Service Task: Zuständigkeit prüfen -->
+    <bpmn:serviceTask id="Task_Zustaendigkeit_pruefen" name="Zustaendigkeit pruefen">
+      <bpmn:incoming>Flow_Start_Zustaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zustaendigkeit_Vollstaendigkeit</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Service Task: Vollständigkeit prüfen -->
+    <bpmn:serviceTask id="Task_Vollstaendigkeit_pruefen" name="Vollstaendigkeit pruefen">
+      <bpmn:incoming>Flow_Zustaendigkeit_Vollstaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Vollstaendigkeit_Bedarf</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- User Task: Betreuungsbedarf prüfen -->
+    <bpmn:userTask id="Task_Betreuungsbedarf_pruefen" name="Betreuungsbedarf pruefen">
+      <bpmn:incoming>Flow_Vollstaendigkeit_Bedarf</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bedarf_IT</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Verfügbarkeit abfragen -->
+    <bpmn:userTask id="Task_Verfuegbarkeit_abfragen" name="Verfuegbarkeit abfragen">
+      <bpmn:incoming>Flow_Bedarf_IT</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Anfrage_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: IT-Antwort erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_IT_Antwort_erhalten" name="Verfuegbare Plaetze erhalten">
+      <bpmn:incoming>Flow_IT_Anfrage_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Antwort_Zuweisung</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_IT_Antwort" messageRef="Message_IT_Antwort" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- User Task: Platz zuweisen -->
+    <bpmn:userTask id="Task_Platz_zuweisen" name="Platz zuweisen">
+      <bpmn:incoming>Flow_IT_Antwort_Zuweisung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zuweisung_Versenden</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Zuweisung versenden -->
+    <bpmn:userTask id="Task_Zuweisung_versenden" name="Zuweisung versenden">
+      <bpmn:incoming>Flow_Zuweisung_Versenden</bpmn:incoming>
+      <bpmn:outgoing>Flow_Versenden_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Behoerde" name="Betreuungsplatz vermittelt">
+      <bpmn:incoming>Flow_Versenden_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Behörde -->
+    <bpmn:sequenceFlow id="Flow_Start_Zustaendigkeit"
+                       sourceRef="StartEvent_Antrag_eingegangen"
+                       targetRef="Task_Zustaendigkeit_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zustaendigkeit_Vollstaendigkeit"
+                       sourceRef="Task_Zustaendigkeit_pruefen"
+                       targetRef="Task_Vollstaendigkeit_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Vollstaendigkeit_Bedarf"
+                       sourceRef="Task_Vollstaendigkeit_pruefen"
+                       targetRef="Task_Betreuungsbedarf_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Bedarf_IT"
+                       sourceRef="Task_Betreuungsbedarf_pruefen"
+                       targetRef="Task_Verfuegbarkeit_abfragen" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Anfrage_Warten"
+                       sourceRef="Task_Verfuegbarkeit_abfragen"
+                       targetRef="Event_IT_Antwort_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Antwort_Zuweisung"
+                       sourceRef="Event_IT_Antwort_erhalten"
+                       targetRef="Task_Platz_zuweisen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zuweisung_Versenden"
+                       sourceRef="Task_Platz_zuweisen"
+                       targetRef="Task_Zuweisung_versenden" />
+    
+    <bpmn:sequenceFlow id="Flow_Versenden_Ende"
+                       sourceRef="Task_Zuweisung_versenden"
+                       targetRef="EndEvent_Behoerde" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       IT-PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_IT"
+                name="IT_Prozess"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_IT_Anfrage_erhalten" name="Anfrage erhalten">
+      <bpmn:outgoing>Flow_IT_Start_Verarbeiten</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Service Task: Verfügbare Plätze abrufen -->
+    <bpmn:serviceTask id="Task_IT_Plaetze_abrufen" name="Verfuegbare Plaetze abrufen">
+      <bpmn:incoming>Flow_IT_Start_Verarbeiten</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Abrufen_Bereitstellen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Service Task: Plätze bereitstellen -->
+    <bpmn:serviceTask id="Task_IT_Plaetze_bereitstellen" name="Plaetze bereitstellen">
+      <bpmn:incoming>Flow_IT_Abrufen_Bereitstellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Bereitstellen_Antwort</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Service Task: Antwort senden -->
+    <bpmn:serviceTask id="Task_IT_Antwort_senden" name="Antwort senden">
+      <bpmn:incoming>Flow_IT_Bereitstellen_Antwort</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Antwort_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_IT" name="Anfrage bearbeitet">
+      <bpmn:incoming>Flow_IT_Antwort_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - IT-Prozess -->
+    <bpmn:sequenceFlow id="Flow_IT_Start_Verarbeiten"
+                       sourceRef="StartEvent_IT_Anfrage_erhalten"
+                       targetRef="Task_IT_Plaetze_abrufen" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Abrufen_Bereitstellen"
+                       sourceRef="Task_IT_Plaetze_abrufen"
+                       targetRef="Task_IT_Plaetze_bereitstellen" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Bereitstellen_Antwort"
+                       sourceRef="Task_IT_Plaetze_bereitstellen"
+                       targetRef="Task_IT_Antwort_senden" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Antwort_Ende"
+                       sourceRef="Task_IT_Antwort_senden"
+                       targetRef="EndEvent_IT" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       MESSAGE DEFINITIONEN
+       ===================================================== -->
+  <bpmn:message id="Message_Zuweisung" name="Platzzuweisung" />
+  <bpmn:message id="Message_IT_Anfrage" name="Verfuegbarkeitsanfrage" />
+  <bpmn:message id="Message_IT_Antwort" name="Verfuegbare Plaetze" />
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Kita_Platz">
+    <bpmndi:BPMNPlane id="BPMNPlane_Kita_Platz" bpmnElement="Collab_Kita_Platz">
+      
+      <!-- ===============================
+           POOL: BÜRGER
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="190" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Bürger Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Antrag_stellen_di" bpmnElement="Task_Antrag_stellen">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Zuweisung_erhalten_di" bpmnElement="Event_Zuweisung_erhalten">
+        <dc:Bounds x="470" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="445" y="225" width="86" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="562" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="540" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence Flows - Bürger -->
+      <bpmndi:BPMNEdge id="Flow_Start_Antrag_di" bpmnElement="Flow_Start_Antrag">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Antrag_Warten_di" bpmnElement="Flow_Antrag_Warten">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="470" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zuweisung_Ende_di" bpmnElement="Flow_Zuweisung_Ende">
+        <di:waypoint x="506" y="200" />
+        <di:waypoint x="562" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           POOL: IT
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="480" width="20" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- IT Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_IT_Anfrage_erhalten_di" bpmnElement="StartEvent_IT_Anfrage_erhalten">
+        <dc:Bounds x="222" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="520" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_IT_Plaetze_abrufen_di" bpmnElement="Task_IT_Plaetze_abrufen">
+        <dc:Bounds x="310" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_IT_Plaetze_bereitstellen_di" bpmnElement="Task_IT_Plaetze_bereitstellen">
+        <dc:Bounds x="470" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_IT_Antwort_senden_di" bpmnElement="Task_IT_Antwort_senden">
+        <dc:Bounds x="630" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_IT_di" bpmnElement="EndEvent_IT">
+        <dc:Bounds x="792" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="770" y="520" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- IT Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_IT_Start_Verarbeiten_di" bpmnElement="Flow_IT_Start_Verarbeiten">
+        <di:waypoint x="258" y="495" />
+        <di:waypoint x="310" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Abrufen_Bereitstellen_di" bpmnElement="Flow_IT_Abrufen_Bereitstellen">
+        <di:waypoint x="410" y="495" />
+        <di:waypoint x="470" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Bereitstellen_Antwort_di" bpmnElement="Flow_IT_Bereitstellen_Antwort">
+        <di:waypoint x="570" y="495" />
+        <di:waypoint x="630" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Antwort_Ende_di" bpmnElement="Flow_IT_Antwort_Ende">
+        <di:waypoint x="730" y="495" />
+        <di:waypoint x="792" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           POOL: BEHÖRDE
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Behoerde_di" bpmnElement="Participant_Behoerde" isHorizontal="true">
+        <dc:Bounds x="160" y="660" width="1200" height="300" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="785" width="20" height="70" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Behörde Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Antrag_eingegangen_di" bpmnElement="StartEvent_Antrag_eingegangen">
+        <dc:Bounds x="222" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="825" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Zustaendigkeit_pruefen_di" bpmnElement="Task_Zustaendigkeit_pruefen">
+        <dc:Bounds x="310" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Vollstaendigkeit_pruefen_di" bpmnElement="Task_Vollstaendigkeit_pruefen">
+        <dc:Bounds x="470" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Betreuungsbedarf_pruefen_di" bpmnElement="Task_Betreuungsbedarf_pruefen">
+        <dc:Bounds x="630" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Verfuegbarkeit_abfragen_di" bpmnElement="Task_Verfuegbarkeit_abfragen">
+        <dc:Bounds x="790" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_IT_Antwort_erhalten_di" bpmnElement="Event_IT_Antwort_erhalten">
+        <dc:Bounds x="952" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="930" y="825" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Platz_zuweisen_di" bpmnElement="Task_Platz_zuweisen">
+        <dc:Bounds x="310" y="870" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Zuweisung_versenden_di" bpmnElement="Task_Zuweisung_versenden">
+        <dc:Bounds x="470" y="870" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Behoerde_di" bpmnElement="EndEvent_Behoerde">
+        <dc:Bounds x="632" y="892" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="610" y="935" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Behörde Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_Start_Zustaendigkeit_di" bpmnElement="Flow_Start_Zustaendigkeit">
+        <di:waypoint x="258" y="800" />
+        <di:waypoint x="310" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zustaendigkeit_Vollstaendigkeit_di" bpmnElement="Flow_Zustaendigkeit_Vollstaendigkeit">
+        <di:waypoint x="410" y="800" />
+        <di:waypoint x="470" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Vollstaendigkeit_Bedarf_di" bpmnElement="Flow_Vollstaendigkeit_Bedarf">
+        <di:waypoint x="570" y="800" />
+        <di:waypoint x="630" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Bedarf_IT_di" bpmnElement="Flow_Bedarf_IT">
+        <di:waypoint x="730" y="800" />
+        <di:waypoint x="790" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Anfrage_Warten_di" bpmnElement="Flow_IT_Anfrage_Warten">
+        <di:waypoint x="890" y="800" />
+        <di:waypoint x="952" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Antwort_Zuweisung_di" bpmnElement="Flow_IT_Antwort_Zuweisung">
+        <di:waypoint x="970" y="818" />
+        <di:waypoint x="970" y="910" />
+        <di:waypoint x="410" y="910" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zuweisung_Versenden_di" bpmnElement="Flow_Zuweisung_Versenden">
+        <di:waypoint x="410" y="910" />
+        <di:waypoint x="470" y="910" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Versenden_Ende_di" bpmnElement="Flow_Versenden_Ende">
+        <di:waypoint x="570" y="910" />
+        <di:waypoint x="632" y="910" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           MESSAGE FLOWS
+           =============================== -->
+      <bpmndi:BPMNEdge id="MsgFlow_Antrag_di" bpmnElement="MsgFlow_Antrag">
+        <di:waypoint x="360" y="240" />
+        <di:waypoint x="360" y="350" />
+        <di:waypoint x="240" y="350" />
+        <di:waypoint x="240" y="782" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="250" y="330" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Zuweisung_di" bpmnElement="MsgFlow_Zuweisung">
+        <di:waypoint x="520" y="870" />
+        <di:waypoint x="520" y="630" />
+        <di:waypoint x="488" y="630" />
+        <di:waypoint x="488" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="445" y="610" width="76" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <!-- IT Message Flows -->
+      <bpmndi:BPMNEdge id="MsgFlow_IT_Anfrage_di" bpmnElement="MsgFlow_IT_Anfrage">
+        <di:waypoint x="840" y="760" />
+        <di:waypoint x="840" y="640" />
+        <di:waypoint x="240" y="640" />
+        <di:waypoint x="240" y="513" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="460" y="620" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_IT_Antwort_di" bpmnElement="MsgFlow_IT_Antwort">
+        <di:waypoint x="680" y="535" />
+        <di:waypoint x="680" y="650" />
+        <di:waypoint x="970" y="650" />
+        <di:waypoint x="970" y="782" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="790" y="630" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>
