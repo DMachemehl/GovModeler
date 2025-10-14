@@ -32,7 +32,7 @@
 | Leistungen zur Bildung und Teilhabe gewähren                           |        |
 | Ausbildungsförderung (BAföG) gewähren                                  |        |
 | Rückzahlung der Ausbildungsförderung nach BaföG bearbeiten             |        |
-| Sorgeerklärung beurkunden                                              |        |
+| Sorgeerklärung beurkunden                                              |   X    |
 | Antrag auf Betreuungsgeld bearbeiten                                   |   X    |
 | Antrag auf Elterngeld bearbeiten                                       |   X    |
 | Plätze für Kinder in Tageseinrichtungen vermitteln                     |   X    |
