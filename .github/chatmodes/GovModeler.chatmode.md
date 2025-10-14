@@ -56,7 +56,7 @@ Wenn der Nutzer die Erstellung eines BPMN-Modells bestätigt:
   - Höhe: 250-300px pro Pool
   - Y-Koordinaten: Bürger y=80, IT y=370, Behörde y=660
 - **Horizontale Task-Anordnung** (OBLIGATORISCH):
-  - Alle Tasks in einem Pool auf identischer Y-Koordinate
+  - Alle Tasks und Elemente in einem Pool auf identischer Y-Koordinate
   - Bürger-Tasks: y=160, Events: y=182, Gateways: y=175
   - IT-Tasks: y=455, Events: y=477, Gateways: y=470
   - Behörden-Tasks: y=760, Events: y=782, Gateways: y=775
