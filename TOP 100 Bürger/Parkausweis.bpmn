@@ -66,17 +66,17 @@
     <bpmn:endEvent id="EndEvent_Behoerde" name="Parkausweis ausgestellt">
       <bpmn:incoming>Flow_Ausstellen_Ende</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:intermediateCatchEvent id="Event_13mceoz" name="Gebühr entrichtet">
-      <bpmn:incoming>Flow_1o41fz0</bpmn:incoming>
-      <bpmn:outgoing>Flow_1049luu</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_0qb9ln7" />
-    </bpmn:intermediateCatchEvent>
     <bpmn:sequenceFlow id="Flow_Start_IT_Warten" sourceRef="StartEvent_Antrag_eingegangen" targetRef="StartEvent_Behoerde_IT_Antwort" />
     <bpmn:sequenceFlow id="Flow_IT_Antwort_Berechtigung" sourceRef="StartEvent_Behoerde_IT_Antwort" targetRef="Task_Anwohnerberechtigung_pruefen" />
     <bpmn:sequenceFlow id="Flow_Berechtigung_Gebuehr" sourceRef="Task_Anwohnerberechtigung_pruefen" targetRef="Task_Gebuehr_festsetzen" />
     <bpmn:sequenceFlow id="Flow_1o41fz0" sourceRef="Task_Gebuehr_festsetzen" targetRef="Event_13mceoz" />
     <bpmn:sequenceFlow id="Flow_1049luu" sourceRef="Event_13mceoz" targetRef="Task_Parkausweis_ausstellen" />
     <bpmn:sequenceFlow id="Flow_Ausstellen_Ende" sourceRef="Task_Parkausweis_ausstellen" targetRef="EndEvent_Behoerde" />
+    <bpmn:intermediateCatchEvent id="Event_13mceoz" name="Gebühr entrichtet">
+      <bpmn:incoming>Flow_1o41fz0</bpmn:incoming>
+      <bpmn:outgoing>Flow_1049luu</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0qb9ln7" />
+    </bpmn:intermediateCatchEvent>
   </bpmn:process>
   <bpmn:process id="Process_IT" name="IT_Parkausweis" isExecutable="true">
     <bpmn:startEvent id="StartEvent_IT_Anfrage_erhalten" name="Antragsdaten erhalten">
@@ -106,9 +106,6 @@
       <bpmn:incoming>Flow_IT_Generieren_Antwort</bpmn:incoming>
       <bpmn:outgoing>Flow_IT_Antwort_Ende</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:endEvent id="EndEvent_IT" name="Verifikation gesendet">
-      <bpmn:incoming>Flow_IT_Antwort_Ende</bpmn:incoming>
-    </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_IT_Start_Zustaendigkeit" sourceRef="StartEvent_IT_Anfrage_erhalten" targetRef="Task_Zustaendigkeit_pruefen" />
     <bpmn:sequenceFlow id="Flow_IT_Zustaendigkeit_Vollstaendigkeit" sourceRef="Task_Zustaendigkeit_pruefen" targetRef="Task_Vollstaendigkeit_pruefen" />
     <bpmn:sequenceFlow id="Flow_IT_Vollstaendigkeit_Erfassen" sourceRef="Task_Vollstaendigkeit_pruefen" targetRef="Task_IT_Antragsdaten_erfassen" />
@@ -116,6 +113,9 @@
     <bpmn:sequenceFlow id="Flow_IT_Verifizieren_Generieren" sourceRef="Task_IT_Wohnsitz_verifizieren" targetRef="Task_IT_Parkausweis_generieren" />
     <bpmn:sequenceFlow id="Flow_IT_Generieren_Antwort" sourceRef="Task_IT_Parkausweis_generieren" targetRef="Task_IT_Antwort_senden" />
     <bpmn:sequenceFlow id="Flow_IT_Antwort_Ende" sourceRef="Task_IT_Antwort_senden" targetRef="EndEvent_IT" />
+    <bpmn:endEvent id="EndEvent_IT" name="Verifikation gesendet">
+      <bpmn:incoming>Flow_IT_Antwort_Ende</bpmn:incoming>
+    </bpmn:endEvent>
   </bpmn:process>
   <bpmn:message id="Message_Gebuehrenbescheid" name="Gebuehrenbescheid" />
   <bpmn:message id="Message_Parkausweis" name="Parkausweis" />
@@ -206,9 +206,9 @@
         <dc:Bounds x="1230" y="490" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_IT_di" bpmnElement="EndEvent_IT">
-        <dc:Bounds x="1382" y="512" width="36" height="36" />
+        <dc:Bounds x="1372" y="512" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1374" y="555" width="53" height="27" />
+          <dc:Bounds x="1364" y="555" width="53" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_IT_Start_Zustaendigkeit_di" bpmnElement="Flow_IT_Start_Zustaendigkeit">
@@ -237,7 +237,7 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_IT_Antwort_Ende_di" bpmnElement="Flow_IT_Antwort_Ende">
         <di:waypoint x="1330" y="530" />
-        <di:waypoint x="1382" y="530" />
+        <di:waypoint x="1372" y="530" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Participant_Behoerde_di" bpmnElement="Participant_Behoerde" isHorizontal="true">
         <dc:Bounds x="160" y="710" width="1410" height="300" />
@@ -271,9 +271,9 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_13mceoz_di" bpmnElement="Event_13mceoz">
-        <dc:Bounds x="1262" y="812" width="36" height="36" />
+        <dc:Bounds x="1272" y="812" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1237" y="855" width="86" height="14" />
+          <dc:Bounds x="1247" y="855" width="86" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_Start_IT_Warten_di" bpmnElement="Flow_Start_IT_Warten">
@@ -290,10 +290,10 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1o41fz0_di" bpmnElement="Flow_1o41fz0">
         <di:waypoint x="1220" y="830" />
-        <di:waypoint x="1262" y="830" />
+        <di:waypoint x="1272" y="830" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1049luu_di" bpmnElement="Flow_1049luu">
-        <di:waypoint x="1298" y="830" />
+        <di:waypoint x="1308" y="830" />
         <di:waypoint x="1370" y="830" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_Ausstellen_Ende_di" bpmnElement="Flow_Ausstellen_Ende">
@@ -315,12 +315,12 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="MsgFlow_IT_Antwort_di" bpmnElement="MsgFlow_IT_Antwort">
-        <di:waypoint x="1260" y="570" />
-        <di:waypoint x="1260" y="650" />
+        <di:waypoint x="1280" y="570" />
+        <di:waypoint x="1280" y="650" />
         <di:waypoint x="890" y="650" />
         <di:waypoint x="890" y="812" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1205" y="603" width="69" height="14" />
+          <dc:Bounds x="1225" y="603" width="69" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1symt3a_di" bpmnElement="Flow_1symt3a">
@@ -328,8 +328,8 @@
         <di:waypoint x="802" y="812" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_12cnez7_di" bpmnElement="Flow_12cnez7">
-        <di:waypoint x="1280" y="270" />
-        <di:waypoint x="1280" y="812" />
+        <di:waypoint x="1290" y="270" />
+        <di:waypoint x="1290" y="812" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0f0c4f7_di" bpmnElement="Flow_0f0c4f7">
         <di:waypoint x="1420" y="790" />
