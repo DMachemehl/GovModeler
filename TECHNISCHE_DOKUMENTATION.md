@@ -61,7 +61,6 @@ Diese Dokumentation beschreibt die technischen Grundlagen und Voraussetzungen zu
 2. KI-Modell auswählen
 3. Mode: GovModeler asuwählen
 4. Prozess benennen oder einsprechen
-   ```
 
 ## Troubleshooting
 
@@ -81,4 +80,5 @@ Bei Fragen oder Problemen:
 
 **Stand:** Oktober 2025  
 **Version:** 1.0
+
 
