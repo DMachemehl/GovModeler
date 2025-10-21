@@ -4,9 +4,6 @@
 
 Dieses Repository dokumentiert einen innovativen Ansatz zur Erstellung von **BPMN-Prozessmodellen** mithilfe von **GitHub Copilot** und generativer KI. Ziel ist es, einen **reproduzierbaren Workflow** zu entwickeln, mit dem Kommunen, Verwaltungen und Organisationen schnell und standardisiert Prozessbeschreibungen und -modelle generieren können – insbesondere auf Basis von **BPMN 2.0**.
 
-## e2e-Prozesse
-
-Die Prozessmodelle werden grundsätzlich e2e modelliert, d. h. die Perspektiven **Kunde, Organisation und IT (KOI)** werden explizit im Prozessmodell dargestellt.
 
 ## Hintergrund
 
@@ -16,7 +13,8 @@ Die öffentliche Verwaltung steht vor der Herausforderung, komplexe und heteroge
 
 * 🧠 **Prompting-Strategien** zur Erzeugung qualitativ hochwertiger Prozessbeschreibungen
 * 🔄 **Transformationsregeln** von Fließtext zu BPMN-Modellen
-* 🔧 **Erstellung und Bearbeitung von BPMN-Modellen**
+* 🔧 **Erstellung, Simulierung und Bearbeitung von BPMN-Modellen**
+* :eyeglasses: **Erstellung von e2e-Prozessmodellen** durch Einbeziehung der Perspektiven **Kunde, Organisation und IT (KOI)**
 
 ## Technologische Basis
 
