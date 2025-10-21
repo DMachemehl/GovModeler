@@ -1,0 +1,475 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0"
+  modeler:executionPlatform="Camunda Platform"
+  modeler:executionPlatformVersion="7.20.0">
+
+  <!-- =====================================================
+       COLLABORATION - Brennholz beziehen
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_Brennholz_beziehen">
+    
+    <!-- Participant: Bürger/Antragsteller -->
+    <bpmn:participant id="Participant_Buerger"
+                      name="Buerger"
+                      processRef="Process_Buerger" />
+    
+    <!-- Participant: IT -->
+    <bpmn:participant id="Participant_IT"
+                      name="IT"
+                      processRef="Process_IT" />
+    
+    <!-- Participant: Forstverwaltung -->
+    <bpmn:participant id="Participant_Behoerde"
+                      name="Forstverwaltung"
+                      processRef="Process_Behoerde" />
+    
+    <!-- Message Flows zwischen Participanten -->
+    <bpmn:messageFlow id="MsgFlow_Antrag"
+                      name="Brennholzantrag"
+                      sourceRef="Task_Antrag_stellen"
+                      targetRef="Event_IT_Antrag" />
+    
+    <bpmn:messageFlow id="MsgFlow_Antrag_IT_Behoerde"
+                      name="Gepruefter Antrag"
+                      sourceRef="Task_IT_Weiterleiten"
+                      targetRef="StartEvent_Antrag_eingegangen" />
+    
+    <bpmn:messageFlow id="MsgFlow_Zuteilungsdaten"
+                      name="Zuteilungsdaten"
+                      sourceRef="Task_Freigabe_erteilen"
+                      targetRef="Event_IT_Zuteilung" />
+    
+    <bpmn:messageFlow id="MsgFlow_Bescheid"
+                      name="Bewilligungsbescheid"
+                      sourceRef="Task_Bescheid_erstellen"
+                      targetRef="Event_Bescheid_erhalten" />
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       BÜRGER PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Buerger"
+                name="Brennholz_beziehen_Buerger"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Buerger" name="Brennholz benoetigt">
+      <bpmn:outgoing>Flow_Start_Antrag</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Antrag stellen -->
+    <bpmn:userTask id="Task_Antrag_stellen" name="Antrag stellen">
+      <bpmn:incoming>Flow_Start_Antrag</bpmn:incoming>
+      <bpmn:outgoing>Flow_Antrag_Bescheid</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Bescheid -->
+    <bpmn:intermediateCatchEvent id="Event_Bescheid_erhalten" name="Bescheid erhalten">
+      <bpmn:incoming>Flow_Antrag_Bescheid</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bescheid_Abholen</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Bescheid" messageRef="Message_Bescheid" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- User Task: Holz abholen -->
+    <bpmn:userTask id="Task_Holz_abholen" name="Holz abholen">
+      <bpmn:incoming>Flow_Bescheid_Abholen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Abholen_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Buerger" name="Brennholz erhalten">
+      <bpmn:incoming>Flow_Abholen_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Bürger -->
+    <bpmn:sequenceFlow id="Flow_Start_Antrag"
+                       sourceRef="StartEvent_Buerger"
+                       targetRef="Task_Antrag_stellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Antrag_Bescheid"
+                       sourceRef="Task_Antrag_stellen"
+                       targetRef="Event_Bescheid_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Bescheid_Abholen"
+                       sourceRef="Event_Bescheid_erhalten"
+                       targetRef="Task_Holz_abholen" />
+    
+    <bpmn:sequenceFlow id="Flow_Abholen_Ende"
+                       sourceRef="Task_Holz_abholen"
+                       targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       IT-PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_IT"
+                name="IT_Prozess"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="Event_IT_Antrag" name="Antrag erhalten">
+      <bpmn:outgoing>Flow_IT_Start_Pruefen</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Service Task: Zuständigkeit prüfen -->
+    <bpmn:serviceTask id="Task_Zustaendigkeit_pruefen" name="Zustaendigkeit pruefen">
+      <bpmn:incoming>Flow_IT_Start_Pruefen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Pruefen_Weiterleiten</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Service Task: Antrag weiterleiten -->
+    <bpmn:serviceTask id="Task_IT_Weiterleiten" name="Antrag weiterleiten">
+      <bpmn:incoming>Flow_Pruefen_Weiterleiten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Weiterleiten_Warten</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Intermediate Catch Event: Zuteilungsdaten -->
+    <bpmn:intermediateCatchEvent id="Event_IT_Zuteilung" name="Zuteilungsdaten erhalten">
+      <bpmn:incoming>Flow_Weiterleiten_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zuteilung_Bescheid</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Zuteilung" messageRef="Message_Zuteilung" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- Service Task: Bescheid erstellen -->
+    <bpmn:serviceTask id="Task_Bescheid_erstellen" name="Bescheid erstellen">
+      <bpmn:incoming>Flow_Zuteilung_Bescheid</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bescheid_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_IT" name="Bescheid versendet">
+      <bpmn:incoming>Flow_Bescheid_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - IT -->
+    <bpmn:sequenceFlow id="Flow_IT_Start_Pruefen"
+                       sourceRef="Event_IT_Antrag"
+                       targetRef="Task_Zustaendigkeit_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Pruefen_Weiterleiten"
+                       sourceRef="Task_Zustaendigkeit_pruefen"
+                       targetRef="Task_IT_Weiterleiten" />
+    
+    <bpmn:sequenceFlow id="Flow_Weiterleiten_Warten"
+                       sourceRef="Task_IT_Weiterleiten"
+                       targetRef="Event_IT_Zuteilung" />
+    
+    <bpmn:sequenceFlow id="Flow_Zuteilung_Bescheid"
+                       sourceRef="Event_IT_Zuteilung"
+                       targetRef="Task_Bescheid_erstellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Bescheid_Ende"
+                       sourceRef="Task_Bescheid_erstellen"
+                       targetRef="EndEvent_IT" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       FORSTVERWALTUNGS-PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Behoerde"
+                name="Brennholz_beziehen_Forstverwaltung"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Antrag_eingegangen" name="Antrag eingegangen">
+      <bpmn:outgoing>Flow_Start_Verfuegbarkeit</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Verfügbarkeit prüfen -->
+    <bpmn:userTask id="Task_Verfuegbarkeit_pruefen" name="Verfuegbarkeit pruefen">
+      <bpmn:incoming>Flow_Start_Verfuegbarkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Verfuegbarkeit_Menge</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Menge zuteilen -->
+    <bpmn:userTask id="Task_Menge_zuteilen" name="Menge zuteilen">
+      <bpmn:incoming>Flow_Verfuegbarkeit_Menge</bpmn:incoming>
+      <bpmn:outgoing>Flow_Menge_Freigabe</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Freigabe erteilen -->
+    <bpmn:userTask id="Task_Freigabe_erteilen" name="Freigabe erteilen">
+      <bpmn:incoming>Flow_Menge_Freigabe</bpmn:incoming>
+      <bpmn:outgoing>Flow_Freigabe_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Behoerde" name="Brennholz zugeteilt">
+      <bpmn:incoming>Flow_Freigabe_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Behörde -->
+    <bpmn:sequenceFlow id="Flow_Start_Verfuegbarkeit"
+                       sourceRef="StartEvent_Antrag_eingegangen"
+                       targetRef="Task_Verfuegbarkeit_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Verfuegbarkeit_Menge"
+                       sourceRef="Task_Verfuegbarkeit_pruefen"
+                       targetRef="Task_Menge_zuteilen" />
+    
+    <bpmn:sequenceFlow id="Flow_Menge_Freigabe"
+                       sourceRef="Task_Menge_zuteilen"
+                       targetRef="Task_Freigabe_erteilen" />
+    
+    <bpmn:sequenceFlow id="Flow_Freigabe_Ende"
+                       sourceRef="Task_Freigabe_erteilen"
+                       targetRef="EndEvent_Behoerde" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       MESSAGE DEFINITIONEN
+       ===================================================== -->
+  <bpmn:message id="Message_Bescheid" name="Bewilligungsbescheid" />
+  <bpmn:message id="Message_Zuteilung" name="Zuteilungsdaten" />
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Brennholz_beziehen">
+    <bpmndi:BPMNPlane id="BPMNPlane_Brennholz_beziehen" bpmnElement="Collab_Brennholz_beziehen">
+      
+      <!-- ===============================
+           POOL: BÜRGER
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="185" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Bürger Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="205" y="225" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Antrag_stellen_di" bpmnElement="Task_Antrag_stellen">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Bescheid_erhalten_di" bpmnElement="Event_Bescheid_erhalten">
+        <dc:Bounds x="472" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="452" y="225" width="76" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Holz_abholen_di" bpmnElement="Task_Holz_abholen">
+        <dc:Bounds x="570" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="722" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="705" y="225" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Bürger Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_Start_Antrag_di" bpmnElement="Flow_Start_Antrag">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Antrag_Bescheid_di" bpmnElement="Flow_Antrag_Bescheid">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="472" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Bescheid_Abholen_di" bpmnElement="Flow_Bescheid_Abholen">
+        <di:waypoint x="508" y="200" />
+        <di:waypoint x="570" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Abholen_Ende_di" bpmnElement="Flow_Abholen_Ende">
+        <di:waypoint x="670" y="200" />
+        <di:waypoint x="722" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           POOL: IT
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="475" width="20" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- IT Process Elements -->
+      <bpmndi:BPMNShape id="Event_IT_Antrag_di" bpmnElement="Event_IT_Antrag">
+        <dc:Bounds x="222" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="520" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Zustaendigkeit_pruefen_di" bpmnElement="Task_Zustaendigkeit_pruefen">
+        <dc:Bounds x="310" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_IT_Weiterleiten_di" bpmnElement="Task_IT_Weiterleiten">
+        <dc:Bounds x="470" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_IT_Zuteilung_di" bpmnElement="Event_IT_Zuteilung">
+        <dc:Bounds x="632" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="612" y="520" width="76" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Bescheid_erstellen_di" bpmnElement="Task_Bescheid_erstellen">
+        <dc:Bounds x="730" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_IT_di" bpmnElement="EndEvent_IT">
+        <dc:Bounds x="882" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="860" y="520" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- IT Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_IT_Start_Pruefen_di" bpmnElement="Flow_IT_Start_Pruefen">
+        <di:waypoint x="258" y="495" />
+        <di:waypoint x="310" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Pruefen_Weiterleiten_di" bpmnElement="Flow_Pruefen_Weiterleiten">
+        <di:waypoint x="410" y="495" />
+        <di:waypoint x="470" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Weiterleiten_Warten_di" bpmnElement="Flow_Weiterleiten_Warten">
+        <di:waypoint x="570" y="495" />
+        <di:waypoint x="632" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zuteilung_Bescheid_di" bpmnElement="Flow_Zuteilung_Bescheid">
+        <di:waypoint x="668" y="495" />
+        <di:waypoint x="730" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Bescheid_Ende_di" bpmnElement="Flow_Bescheid_Ende">
+        <di:waypoint x="830" y="495" />
+        <di:waypoint x="882" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           POOL: FORSTVERWALTUNG
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Behoerde_di" bpmnElement="Participant_Behoerde" isHorizontal="true">
+        <dc:Bounds x="160" y="660" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="735" width="20" height="120" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Behörde Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Antrag_eingegangen_di" bpmnElement="StartEvent_Antrag_eingegangen">
+        <dc:Bounds x="222" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="825" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Verfuegbarkeit_pruefen_di" bpmnElement="Task_Verfuegbarkeit_pruefen">
+        <dc:Bounds x="310" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Menge_zuteilen_di" bpmnElement="Task_Menge_zuteilen">
+        <dc:Bounds x="470" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Freigabe_erteilen_di" bpmnElement="Task_Freigabe_erteilen">
+        <dc:Bounds x="630" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Behoerde_di" bpmnElement="EndEvent_Behoerde">
+        <dc:Bounds x="782" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="765" y="825" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Behörde Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_Start_Verfuegbarkeit_di" bpmnElement="Flow_Start_Verfuegbarkeit">
+        <di:waypoint x="258" y="800" />
+        <di:waypoint x="310" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Verfuegbarkeit_Menge_di" bpmnElement="Flow_Verfuegbarkeit_Menge">
+        <di:waypoint x="410" y="800" />
+        <di:waypoint x="470" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Menge_Freigabe_di" bpmnElement="Flow_Menge_Freigabe">
+        <di:waypoint x="570" y="800" />
+        <di:waypoint x="630" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Freigabe_Ende_di" bpmnElement="Flow_Freigabe_Ende">
+        <di:waypoint x="730" y="800" />
+        <di:waypoint x="782" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           MESSAGE FLOWS
+           =============================== -->
+      <bpmndi:BPMNEdge id="MsgFlow_Antrag_di" bpmnElement="MsgFlow_Antrag">
+        <di:waypoint x="360" y="240" />
+        <di:waypoint x="360" y="350" />
+        <di:waypoint x="240" y="350" />
+        <di:waypoint x="240" y="477" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="260" y="330" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Antrag_IT_Behoerde_di" bpmnElement="MsgFlow_Antrag_IT_Behoerde">
+        <di:waypoint x="520" y="535" />
+        <di:waypoint x="520" y="640" />
+        <di:waypoint x="240" y="640" />
+        <di:waypoint x="240" y="782" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="340" y="620" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Zuteilungsdaten_di" bpmnElement="MsgFlow_Zuteilungsdaten">
+        <di:waypoint x="680" y="760" />
+        <di:waypoint x="680" y="640" />
+        <di:waypoint x="650" y="640" />
+        <di:waypoint x="650" y="513" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="620" y="620" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Bescheid_di" bpmnElement="MsgFlow_Bescheid">
+        <di:waypoint x="780" y="455" />
+        <di:waypoint x="780" y="350" />
+        <di:waypoint x="490" y="350" />
+        <di:waypoint x="490" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="600" y="330" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>
