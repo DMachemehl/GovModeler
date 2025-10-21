@@ -3,6 +3,7 @@
 ## Projektziel
 
 Dieses Repository dokumentiert einen innovativen Ansatz zur Erstellung von **BPMN-Prozessmodellen** mithilfe von **GitHub Copilot** und generativer KI. Ziel ist es, einen **reproduzierbaren Workflow** zu entwickeln, mit dem Kommunen, Verwaltungen und Organisationen schnell und standardisiert Prozessbeschreibungen und -modelle generieren können – insbesondere auf Basis von **BPMN 2.0**.
+Die Prozessmodelle werden grundsätzlich e2e modelliert, d. h. die Perspektiven **Kunde, Organisation und IT (KOI)** werden explizit im Prozessmodell dargestellt.
 
 ## Hintergrund
 
