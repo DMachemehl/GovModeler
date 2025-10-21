@@ -28,7 +28,7 @@ Die öffentliche Verwaltung steht vor der Herausforderung, komplexe und heteroge
 
 ## Mitmachen
 
-Du bist Prozessmanager*in, Entwickler*in oder interessierst dich für die Anwendung von KI in der öffentlichen Verwaltung? Beiträge, Feedback und neue Beispiele sind jederzeit willkommen!
+Du bist Prozessmanager:in, Entwickler:in oder interessierst dich für die Anwendung von KI in der öffentlichen Verwaltung? Beiträge, Feedback und neue Beispiele sind jederzeit willkommen!
 
 ## Lizenz
 
