@@ -5,7 +5,7 @@
 | Fahrerlaubnis (erstmalig) erteilen                                     |        |
 | KFZ-Zulassung erteilen                                                 |        |
 | Wohnsitz anmelden                                                      |   X    |
-| Meldebestätigung ausstellen                                            |        |
+| Meldebestätigung ausstellen                                            |   X    |
 | Einfache Auskunft aus dem Melderegister erteilen                       |        |
 | Personalausweis ausstellen                                             |        |
 | Antrag auf einfaches Führungszeugnis entgegennehmen und weiterleiten   |        |
