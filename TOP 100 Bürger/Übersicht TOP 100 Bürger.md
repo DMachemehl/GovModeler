@@ -4,7 +4,7 @@
 | Parkausweis für Schwerbehinderte                                       |        |
 | Fahrerlaubnis (erstmalig) erteilen                                     |        |
 | KFZ-Zulassung erteilen                                                 |        |
-| Wohnsitz anmelden                                                      |        |
+| Wohnsitz anmelden                                                      |   X    |
 | Meldebestätigung ausstellen                                            |        |
 | Einfache Auskunft aus dem Melderegister erteilen                       |        |
 | Personalausweis ausstellen                                             |        |
