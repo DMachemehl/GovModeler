@@ -3,7 +3,7 @@
 | Anwohnerparkausweis                                                    |   X    |
 | Parkausweis für Schwerbehinderte                                       |        |
 | Fahrerlaubnis (erstmalig) erteilen                                     |        |
-| KFZ-Zulassung erteilen                                                 |        |
+| KFZ-Zulassung erteilen                                                 |   x    |
 | Wohnsitz anmelden                                                      |   X    |
 | Meldebestätigung ausstellen                                            |   X    |
 | Einfache Auskunft aus dem Melderegister erteilen                       |        |
