@@ -6,7 +6,7 @@
 | KFZ-Zulassung erteilen                                                 |   x    |
 | Wohnsitz anmelden                                                      |   X    |
 | Meldebestätigung ausstellen                                            |   X    |
-| Einfache Auskunft aus dem Melderegister erteilen                       |        |
+| Einfache Auskunft aus dem Melderegister erteilen                       |   X    |
 | Personalausweis ausstellen                                             |        |
 | Antrag auf einfaches Führungszeugnis entgegennehmen und weiterleiten   |        |
 | Einbürgerungstest durchführen                                          |        |

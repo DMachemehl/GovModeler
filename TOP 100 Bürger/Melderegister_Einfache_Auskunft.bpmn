@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  targetNamespace="http://example.com/bpmn/melderegister_einfache_auskunft"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.4.0">
+
+  <!-- Collaboration -->
+  <bpmn:collaboration id="Collab_Melderegister_Einfache_Auskunft">
+    <bpmn:participant id="Participant_Buerger" name="Buerger" processRef="Process_Buerger" />
+    <bpmn:participant id="Participant_IT" name="IT" processRef="Process_IT" />
+    <bpmn:participant id="Participant_Behoerde" name="Behoerde" processRef="Process_Behoerde" />
+
+    <!-- Message Flows -->
+    <bpmn:messageFlow id="MsgFlow_Antrag" name="Antrag" sourceRef="Task_Buerger_Suchdaten_uebermitteln" targetRef="StartEvent_Behoerde_Antrag_eingegangen" />
+    <bpmn:messageFlow id="MsgFlow_Pruefauftrag" name="Pruefauftrag" sourceRef="Task_Behoerde_Rechtsgrundlage_pruefen" targetRef="StartEvent_IT_Pruefauftrag_erhalten" />
+    <bpmn:messageFlow id="MsgFlow_Ergebnisdaten" name="Ergebnisdaten" sourceRef="Task_IT_Auskunftsdokument_erzeugen" targetRef="Event_Behoerde_Ergebnisdaten_erhalten" />
+    <bpmn:messageFlow id="MsgFlow_Auskunft" name="Auskunft" sourceRef="Task_Behoerde_Auskunft_freigeben" targetRef="Event_Buerger_Auskunft_erhalten" />
+  </bpmn:collaboration>
+
+  <!-- Buerger Prozess -->
+  <bpmn:process id="Process_Buerger" name="Melderegister_Einfache_Auskunft_Buerger" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_Buerger_Start" name="Anfrage gestartet">
+      <bpmn:outgoing>Flow_Buerger_Start_to_Beantragen</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="Task_Buerger_Auskunft_beantragen" name="Auskunft beantragen">
+      <bpmn:incoming>Flow_Buerger_Start_to_Beantragen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Beantragen_to_Suchdaten</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:userTask id="Task_Buerger_Suchdaten_uebermitteln" name="Suchdaten uebermitteln">
+      <bpmn:incoming>Flow_Buerger_Beantragen_to_Suchdaten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Suchdaten_to_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:intermediateCatchEvent id="Event_Buerger_Auskunft_erhalten" name="Auskunft erhalten">
+      <bpmn:incoming>Flow_Buerger_Suchdaten_to_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Erhalten_to_Abrufen</bpmn:outgoing>
+      <bpmn:messageEventDefinition />
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:userTask id="Task_Buerger_Auskunft_abrufen" name="Auskunft abrufen">
+      <bpmn:incoming>Flow_Buerger_Erhalten_to_Abrufen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Abrufen_to_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:endEvent id="EndEvent_Buerger_Ende" name="Prozess abgeschlossen">
+      <bpmn:incoming>Flow_Buerger_Abrufen_to_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequence Flows Buerger -->
+    <bpmn:sequenceFlow id="Flow_Buerger_Start_to_Beantragen" sourceRef="StartEvent_Buerger_Start" targetRef="Task_Buerger_Auskunft_beantragen" />
+    <bpmn:sequenceFlow id="Flow_Buerger_Beantragen_to_Suchdaten" sourceRef="Task_Buerger_Auskunft_beantragen" targetRef="Task_Buerger_Suchdaten_uebermitteln" />
+    <bpmn:sequenceFlow id="Flow_Buerger_Suchdaten_to_Warten" sourceRef="Task_Buerger_Suchdaten_uebermitteln" targetRef="Event_Buerger_Auskunft_erhalten" />
+    <bpmn:sequenceFlow id="Flow_Buerger_Erhalten_to_Abrufen" sourceRef="Event_Buerger_Auskunft_erhalten" targetRef="Task_Buerger_Auskunft_abrufen" />
+    <bpmn:sequenceFlow id="Flow_Buerger_Abrufen_to_Ende" sourceRef="Task_Buerger_Auskunft_abrufen" targetRef="EndEvent_Buerger_Ende" />
+  </bpmn:process>
+
+  <!-- IT Prozess -->
+  <bpmn:process id="Process_IT" name="Melderegister_Einfache_Auskunft_IT" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_IT_Pruefauftrag_erhalten" name="Pruefauftrag erhalten">
+      <bpmn:outgoing>Flow_IT_Start_to_Validieren</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_IT_Antrag_validieren" name="Antrag validieren">
+      <bpmn:incoming>Flow_IT_Start_to_Validieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Validieren_to_Rechte</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_IT_Zugriffsrechte_pruefen" name="Zugriffsrechte pruefen">
+      <bpmn:incoming>Flow_IT_Validieren_to_Rechte</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Rechte_to_Gebuehr</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_IT_Gebuehr_einziehen" name="Gebuehr einziehen">
+      <bpmn:incoming>Flow_IT_Rechte_to_Gebuehr</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Gebuehr_to_Meldedaten</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_IT_Meldedaten_abfragen" name="Meldedaten abfragen">
+      <bpmn:incoming>Flow_IT_Gebuehr_to_Meldedaten</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Meldedaten_to_Dokument</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_IT_Auskunftsdokument_erzeugen" name="Auskunftsdokument erzeugen">
+      <bpmn:incoming>Flow_IT_Meldedaten_to_Dokument</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Dokument_to_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_IT_Ende" name="IT bearbeitet">
+      <bpmn:incoming>Flow_IT_Dokument_to_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequence Flows IT -->
+    <bpmn:sequenceFlow id="Flow_IT_Start_to_Validieren" sourceRef="StartEvent_IT_Pruefauftrag_erhalten" targetRef="Task_IT_Antrag_validieren" />
+    <bpmn:sequenceFlow id="Flow_IT_Validieren_to_Rechte" sourceRef="Task_IT_Antrag_validieren" targetRef="Task_IT_Zugriffsrechte_pruefen" />
+    <bpmn:sequenceFlow id="Flow_IT_Rechte_to_Gebuehr" sourceRef="Task_IT_Zugriffsrechte_pruefen" targetRef="Task_IT_Gebuehr_einziehen" />
+    <bpmn:sequenceFlow id="Flow_IT_Gebuehr_to_Meldedaten" sourceRef="Task_IT_Gebuehr_einziehen" targetRef="Task_IT_Meldedaten_abfragen" />
+    <bpmn:sequenceFlow id="Flow_IT_Meldedaten_to_Dokument" sourceRef="Task_IT_Meldedaten_abfragen" targetRef="Task_IT_Auskunftsdokument_erzeugen" />
+    <bpmn:sequenceFlow id="Flow_IT_Dokument_to_Ende" sourceRef="Task_IT_Auskunftsdokument_erzeugen" targetRef="EndEvent_IT_Ende" />
+  </bpmn:process>
+
+  <!-- Behoerde Prozess -->
+  <bpmn:process id="Process_Behoerde" name="Melderegister_Einfache_Auskunft_Behoerde" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_Behoerde_Antrag_eingegangen" name="Antrag eingegangen">
+      <bpmn:outgoing>Flow_Behoerde_Start_to_Rechtsgrundlage</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="Task_Behoerde_Rechtsgrundlage_pruefen" name="Rechtsgrundlage pruefen">
+      <bpmn:incoming>Flow_Behoerde_Start_to_Rechtsgrundlage</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Rechtsgrundlage_to_Ergebnisdaten</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:intermediateCatchEvent id="Event_Behoerde_Ergebnisdaten_erhalten" name="Ergebnisdaten erhalten">
+      <bpmn:incoming>Flow_Behoerde_Rechtsgrundlage_to_Ergebnisdaten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Ergebnisdaten_to_Freigeben</bpmn:outgoing>
+      <bpmn:messageEventDefinition />
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:userTask id="Task_Behoerde_Auskunft_freigeben" name="Auskunft freigeben">
+      <bpmn:incoming>Flow_Behoerde_Ergebnisdaten_to_Freigeben</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Freigeben_to_Dokumentieren</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:userTask id="Task_Behoerde_Vorgang_dokumentieren" name="Vorgang dokumentieren">
+      <bpmn:incoming>Flow_Behoerde_Freigeben_to_Dokumentieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Dokumentieren_to_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:endEvent id="EndEvent_Behoerde_Ende" name="Auskunft erteilt">
+      <bpmn:incoming>Flow_Behoerde_Dokumentieren_to_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequence Flows Behoerde -->
+    <bpmn:sequenceFlow id="Flow_Behoerde_Start_to_Rechtsgrundlage" sourceRef="StartEvent_Behoerde_Antrag_eingegangen" targetRef="Task_Behoerde_Rechtsgrundlage_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Rechtsgrundlage_to_Ergebnisdaten" sourceRef="Task_Behoerde_Rechtsgrundlage_pruefen" targetRef="Event_Behoerde_Ergebnisdaten_erhalten" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Ergebnisdaten_to_Freigeben" sourceRef="Event_Behoerde_Ergebnisdaten_erhalten" targetRef="Task_Behoerde_Auskunft_freigeben" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Freigeben_to_Dokumentieren" sourceRef="Task_Behoerde_Auskunft_freigeben" targetRef="Task_Behoerde_Vorgang_dokumentieren" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Dokumentieren_to_Ende" sourceRef="Task_Behoerde_Vorgang_dokumentieren" targetRef="EndEvent_Behoerde_Ende" />
+  </bpmn:process>
+
+  <!-- Messages (optional definitions for clarity) -->
+  <bpmn:message id="Message_Antrag" name="Antrag" />
+  <bpmn:message id="Message_Pruefauftrag" name="Pruefauftrag" />
+  <bpmn:message id="Message_Ergebnisdaten" name="Ergebnisdaten" />
+  <bpmn:message id="Message_Auskunft" name="Auskunft" />
+
+  <!-- BPMN-DI: Pools & Elements (horizontal alignment per Guidelines) -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Melderegister_Einfache_Auskunft">
+    <bpmndi:BPMNPlane id="BPMNPlane_Melderegister_Einfache_Auskunft" bpmnElement="Collab_Melderegister_Einfache_Auskunft">
+
+      <!-- Pools -->
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="300" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="1200" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_Behoerde_di" bpmnElement="Participant_Behoerde" isHorizontal="true">
+        <dc:Bounds x="160" y="660" width="1200" height="300" />
+      </bpmndi:BPMNShape>
+
+      <!-- Buerger Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Buerger_Start_di" bpmnElement="StartEvent_Buerger_Start">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Buerger_Auskunft_beantragen_di" bpmnElement="Task_Buerger_Auskunft_beantragen">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Buerger_Suchdaten_uebermitteln_di" bpmnElement="Task_Buerger_Suchdaten_uebermitteln">
+        <dc:Bounds x="470" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Buerger_Auskunft_erhalten_di" bpmnElement="Event_Buerger_Auskunft_erhalten">
+        <dc:Bounds x="630" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Buerger_Auskunft_abrufen_di" bpmnElement="Task_Buerger_Auskunft_abrufen">
+        <dc:Bounds x="790" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Buerger_Ende_di" bpmnElement="EndEvent_Buerger_Ende">
+        <dc:Bounds x="952" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- IT Elements -->
+      <bpmndi:BPMNShape id="StartEvent_IT_Pruefauftrag_erhalten_di" bpmnElement="StartEvent_IT_Pruefauftrag_erhalten">
+        <dc:Bounds x="222" y="477" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_IT_Antrag_validieren_di" bpmnElement="Task_IT_Antrag_validieren">
+        <dc:Bounds x="310" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_IT_Zugriffsrechte_pruefen_di" bpmnElement="Task_IT_Zugriffsrechte_pruefen">
+        <dc:Bounds x="470" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_IT_Gebuehr_einziehen_di" bpmnElement="Task_IT_Gebuehr_einziehen">
+        <dc:Bounds x="630" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_IT_Meldedaten_abfragen_di" bpmnElement="Task_IT_Meldedaten_abfragen">
+        <dc:Bounds x="790" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_IT_Auskunftsdokument_erzeugen_di" bpmnElement="Task_IT_Auskunftsdokument_erzeugen">
+        <dc:Bounds x="950" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_IT_Ende_di" bpmnElement="EndEvent_IT_Ende">
+        <dc:Bounds x="1092" y="477" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- Behoerde Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Behoerde_Antrag_eingegangen_di" bpmnElement="StartEvent_Behoerde_Antrag_eingegangen">
+        <dc:Bounds x="222" y="782" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Behoerde_Rechtsgrundlage_pruefen_di" bpmnElement="Task_Behoerde_Rechtsgrundlage_pruefen">
+        <dc:Bounds x="310" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Behoerde_Ergebnisdaten_erhalten_di" bpmnElement="Event_Behoerde_Ergebnisdaten_erhalten">
+        <dc:Bounds x="630" y="782" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Behoerde_Auskunft_freigeben_di" bpmnElement="Task_Behoerde_Auskunft_freigeben">
+        <dc:Bounds x="790" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Behoerde_Vorgang_dokumentieren_di" bpmnElement="Task_Behoerde_Vorgang_dokumentieren">
+        <dc:Bounds x="950" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Behoerde_Ende_di" bpmnElement="EndEvent_Behoerde_Ende">
+        <dc:Bounds x="1092" y="782" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- Sequence Flows DI - Buerger -->
+      <bpmndi:BPMNEdge id="Flow_Buerger_Start_to_Beantragen_di" bpmnElement="Flow_Buerger_Start_to_Beantragen">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Beantragen_to_Suchdaten_di" bpmnElement="Flow_Buerger_Beantragen_to_Suchdaten">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="470" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Suchdaten_to_Warten_di" bpmnElement="Flow_Buerger_Suchdaten_to_Warten">
+        <di:waypoint x="570" y="200" />
+        <di:waypoint x="630" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Erhalten_to_Abrufen_di" bpmnElement="Flow_Buerger_Erhalten_to_Abrufen">
+        <di:waypoint x="666" y="200" />
+        <di:waypoint x="790" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Abrufen_to_Ende_di" bpmnElement="Flow_Buerger_Abrufen_to_Ende">
+        <di:waypoint x="890" y="200" />
+        <di:waypoint x="952" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Sequence Flows DI - IT -->
+      <bpmndi:BPMNEdge id="Flow_IT_Start_to_Validieren_di" bpmnElement="Flow_IT_Start_to_Validieren">
+        <di:waypoint x="258" y="495" />
+        <di:waypoint x="310" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Validieren_to_Rechte_di" bpmnElement="Flow_IT_Validieren_to_Rechte">
+        <di:waypoint x="410" y="495" />
+        <di:waypoint x="470" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Rechte_to_Gebuehr_di" bpmnElement="Flow_IT_Rechte_to_Gebuehr">
+        <di:waypoint x="570" y="495" />
+        <di:waypoint x="630" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Gebuehr_to_Meldedaten_di" bpmnElement="Flow_IT_Gebuehr_to_Meldedaten">
+        <di:waypoint x="730" y="495" />
+        <di:waypoint x="790" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Meldedaten_to_Dokument_di" bpmnElement="Flow_IT_Meldedaten_to_Dokument">
+        <di:waypoint x="890" y="495" />
+        <di:waypoint x="950" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Dokument_to_Ende_di" bpmnElement="Flow_IT_Dokument_to_Ende">
+        <di:waypoint x="1050" y="495" />
+        <di:waypoint x="1092" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Sequence Flows DI - Behoerde -->
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Start_to_Rechtsgrundlage_di" bpmnElement="Flow_Behoerde_Start_to_Rechtsgrundlage">
+        <di:waypoint x="258" y="800" />
+        <di:waypoint x="310" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Rechtsgrundlage_to_Ergebnisdaten_di" bpmnElement="Flow_Behoerde_Rechtsgrundlage_to_Ergebnisdaten">
+        <di:waypoint x="410" y="800" />
+        <di:waypoint x="630" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Ergebnisdaten_to_Freigeben_di" bpmnElement="Flow_Behoerde_Ergebnisdaten_to_Freigeben">
+        <di:waypoint x="666" y="800" />
+        <di:waypoint x="790" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Freigeben_to_Dokumentieren_di" bpmnElement="Flow_Behoerde_Freigeben_to_Dokumentieren">
+        <di:waypoint x="890" y="800" />
+        <di:waypoint x="950" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Dokumentieren_to_Ende_di" bpmnElement="Flow_Behoerde_Dokumentieren_to_Ende">
+        <di:waypoint x="1050" y="800" />
+        <di:waypoint x="1092" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Message Flows DI -->
+      <bpmndi:BPMNEdge id="MsgFlow_Antrag_di" bpmnElement="MsgFlow_Antrag">
+        <di:waypoint x="520" y="240" />
+        <di:waypoint x="520" y="740" />
+        <di:waypoint x="240" y="740" />
+        <di:waypoint x="240" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Pruefauftrag_di" bpmnElement="MsgFlow_Pruefauftrag">
+        <di:waypoint x="410" y="800" />
+        <di:waypoint x="410" y="520" />
+        <di:waypoint x="240" y="520" />
+        <di:waypoint x="240" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Ergebnisdaten_di" bpmnElement="MsgFlow_Ergebnisdaten">
+        <di:waypoint x="1000" y="495" />
+        <di:waypoint x="1000" y="740" />
+        <di:waypoint x="648" y="740" />
+        <di:waypoint x="648" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Auskunft_di" bpmnElement="MsgFlow_Auskunft">
+        <di:waypoint x="840" y="800" />
+        <di:waypoint x="840" y="240" />
+        <di:waypoint x="648" y="240" />
+        <di:waypoint x="648" y="200" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
