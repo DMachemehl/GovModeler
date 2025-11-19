@@ -7,7 +7,7 @@
 | Wohnsitz anmelden                                                      |   X    |
 | Meldebestätigung ausstellen                                            |   X    |
 | Einfache Auskunft aus dem Melderegister erteilen                       |   X    |
-| Personalausweis ausstellen                                             |        |
+| Personalausweis ausstellen                                             |   X    |
 | Antrag auf einfaches Führungszeugnis entgegennehmen und weiterleiten   |        |
 | Einbürgerungstest durchführen                                          |   X    |
 | Einbürgerung von Ausländern genehmigen                                 |        |
