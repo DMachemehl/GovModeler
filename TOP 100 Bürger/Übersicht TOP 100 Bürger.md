@@ -9,7 +9,7 @@
 | Einfache Auskunft aus dem Melderegister erteilen                       |   X    |
 | Personalausweis ausstellen                                             |        |
 | Antrag auf einfaches Führungszeugnis entgegennehmen und weiterleiten   |        |
-| Einbürgerungstest durchführen                                          |        |
+| Einbürgerungstest durchführen                                          |   X    |
 | Einbürgerung von Ausländern genehmigen                                 |        |
 | Miteinbürgerung genehmigen                                             |        |
 | Staatsangehörigkeitsausweis ausstellen                                 |        |
