@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" targetNamespace="http://example.com/bpmn" exporter="GitHub-Copilot-GovModeler" exporterVersion="2.0">
+  <bpmn:collaboration id="Collab_Vordruck_gestalten">
+    <bpmn:participant id="Participant_Buerger" name="Kunde" processRef="Process_Buerger" />
+    <bpmn:participant id="Participant_Behoerde" name="Behoerde" processRef="Process_Behoerde" />
+    <bpmn:messageFlow id="MsgFlow_Vordruck_Anfrage" name="Vordruck-Anfrage" sourceRef="Task_Vordruck_Anfrage_stellen" targetRef="StartEvent_Vordruck_Anfrage_eingegangen" />
+    <bpmn:messageFlow id="MsgFlow_Vordruck_bereit" name="Vordruck bereit" sourceRef="Task_Vordruck_bereitstellen" targetRef="Event_Vordruck_erhalten" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Buerger" name="Vordruck_gestalten_Buerger" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Buerger" name="Vordruck-Anfrage eingegangen">
+      <bpmn:outgoing>Flow_Start_Anfrage</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_Vordruck_Anfrage_stellen" name="Vordruck-Anfrage stellen">
+      <bpmn:incoming>Flow_Start_Anfrage</bpmn:incoming>
+      <bpmn:outgoing>Flow_Anfrage_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:intermediateCatchEvent id="Event_Vordruck_erhalten" name="Vordruck erhalten">
+      <bpmn:incoming>Flow_Anfrage_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Vordruck_pruefen</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Vordruck_erhalten" messageRef="Message_Vordruck_bereit" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:userTask id="Task_Vordruck_pruefen" name="Vordruck pruefen">
+      <bpmn:incoming>Flow_Vordruck_pruefen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Pruefen_Freigeben</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Vordruck_freigeben" name="Vordruck freigeben">
+      <bpmn:incoming>Flow_Pruefen_Freigeben</bpmn:incoming>
+      <bpmn:outgoing>Flow_Freigeben_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_Buerger" name="Vordruck gestaltet">
+      <bpmn:incoming>Flow_Freigeben_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_Anfrage" sourceRef="StartEvent_Buerger" targetRef="Task_Vordruck_Anfrage_stellen" />
+    <bpmn:sequenceFlow id="Flow_Anfrage_Warten" sourceRef="Task_Vordruck_Anfrage_stellen" targetRef="Event_Vordruck_erhalten" />
+    <bpmn:sequenceFlow id="Flow_Vordruck_pruefen" sourceRef="Event_Vordruck_erhalten" targetRef="Task_Vordruck_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Pruefen_Freigeben" sourceRef="Task_Vordruck_pruefen" targetRef="Task_Vordruck_freigeben" />
+    <bpmn:sequenceFlow id="Flow_Freigeben_Ende" sourceRef="Task_Vordruck_freigeben" targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+  <bpmn:process id="Process_Behoerde" name="Vordruck_gestalten_Behoerde" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Vordruck_Anfrage_eingegangen" name="Vordruck-Anfrage eingegangen">
+      <bpmn:outgoing>Flow_Start_Anforderungen_pruefen</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_Anforderungen_pruefen" name="Anforderungen pruefen">
+      <bpmn:incoming>Flow_Start_Anforderungen_pruefen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Anforderungen_Entwerfen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_Vordruck_entwerfen" name="Vordruck entwerfen">
+      <bpmn:incoming>Flow_Anforderungen_Entwerfen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Entwerfen_Bereitstellen</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Vordruck_bereitstellen" name="Vordruck bereitstellen">
+      <bpmn:incoming>Flow_Entwerfen_Bereitstellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bereitstellen_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_Behoerde" name="Vordruck gestaltet">
+      <bpmn:incoming>Flow_Bereitstellen_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_Anforderungen_pruefen" sourceRef="StartEvent_Vordruck_Anfrage_eingegangen" targetRef="Task_Anforderungen_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Anforderungen_Entwerfen" sourceRef="Task_Anforderungen_pruefen" targetRef="Task_Vordruck_entwerfen" />
+    <bpmn:sequenceFlow id="Flow_Entwerfen_Bereitstellen" sourceRef="Task_Vordruck_entwerfen" targetRef="Task_Vordruck_bereitstellen" />
+    <bpmn:sequenceFlow id="Flow_Bereitstellen_Ende" sourceRef="Task_Vordruck_bereitstellen" targetRef="EndEvent_Behoerde" />
+  </bpmn:process>
+  <bpmn:message id="Message_Vordruck_Anfrage" name="Vordruck-Anfrage" />
+  <bpmn:message id="Message_Vordruck_bereit" name="Vordruck bereit" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Vordruck_gestalten">
+    <bpmndi:BPMNPlane id="BPMNPlane_Vordruck_gestalten" bpmnElement="Collab_Vordruck_gestalten">
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="300" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="215" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Vordruck_Anfrage_stellen_di" bpmnElement="Task_Vordruck_Anfrage_stellen">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Vordruck_erhalten_di" bpmnElement="Event_Vordruck_erhalten">
+        <dc:Bounds x="472" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="450" y="225" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Vordruck_pruefen_di" bpmnElement="Task_Vordruck_pruefen">
+        <dc:Bounds x="560" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Vordruck_freigeben_di" bpmnElement="Task_Vordruck_freigeben">
+        <dc:Bounds x="720" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="872" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="850" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_Anfrage_di" bpmnElement="Flow_Start_Anfrage">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Anfrage_Warten_di" bpmnElement="Flow_Anfrage_Warten">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="472" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Vordruck_pruefen_di" bpmnElement="Flow_Vordruck_pruefen">
+        <di:waypoint x="508" y="200" />
+        <di:waypoint x="560" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Pruefen_Freigeben_di" bpmnElement="Flow_Pruefen_Freigeben">
+        <di:waypoint x="660" y="200" />
+        <di:waypoint x="720" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Freigeben_Ende_di" bpmnElement="Flow_Freigeben_Ende">
+        <di:waypoint x="820" y="200" />
+        <di:waypoint x="872" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Participant_Behoerde_di" bpmnElement="Participant_Behoerde" isHorizontal="true">
+        <dc:Bounds x="160" y="420" width="1200" height="300" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="555" width="20" height="60" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Vordruck_Anfrage_eingegangen_di" bpmnElement="StartEvent_Vordruck_Anfrage_eingegangen">
+        <dc:Bounds x="222" y="522" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="565" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Anforderungen_pruefen_di" bpmnElement="Task_Anforderungen_pruefen">
+        <dc:Bounds x="310" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Vordruck_entwerfen_di" bpmnElement="Task_Vordruck_entwerfen">
+        <dc:Bounds x="470" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Vordruck_bereitstellen_di" bpmnElement="Task_Vordruck_bereitstellen">
+        <dc:Bounds x="630" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Behoerde_di" bpmnElement="EndEvent_Behoerde">
+        <dc:Bounds x="782" y="522" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="760" y="565" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_Anforderungen_pruefen_di" bpmnElement="Flow_Start_Anforderungen_pruefen">
+        <di:waypoint x="258" y="540" />
+        <di:waypoint x="310" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Anforderungen_Entwerfen_di" bpmnElement="Flow_Anforderungen_Entwerfen">
+        <di:waypoint x="410" y="540" />
+        <di:waypoint x="470" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Entwerfen_Bereitstellen_di" bpmnElement="Flow_Entwerfen_Bereitstellen">
+        <di:waypoint x="570" y="540" />
+        <di:waypoint x="630" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Bereitstellen_Ende_di" bpmnElement="Flow_Bereitstellen_Ende">
+        <di:waypoint x="730" y="540" />
+        <di:waypoint x="782" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Vordruck_Anfrage_di" bpmnElement="MsgFlow_Vordruck_Anfrage">
+        <di:waypoint x="360" y="240" />
+        <di:waypoint x="360" y="380" />
+        <di:waypoint x="240" y="380" />
+        <di:waypoint x="240" y="522" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="270" y="362" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Vordruck_bereit_di" bpmnElement="MsgFlow_Vordruck_bereit">
+        <di:waypoint x="680" y="500" />
+        <di:waypoint x="680" y="380" />
+        <di:waypoint x="490" y="380" />
+        <di:waypoint x="490" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="560" y="362" width="75" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
