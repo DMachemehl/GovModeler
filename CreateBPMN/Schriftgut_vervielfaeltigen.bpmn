@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0"
+  modeler:executionPlatform="Camunda Platform"
+  modeler:executionPlatformVersion="7.20.0">
+
+  <!-- =====================================================
+       COLLABORATION - Schriftgut vervielfältigen
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_Schriftgut_vervielfaeltigen">
+    
+    <!-- Participant: Bürger -->
+    <bpmn:participant id="Participant_Buerger"
+                      name="Buerger"
+                      processRef="Process_Buerger" />
+    
+    <!-- Participant: Behörde -->
+    <bpmn:participant id="Participant_Behoerde"
+                      name="Behoerde"
+                      processRef="Process_Behoerde" />
+    
+    <!-- Message Flows zwischen Participanten -->
+    <bpmn:messageFlow id="MsgFlow_Kopieranfrage"
+                      name="Kopieranfrage"
+                      sourceRef="Task_Kopieranfrage_stellen"
+                      targetRef="StartEvent_Kopieranfrage_eingegangen" />
+    
+    <bpmn:messageFlow id="MsgFlow_Kopien_bereit"
+                      name="Kopien bereit"
+                      sourceRef="Task_Kopien_bereitstellen"
+                      targetRef="Event_Kopien_bereit" />
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       BÜRGER PROZESS - Schriftgut vervielfältigen
+       ===================================================== -->
+  <bpmn:process id="Process_Buerger"
+                name="Schriftgut_vervielfaeltigen_Buerger"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Buerger" name="Kopieranfrage eingegangen">
+      <bpmn:outgoing>Flow_Start_Kopieranfrage</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Kopieranfrage stellen -->
+    <bpmn:userTask id="Task_Kopieranfrage_stellen" name="Kopieranfrage stellen">
+      <bpmn:incoming>Flow_Start_Kopieranfrage</bpmn:incoming>
+      <bpmn:outgoing>Flow_Kopieranfrage_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Kopien bereit -->
+    <bpmn:intermediateCatchEvent id="Event_Kopien_bereit" name="Kopien bereit">
+      <bpmn:incoming>Flow_Kopieranfrage_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Kopien_abholen</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Kopien_bereit" messageRef="Message_Kopien_bereit" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- User Task: Kopien abholen -->
+    <bpmn:userTask id="Task_Kopien_abholen" name="Kopien abholen">
+      <bpmn:incoming>Flow_Kopien_abholen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Kopien_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Buerger" name="Schriftgut vervielfaeltigt">
+      <bpmn:incoming>Flow_Kopien_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Bürger -->
+    <bpmn:sequenceFlow id="Flow_Start_Kopieranfrage"
+                       sourceRef="StartEvent_Buerger"
+                       targetRef="Task_Kopieranfrage_stellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Kopieranfrage_Warten"
+                       sourceRef="Task_Kopieranfrage_stellen"
+                       targetRef="Event_Kopien_bereit" />
+    
+    <bpmn:sequenceFlow id="Flow_Kopien_abholen"
+                       sourceRef="Event_Kopien_bereit"
+                       targetRef="Task_Kopien_abholen" />
+    
+    <bpmn:sequenceFlow id="Flow_Kopien_Ende"
+                       sourceRef="Task_Kopien_abholen"
+                       targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       BEHÖRDEN PROZESS - Schriftgut vervielfältigen
+       ===================================================== -->
+  <bpmn:process id="Process_Behoerde"
+                name="Schriftgut_vervielfaeltigen_Behoerde"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Kopieranfrage_eingegangen" name="Kopieranfrage eingegangen">
+      <bpmn:outgoing>Flow_Start_Anfrage_pruefen</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Service Task: Anfrage prüfen -->
+    <bpmn:serviceTask id="Task_Anfrage_pruefen" name="Anfrage pruefen">
+      <bpmn:incoming>Flow_Start_Anfrage_pruefen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Anfrage_Kopieren</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- User Task: Schriftgut kopieren -->
+    <bpmn:userTask id="Task_Schriftgut_kopieren" name="Schriftgut kopieren">
+      <bpmn:incoming>Flow_Anfrage_Kopieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_Kopieren_Bereitstellen</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Kopien bereitstellen -->
+    <bpmn:userTask id="Task_Kopien_bereitstellen" name="Kopien bereitstellen">
+      <bpmn:incoming>Flow_Kopieren_Bereitstellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bereitstellen_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Behoerde" name="Schriftgut vervielfaeltigt">
+      <bpmn:incoming>Flow_Bereitstellen_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Behörde -->
+    <bpmn:sequenceFlow id="Flow_Start_Anfrage_pruefen"
+                       sourceRef="StartEvent_Kopieranfrage_eingegangen"
+                       targetRef="Task_Anfrage_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Anfrage_Kopieren"
+                       sourceRef="Task_Anfrage_pruefen"
+                       targetRef="Task_Schriftgut_kopieren" />
+    
+    <bpmn:sequenceFlow id="Flow_Kopieren_Bereitstellen"
+                       sourceRef="Task_Schriftgut_kopieren"
+                       targetRef="Task_Kopien_bereitstellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Bereitstellen_Ende"
+                       sourceRef="Task_Kopien_bereitstellen"
+                       targetRef="EndEvent_Behoerde" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       MESSAGE DEFINITIONEN
+       ===================================================== -->
+  <bpmn:message id="Message_Kopieranfrage" name="Kopieranfrage" />
+  <bpmn:message id="Message_Kopien_bereit" name="Kopien bereit" />
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG - Horizontale Task-Anordnung
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Schriftgut_vervielfaeltigen">
+    <bpmndi:BPMNPlane id="BPMNPlane_Schriftgut_vervielfaeltigen" bpmnElement="Collab_Schriftgut_vervielfaeltigen">
+      
+      <!-- ===============================
+           POOL: BÜRGER
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="300" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="215" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Bürger Process Elements - Horizontale Anordnung Y=160 -->
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Kopieranfrage_stellen_di" bpmnElement="Task_Kopieranfrage_stellen">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Kopien_bereit_di" bpmnElement="Event_Kopien_bereit">
+        <dc:Bounds x="472" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="455" y="225" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Kopien_abholen_di" bpmnElement="Task_Kopien_abholen">
+        <dc:Bounds x="560" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="712" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="690" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===============================
+           POOL: BEHÖRDE
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Behoerde_di" bpmnElement="Participant_Behoerde" isHorizontal="true">
+        <dc:Bounds x="160" y="420" width="1200" height="300" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="555" width="20" height="60" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Behörde Process Elements - Horizontale Anordnung Y=500 -->
+      <bpmndi:BPMNShape id="StartEvent_Kopieranfrage_eingegangen_di" bpmnElement="StartEvent_Kopieranfrage_eingegangen">
+        <dc:Bounds x="222" y="522" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="565" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Anfrage_pruefen_di" bpmnElement="Task_Anfrage_pruefen">
+        <dc:Bounds x="310" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Schriftgut_kopieren_di" bpmnElement="Task_Schriftgut_kopieren">
+        <dc:Bounds x="470" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Kopien_bereitstellen_di" bpmnElement="Task_Kopien_bereitstellen">
+        <dc:Bounds x="630" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Behoerde_di" bpmnElement="EndEvent_Behoerde">
+        <dc:Bounds x="782" y="522" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="760" y="565" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===============================
+           SEQUENCE FLOWS - BÜRGER
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_Start_Kopieranfrage_di" bpmnElement="Flow_Start_Kopieranfrage">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Kopieranfrage_Warten_di" bpmnElement="Flow_Kopieranfrage_Warten">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="472" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Kopien_abholen_di" bpmnElement="Flow_Kopien_abholen">
+        <di:waypoint x="508" y="200" />
+        <di:waypoint x="560" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Kopien_Ende_di" bpmnElement="Flow_Kopien_Ende">
+        <di:waypoint x="660" y="200" />
+        <di:waypoint x="712" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           SEQUENCE FLOWS - BEHÖRDE
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_Start_Anfrage_pruefen_di" bpmnElement="Flow_Start_Anfrage_pruefen">
+        <di:waypoint x="258" y="540" />
+        <di:waypoint x="310" y="540" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Anfrage_Kopieren_di" bpmnElement="Flow_Anfrage_Kopieren">
+        <di:waypoint x="410" y="540" />
+        <di:waypoint x="470" y="540" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Kopieren_Bereitstellen_di" bpmnElement="Flow_Kopieren_Bereitstellen">
+        <di:waypoint x="570" y="540" />
+        <di:waypoint x="630" y="540" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Bereitstellen_Ende_di" bpmnElement="Flow_Bereitstellen_Ende">
+        <di:waypoint x="730" y="540" />
+        <di:waypoint x="782" y="540" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           MESSAGE FLOWS
+           =============================== -->
+      <bpmndi:BPMNEdge id="MsgFlow_Kopieranfrage_di" bpmnElement="MsgFlow_Kopieranfrage">
+        <di:waypoint x="360" y="240" />
+        <di:waypoint x="360" y="380" />
+        <di:waypoint x="240" y="380" />
+        <di:waypoint x="240" y="522" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="275" y="362" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Kopien_bereit_di" bpmnElement="MsgFlow_Kopien_bereit">
+        <di:waypoint x="680" y="500" />
+        <di:waypoint x="680" y="380" />
+        <di:waypoint x="490" y="380" />
+        <di:waypoint x="490" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="560" y="362" width="65" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

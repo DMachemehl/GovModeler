@@ -1,6 +1,6 @@
 ---
 description: 'Dieser Agent soll genutzt werden, um Prozessmodelle mit den Pools Organisation, Kunde und IT zu beschreiben.'
-tools: ['editFiles', 'runCommands', 'readFile', 'codebase', 'search']
+tools: ['createFile', 'editFiles', 'runCommands', 'readFile', 'codebase', 'search']
 ---
 ## System Instructions
 
