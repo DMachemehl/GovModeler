@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0">
+
+  <!-- IT-only Prozess: Antrag auf Arbeitszeitaenderung -->
+  <bpmn:collaboration id="Collab_Arbeitszeitaenderung">
+    <bpmn:participant id="Participant_IT" name="IT" processRef="Process_IT_Arbeitszeit_aenderung" />
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_IT_Arbeitszeit_aenderung" name="IT_Datenverarbeitung_Arbeitszeit_aenderung" isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_Antrag_empfangen" name="Antrag auf Arbeitszeitaenderung empfangen">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_Antragsdaten_empfangen" name="Antragsdaten empfangen">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_JSON_validieren" name="JSON Struktur validieren">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Pflichtfelder_pruefen" name="Pflichtfelder pruefen">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Formate_validieren" name="Datenformate validieren">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Arbeitsvertrag_pruefen" name="Arbeitsvertrag pruefen">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Stammdaten_abrufen" name="Stammdaten abrufen">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Daten_anreichern" name="Daten anreichern">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Arbeitszeit_berechnen" name="Arbeitszeit berechnen">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Genehmigungsstatus_pruefen" name="Genehmigungsstatus pruefen">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Arbeitszeit_aenderung_speichern" name="Arbeitszeit aenderung speichern">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Audit_log_schreiben" name="Audit-Log schreiben">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Bestaetigung_generieren" name="Bestaetigung generieren">
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Bestaetigung_versenden" name="Bestaetigung versenden">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_Arbeitszeitaenderung_verzeichnet" name="Arbeitszeitaenderung verzeichnet">
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequence Flows -->
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Antrag_empfangen" targetRef="Task_Antragsdaten_empfangen" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_Antragsdaten_empfangen" targetRef="Task_JSON_validieren" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_JSON_validieren" targetRef="Task_Pflichtfelder_pruefen" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_Pflichtfelder_pruefen" targetRef="Task_Formate_validieren" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_Formate_validieren" targetRef="Task_Arbeitsvertrag_pruefen" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_Arbeitsvertrag_pruefen" targetRef="Task_Stammdaten_abrufen" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_Stammdaten_abrufen" targetRef="Task_Daten_anreichern" />
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_Daten_anreichern" targetRef="Task_Arbeitszeit_berechnen" />
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_Arbeitszeit_berechnen" targetRef="Task_Genehmigungsstatus_pruefen" />
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Task_Genehmigungsstatus_pruefen" targetRef="Task_Arbeitszeit_aenderung_speichern" />
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Task_Arbeitszeit_aenderung_speichern" targetRef="Task_Audit_log_schreiben" />
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="Task_Audit_log_schreiben" targetRef="Task_Bestaetigung_generieren" />
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Task_Bestaetigung_generieren" targetRef="Task_Bestaetigung_versenden" />
+    <bpmn:sequenceFlow id="Flow_14" sourceRef="Task_Bestaetigung_versenden" targetRef="EndEvent_Arbeitszeitaenderung_verzeichnet" />
+
+  </bpmn:process>
+
+  <!-- BPMN-DI Visualisierung (IT-Pool, horizontale Task-Anordnung) -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Arbeitszeitaenderung">
+    <bpmndi:BPMNPlane id="BPMNPlane_Arbeitszeitaenderung" bpmnElement="Collab_Arbeitszeitaenderung">
+
+      <!-- Pool: IT -->
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="2300" height="250" />
+      </bpmndi:BPMNShape>
+
+      <!-- Start Event -->
+      <bpmndi:BPMNShape id="StartEvent_Antrag_empfangen_di" bpmnElement="StartEvent_Antrag_empfangen">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- Tasks (horizontal, y=160) -->
+      <bpmndi:BPMNShape id="Task_Antragsdaten_empfangen_di" bpmnElement="Task_Antragsdaten_empfangen">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_JSON_validieren_di" bpmnElement="Task_JSON_validieren">
+        <dc:Bounds x="470" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Pflichtfelder_pruefen_di" bpmnElement="Task_Pflichtfelder_pruefen">
+        <dc:Bounds x="630" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Formate_validieren_di" bpmnElement="Task_Formate_validieren">
+        <dc:Bounds x="790" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Arbeitsvertrag_pruefen_di" bpmnElement="Task_Arbeitsvertrag_pruefen">
+        <dc:Bounds x="950" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Stammdaten_abrufen_di" bpmnElement="Task_Stammdaten_abrufen">
+        <dc:Bounds x="1110" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Daten_anreichern_di" bpmnElement="Task_Daten_anreichern">
+        <dc:Bounds x="1270" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Arbeitszeit_berechnen_di" bpmnElement="Task_Arbeitszeit_berechnen">
+        <dc:Bounds x="1430" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Genehmigungsstatus_pruefen_di" bpmnElement="Task_Genehmigungsstatus_pruefen">
+        <dc:Bounds x="1590" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Arbeitszeit_aenderung_speichern_di" bpmnElement="Task_Arbeitszeit_aenderung_speichern">
+        <dc:Bounds x="1750" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Audit_log_schreiben_di" bpmnElement="Task_Audit_log_schreiben">
+        <dc:Bounds x="1910" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Bestaetigung_generieren_di" bpmnElement="Task_Bestaetigung_generieren">
+        <dc:Bounds x="2070" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Bestaetigung_versenden_di" bpmnElement="Task_Bestaetigung_versenden">
+        <dc:Bounds x="2230" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- End Event -->
+      <bpmndi:BPMNShape id="EndEvent_Arbeitszeitaenderung_verzeichnet_di" bpmnElement="EndEvent_Arbeitszeitaenderung_verzeichnet">
+        <dc:Bounds x="2412" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- Sequence Flow edges (straight) -->
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <!-- subsequent flow edges follow horizontally between task centers -->
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="470" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="570" y="200" />
+        <di:waypoint x="630" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="730" y="200" />
+        <di:waypoint x="790" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="890" y="200" />
+        <di:waypoint x="950" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="1050" y="200" />
+        <di:waypoint x="1110" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="1230" y="200" />
+        <di:waypoint x="1270" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="1390" y="200" />
+        <di:waypoint x="1430" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="1550" y="200" />
+        <di:waypoint x="1590" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="1710" y="200" />
+        <di:waypoint x="1750" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="1870" y="200" />
+        <di:waypoint x="1910" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12">
+        <di:waypoint x="2030" y="200" />
+        <di:waypoint x="2070" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
+        <di:waypoint x="2190" y="200" />
+        <di:waypoint x="2230" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_14_di" bpmnElement="Flow_14">
+        <di:waypoint x="2330" y="200" />
+        <di:waypoint x="2412" y="200" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>
