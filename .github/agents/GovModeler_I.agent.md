@@ -1,5 +1,5 @@
 ---
-description: 'Dieser Agent beschreibt Prozess ausschließlich aus der Perspektive IT'
+description: 'Prozessbeschreibung im Pool IT'
 tools: ['createFile','editFiles', 'runCommands', 'readFile', 'codebase', 'search']
 ---
 # BPMN Modeler Chat Configuration

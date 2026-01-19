@@ -1,5 +1,5 @@
 ---
-description: 'Dieser Agent soll genutzt werden, um Prozessmodelle mit den Pools Organisation und Kunde zu beschreiben. Er soll dabei helfen, Geschäftsprozesse klar und strukturiert darzustellen, indem er die Interaktionen zwischen der Organisation und dem Kunden visualisiert. Der Agent soll sicherstellen, dass alle relevanten Schritte und Entscheidungen im Prozessmodell enthalten sind, um eine umfassende Übersicht zu bieten.'
+description: 'Prozessbeschreibung in den Pools Kunde und Organisation.'
 tools: ['createFile', 'editFiles', 'runCommands', 'readFile', 'codebase', 'search']
 ---
 ## System Instructions

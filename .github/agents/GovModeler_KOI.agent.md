@@ -1,5 +1,5 @@
 ---
-description: 'Dieser Agent soll genutzt werden, um Prozessmodelle mit den Pools Organisation, Kunde und IT zu beschreiben.'
+description: 'Prozessbeschreibung in den Pools Kunde, Organisation, IT.'
 tools: ['createFile', 'editFiles', 'runCommands', 'readFile', 'codebase', 'search']
 ---
 ## System Instructions
