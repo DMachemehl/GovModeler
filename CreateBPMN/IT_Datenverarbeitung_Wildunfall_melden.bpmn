@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_Wildunfall" targetNamespace="http://bpmn.io/schema/bpmn" exporter="GitHub-Copilot-GovModeler" exporterVersion="2.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collab_Wildunfall_melden">
+    <bpmn:participant id="Participant_IT" name="IT-Systeme" processRef="Process_IT_Wildunfall" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_IT_Wildunfall" name="IT_Datenverarbeitung_Wildunfall_melden" isExecutable="true">
+    <bpmn:laneSet id="LaneSet_IT">
+      <bpmn:lane id="Lane_Validierung" name="Validierungsservice">
+        <bpmn:flowNodeRef>StartEvent_Wildunfall</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Meldung_validieren</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Geodaten" name="Geodaten-Service">
+        <bpmn:flowNodeRef>Task_Standort_ermitteln</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Fachverfahren" name="Fachverfahren Wildunfall">
+        <bpmn:flowNodeRef>Task_Meldung_verarbeiten</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Meldung_speichern</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Benachrichtigung" name="Benachrichtigungsservice">
+        <bpmn:flowNodeRef>Task_Beteiligte_benachrichtigen</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_DMS" name="Dokumentenmanagement">
+        <bpmn:flowNodeRef>Task_Bescheinigung_erstellen</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Wildunfall</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_Wildunfall" name="Wildunfallmeldung empfangen">
+      <bpmn:outgoing>Flow_Start_Task1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Wildunfall" />
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_Meldung_validieren" name="Meldung validieren">
+      <bpmn:incoming>Flow_Start_Task1</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task1_Task2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Standort_ermitteln" name="Standort und Zustaendigkeit ermitteln">
+      <bpmn:incoming>Flow_Task1_Task2</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task2_Task3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Meldung_verarbeiten" name="Meldung verarbeiten und anreichern">
+      <bpmn:incoming>Flow_Task2_Task3</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task3_Task4</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Meldung_speichern" name="Meldung speichern">
+      <bpmn:extensionElements />
+      <bpmn:incoming>Flow_Task3_Task4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task4_Task5</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sendTask id="Task_Beteiligte_benachrichtigen" name="Jaeger und Polizei benachrichtigen">
+      <bpmn:incoming>Flow_Task4_Task5</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task5_Task6</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:serviceTask id="Task_Bescheinigung_erstellen" name="Wildunfallbescheinigung erstellen und versenden">
+      <bpmn:incoming>Flow_Task5_Task6</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task6_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent_Wildunfall" name="Wildunfallmeldung verarbeitet">
+      <bpmn:incoming>Flow_Task6_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_Task1" sourceRef="StartEvent_Wildunfall" targetRef="Task_Meldung_validieren" />
+    <bpmn:sequenceFlow id="Flow_Task1_Task2" sourceRef="Task_Meldung_validieren" targetRef="Task_Standort_ermitteln" />
+    <bpmn:sequenceFlow id="Flow_Task2_Task3" sourceRef="Task_Standort_ermitteln" targetRef="Task_Meldung_verarbeiten" />
+    <bpmn:sequenceFlow id="Flow_Task3_Task4" sourceRef="Task_Meldung_verarbeiten" targetRef="Task_Meldung_speichern" />
+    <bpmn:sequenceFlow id="Flow_Task4_Task5" sourceRef="Task_Meldung_speichern" targetRef="Task_Beteiligte_benachrichtigen" />
+    <bpmn:sequenceFlow id="Flow_Task5_Task6" sourceRef="Task_Beteiligte_benachrichtigen" targetRef="Task_Bescheinigung_erstellen" />
+    <bpmn:sequenceFlow id="Flow_Task6_End" sourceRef="Task_Bescheinigung_erstellen" targetRef="EndEvent_Wildunfall" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Wildunfall">
+    <bpmndi:BPMNPlane id="BPMNPlane_Wildunfall" bpmnElement="Collab_Wildunfall_melden">
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1400" height="600" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_DMS_di" bpmnElement="Lane_DMS" isHorizontal="true">
+        <dc:Bounds x="190" y="560" width="1370" height="120" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Benachrichtigung_di" bpmnElement="Lane_Benachrichtigung" isHorizontal="true">
+        <dc:Bounds x="190" y="440" width="1370" height="120" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Fachverfahren_di" bpmnElement="Lane_Fachverfahren" isHorizontal="true">
+        <dc:Bounds x="190" y="320" width="1370" height="120" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Geodaten_di" bpmnElement="Lane_Geodaten" isHorizontal="true">
+        <dc:Bounds x="190" y="200" width="1370" height="120" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Validierung_di" bpmnElement="Lane_Validierung" isHorizontal="true">
+        <dc:Bounds x="190" y="80" width="1370" height="120" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Wildunfall_di" bpmnElement="StartEvent_Wildunfall">
+        <dc:Bounds x="252" y="122" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="227" y="165" width="87" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Meldung_validieren_di" bpmnElement="Task_Meldung_validieren">
+        <dc:Bounds x="350" y="100" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Standort_ermitteln_di" bpmnElement="Task_Standort_ermitteln">
+        <dc:Bounds x="510" y="220" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Meldung_verarbeiten_di" bpmnElement="Task_Meldung_verarbeiten">
+        <dc:Bounds x="670" y="340" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Meldung_speichern_di" bpmnElement="Task_Meldung_speichern">
+        <dc:Bounds x="830" y="340" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Beteiligte_benachrichtigen_di" bpmnElement="Task_Beteiligte_benachrichtigen">
+        <dc:Bounds x="990" y="460" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Bescheinigung_erstellen_di" bpmnElement="Task_Bescheinigung_erstellen">
+        <dc:Bounds x="1150" y="580" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Wildunfall_di" bpmnElement="EndEvent_Wildunfall">
+        <dc:Bounds x="1312" y="602" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1287" y="645" width="87" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_Task1_di" bpmnElement="Flow_Start_Task1">
+        <di:waypoint x="288" y="140" />
+        <di:waypoint x="350" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Task1_Task2_di" bpmnElement="Flow_Task1_Task2">
+        <di:waypoint x="450" y="140" />
+        <di:waypoint x="480" y="140" />
+        <di:waypoint x="480" y="260" />
+        <di:waypoint x="510" y="260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Task2_Task3_di" bpmnElement="Flow_Task2_Task3">
+        <di:waypoint x="610" y="260" />
+        <di:waypoint x="640" y="260" />
+        <di:waypoint x="640" y="380" />
+        <di:waypoint x="670" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Task3_Task4_di" bpmnElement="Flow_Task3_Task4">
+        <di:waypoint x="770" y="380" />
+        <di:waypoint x="830" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Task4_Task5_di" bpmnElement="Flow_Task4_Task5">
+        <di:waypoint x="930" y="380" />
+        <di:waypoint x="960" y="380" />
+        <di:waypoint x="960" y="500" />
+        <di:waypoint x="990" y="500" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Task5_Task6_di" bpmnElement="Flow_Task5_Task6">
+        <di:waypoint x="1090" y="500" />
+        <di:waypoint x="1120" y="500" />
+        <di:waypoint x="1120" y="620" />
+        <di:waypoint x="1150" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Task6_End_di" bpmnElement="Flow_Task6_End">
+        <di:waypoint x="1250" y="620" />
+        <di:waypoint x="1312" y="620" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

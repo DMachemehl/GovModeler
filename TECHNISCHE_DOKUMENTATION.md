@@ -59,7 +59,7 @@ Diese Dokumentation beschreibt die technischen Grundlagen und Voraussetzungen zu
 ## BPMN-Generierung mit Copilot Chat
 1. Öffnen Sie Copilot Chat (`Ctrl+Alt+I` / `Cmd+Alt+I`)
 2. KI-Modell auswählen
-3. Mode: GovModeler asuwählen
+3. Agenten auswählen (KOI, KO, I)
 4. Prozess benennen oder einsprechen
 
 ## Troubleshooting
@@ -78,7 +78,7 @@ Bei Fragen oder Problemen:
 
 ---
 
-**Stand:** Oktober 2025  
-**Version:** 1.0
+**Stand:** Januar 2026  
+**Version:** 1.1
 
 
