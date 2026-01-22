@@ -1,0 +1,716 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0"
+  modeler:executionPlatform="Camunda Platform"
+  modeler:executionPlatformVersion="7.20.0">
+
+  <!-- =====================================================
+       COLLABORATION - Bewerbungsverfahren durchführen
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_Bewerbungsverfahren">
+    
+    <!-- Participant: Kunde (Blackbox) -->
+    <bpmn:participant id="Participant_Kunde"
+                      name="Kunde"
+                      processRef="Process_Kunde" />
+    
+    <!-- Participant: Dezentrale Personalstelle -->
+    <bpmn:participant id="Participant_Dezentrale_Personalstelle"
+                      name="Dezentrale Personalstelle"
+                      processRef="Process_Dezentrale_Personalstelle" />
+    
+    <!-- Participant: Zentrale Personalstelle -->
+    <bpmn:participant id="Participant_Zentrale_Personalstelle"
+                      name="Zentrale Personalstelle"
+                      processRef="Process_Zentrale_Personalstelle" />
+    
+    <!-- Message Flows zwischen Kunde und Dezentraler Personalstelle -->
+    <bpmn:messageFlow id="MsgFlow_Personalbedarf"
+                      name="Personalbedarf"
+                      sourceRef="Task_Personalbedarf_melden"
+                      targetRef="StartEvent_Anforderung_aufnehmen" />
+    
+    <bpmn:messageFlow id="MsgFlow_Einstellung_bestaetigt"
+                      name="Einstellung bestätigt"
+                      sourceRef="Task_Einstellung_bestaetigen"
+                      targetRef="Event_Bestaetigung_erhalten" />
+    
+    <!-- Message Flows zwischen Dezentraler und Zentraler Personalstelle -->
+    <bpmn:messageFlow id="MsgFlow_Anforderung_uebergeben"
+                      name="Anforderung"
+                      sourceRef="Task_Anforderung_uebergeben"
+                      targetRef="StartEvent_Vorgang_anlegen" />
+    
+    <!-- Message Flows zwischen Zentraler Personalstelle und Kunde -->
+    <bpmn:messageFlow id="MsgFlow_Terminvorschlaege"
+                      name="Terminvorschläge"
+                      sourceRef="Task_Auswahlgespraeche_terminieren"
+                      targetRef="Event_Terminvorschlaege_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Entscheidungsunterlage"
+                      name="Entscheidungsunterlage"
+                      sourceRef="Task_Auswahlentscheidung_herbeifuehren"
+                      targetRef="Event_Entscheidungsunterlage_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Einstellungsentscheidung"
+                      name="Einstellungsentscheidung"
+                      sourceRef="Task_Entscheidung_treffen"
+                      targetRef="Event_Entscheidung_entgegennehmen" />
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       KUNDE PROZESS (Blackbox)
+       ===================================================== -->
+  <bpmn:process id="Process_Kunde"
+                name="Bewerbungsverfahren_Kunde"
+                isExecutable="false">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Kunde" name="Personalbedarf gemeldet">
+      <bpmn:outgoing>Flow_Start_Personalbedarf</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Task: Personalbedarf melden -->
+    <bpmn:userTask id="Task_Personalbedarf_melden" name="Personalbedarf melden">
+      <bpmn:incoming>Flow_Start_Personalbedarf</bpmn:incoming>
+      <bpmn:outgoing>Flow_Personalbedarf_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Event: Terminvorschläge erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Terminvorschlaege_erhalten" name="Terminvorschläge erhalten">
+      <bpmn:incoming>Flow_Personalbedarf_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Terminvorschlaege_Entscheidungsunterlage</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Terminvorschlaege" messageRef="Message_Terminvorschlaege" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- Event: Entscheidungsunterlage erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Entscheidungsunterlage_erhalten" name="Entscheidungsunterlage erhalten">
+      <bpmn:incoming>Flow_Terminvorschlaege_Entscheidungsunterlage</bpmn:incoming>
+      <bpmn:outgoing>Flow_Entscheidungsunterlage_Treffen</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Entscheidungsunterlage" messageRef="Message_Entscheidungsunterlage" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- Task: Entscheidung treffen -->
+    <bpmn:userTask id="Task_Entscheidung_treffen" name="Entscheidung treffen">
+      <bpmn:incoming>Flow_Entscheidungsunterlage_Treffen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Entscheidung_Bestaetigung</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Event: Bestätigung erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Bestaetigung_erhalten" name="Bestätigung erhalten">
+      <bpmn:incoming>Flow_Entscheidung_Bestaetigung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bestaetigung_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Bestaetigung" messageRef="Message_Bestaetigung" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Kunde" name="Prozess abgeschlossen">
+      <bpmn:incoming>Flow_Bestaetigung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Kunde -->
+    <bpmn:sequenceFlow id="Flow_Start_Personalbedarf"
+                       sourceRef="StartEvent_Kunde"
+                       targetRef="Task_Personalbedarf_melden" />
+    
+    <bpmn:sequenceFlow id="Flow_Personalbedarf_Warten"
+                       sourceRef="Task_Personalbedarf_melden"
+                       targetRef="Event_Terminvorschlaege_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Terminvorschlaege_Entscheidungsunterlage"
+                       sourceRef="Event_Terminvorschlaege_erhalten"
+                       targetRef="Event_Entscheidungsunterlage_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Entscheidungsunterlage_Treffen"
+                       sourceRef="Event_Entscheidungsunterlage_erhalten"
+                       targetRef="Task_Entscheidung_treffen" />
+    
+    <bpmn:sequenceFlow id="Flow_Entscheidung_Bestaetigung"
+                       sourceRef="Task_Entscheidung_treffen"
+                       targetRef="Event_Bestaetigung_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Bestaetigung_Ende"
+                       sourceRef="Event_Bestaetigung_erhalten"
+                       targetRef="EndEvent_Kunde" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       DEZENTRALE PERSONALSTELLE PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Dezentrale_Personalstelle"
+                name="Bewerbungsverfahren_Dezentrale_Personalstelle"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Anforderung_aufnehmen" name="Personalbedarf übermittelt">
+      <bpmn:outgoing>Flow_Dez_Start_Aufnehmen</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Task: Anforderung aufnehmen -->
+    <bpmn:userTask id="Task_Anforderung_aufnehmen" name="Anforderung aufnehmen">
+      <bpmn:incoming>Flow_Dez_Start_Aufnehmen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Dez_Aufnehmen_Beraten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Task: Anforderungsprofil beraten -->
+    <bpmn:userTask id="Task_Anforderungsprofil_beraten" name="Anforderungsprofil beraten">
+      <bpmn:incoming>Flow_Dez_Aufnehmen_Beraten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Dez_Beraten_Uebergeben</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Task: Anforderung übergeben -->
+    <bpmn:userTask id="Task_Anforderung_uebergeben" name="Anforderung übergeben">
+      <bpmn:incoming>Flow_Dez_Beraten_Uebergeben</bpmn:incoming>
+      <bpmn:outgoing>Flow_Dez_Uebergeben_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Dezentrale_Personalstelle" name="Anforderung übermittelt">
+      <bpmn:incoming>Flow_Dez_Uebergeben_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Dezentrale Personalstelle -->
+    <bpmn:sequenceFlow id="Flow_Dez_Start_Aufnehmen"
+                       sourceRef="StartEvent_Anforderung_aufnehmen"
+                       targetRef="Task_Anforderung_aufnehmen" />
+    
+    <bpmn:sequenceFlow id="Flow_Dez_Aufnehmen_Beraten"
+                       sourceRef="Task_Anforderung_aufnehmen"
+                       targetRef="Task_Anforderungsprofil_beraten" />
+    
+    <bpmn:sequenceFlow id="Flow_Dez_Beraten_Uebergeben"
+                       sourceRef="Task_Anforderungsprofil_beraten"
+                       targetRef="Task_Anforderung_uebergeben" />
+    
+    <bpmn:sequenceFlow id="Flow_Dez_Uebergeben_Ende"
+                       sourceRef="Task_Anforderung_uebergeben"
+                       targetRef="EndEvent_Dezentrale_Personalstelle" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       ZENTRALE PERSONALSTELLE PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Zentrale_Personalstelle"
+                name="Bewerbungsverfahren_Zentrale_Personalstelle"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Vorgang_anlegen" name="Anforderung erhalten">
+      <bpmn:outgoing>Flow_Zen_Start_Anlegen</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Task: Vorgang anlegen -->
+    <bpmn:userTask id="Task_Vorgang_anlegen" name="Vorgang anlegen">
+      <bpmn:incoming>Flow_Zen_Start_Anlegen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Anlegen_Pruefen</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Service Task: Vollständigkeit prüfen -->
+    <bpmn:serviceTask id="Task_Vollstaendigkeit_pruefen" name="Vollständigkeit prüfen">
+      <bpmn:incoming>Flow_Zen_Anlegen_Pruefen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Pruefen_Ausschreibung</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Task: Ausschreibung erstellen -->
+    <bpmn:userTask id="Task_Ausschreibung_erstellen" name="Ausschreibung erstellen">
+      <bpmn:incoming>Flow_Zen_Pruefen_Ausschreibung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Ausschreibung_Veroeffentlichen</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Task: Ausschreibung veröffentlichen -->
+    <bpmn:userTask id="Task_Ausschreibung_veroeffentlichen" name="Ausschreibung veröffentlichen">
+      <bpmn:incoming>Flow_Zen_Ausschreibung_Veroeffentlichen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Veroeffentlichen_Entgegennehmen</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Task: Bewerbungen entgegennehmen -->
+    <bpmn:userTask id="Task_Bewerbungen_entgegennehmen" name="Bewerbungen entgegennehmen">
+      <bpmn:incoming>Flow_Zen_Veroeffentlichen_Entgegennehmen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Entgegennehmen_Vorpruefen</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Task: Eignung vorprüfen -->
+    <bpmn:userTask id="Task_Eignung_vorpruefen" name="Eignung vorprüfen">
+      <bpmn:incoming>Flow_Zen_Entgegennehmen_Vorpruefen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Vorpruefen_Terminieren</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Task: Auswahlgespräche terminieren -->
+    <bpmn:userTask id="Task_Auswahlgespraeche_terminieren" name="Auswahlgespräche terminieren">
+      <bpmn:incoming>Flow_Zen_Vorpruefen_Terminieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Terminieren_Organisieren</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Task: Auswahlgespräche organisieren -->
+    <bpmn:userTask id="Task_Auswahlgespraeche_organisieren" name="Auswahlgespräche organisieren">
+      <bpmn:incoming>Flow_Zen_Terminieren_Organisieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Organisieren_Herbeifuehren</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Task: Auswahlentscheidung herbeiführen -->
+    <bpmn:userTask id="Task_Auswahlentscheidung_herbeifuehren" name="Auswahlentscheidung herbeiführen">
+      <bpmn:incoming>Flow_Zen_Organisieren_Herbeifuehren</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Herbeifuehren_Entgegennehmen</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Event: Entscheidung entgegennehmen -->
+    <bpmn:intermediateCatchEvent id="Event_Entscheidung_entgegennehmen" name="Entscheidung entgegennehmen">
+      <bpmn:incoming>Flow_Zen_Herbeifuehren_Entgegennehmen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Entgegennehmen_Erstellen</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Entscheidung" messageRef="Message_Entscheidung" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- Task: Einstellungsunterlagen erstellen -->
+    <bpmn:userTask id="Task_Einstellungsunterlagen_erstellen" name="Einstellungsunterlagen erstellen">
+      <bpmn:incoming>Flow_Zen_Entgegennehmen_Erstellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Erstellen_Bestaetigen</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Task: Einstellung bestätigen -->
+    <bpmn:userTask id="Task_Einstellung_bestaetigen" name="Einstellung bestätigen">
+      <bpmn:incoming>Flow_Zen_Erstellen_Bestaetigen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Bestaetigen_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Zentrale_Personalstelle" name="Bewerbungsverfahren abgeschlossen">
+      <bpmn:incoming>Flow_Zen_Bestaetigen_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Zentrale Personalstelle -->
+    <bpmn:sequenceFlow id="Flow_Zen_Start_Anlegen"
+                       sourceRef="StartEvent_Vorgang_anlegen"
+                       targetRef="Task_Vorgang_anlegen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Anlegen_Pruefen"
+                       sourceRef="Task_Vorgang_anlegen"
+                       targetRef="Task_Vollstaendigkeit_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Pruefen_Ausschreibung"
+                       sourceRef="Task_Vollstaendigkeit_pruefen"
+                       targetRef="Task_Ausschreibung_erstellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Ausschreibung_Veroeffentlichen"
+                       sourceRef="Task_Ausschreibung_erstellen"
+                       targetRef="Task_Ausschreibung_veroeffentlichen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Veroeffentlichen_Entgegennehmen"
+                       sourceRef="Task_Ausschreibung_veroeffentlichen"
+                       targetRef="Task_Bewerbungen_entgegennehmen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Entgegennehmen_Vorpruefen"
+                       sourceRef="Task_Bewerbungen_entgegennehmen"
+                       targetRef="Task_Eignung_vorpruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Vorpruefen_Terminieren"
+                       sourceRef="Task_Eignung_vorpruefen"
+                       targetRef="Task_Auswahlgespraeche_terminieren" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Terminieren_Organisieren"
+                       sourceRef="Task_Auswahlgespraeche_terminieren"
+                       targetRef="Task_Auswahlgespraeche_organisieren" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Organisieren_Herbeifuehren"
+                       sourceRef="Task_Auswahlgespraeche_organisieren"
+                       targetRef="Task_Auswahlentscheidung_herbeifuehren" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Herbeifuehren_Entgegennehmen"
+                       sourceRef="Task_Auswahlentscheidung_herbeifuehren"
+                       targetRef="Event_Entscheidung_entgegennehmen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Entgegennehmen_Erstellen"
+                       sourceRef="Event_Entscheidung_entgegennehmen"
+                       targetRef="Task_Einstellungsunterlagen_erstellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Erstellen_Bestaetigen"
+                       sourceRef="Task_Einstellungsunterlagen_erstellen"
+                       targetRef="Task_Einstellung_bestaetigen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Bestaetigen_Ende"
+                       sourceRef="Task_Einstellung_bestaetigen"
+                       targetRef="EndEvent_Zentrale_Personalstelle" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       MESSAGE DEFINITIONEN
+       ===================================================== -->
+  <bpmn:message id="Message_Personalbedarf" name="Personalbedarf" />
+  <bpmn:message id="Message_Anforderung" name="Anforderung" />
+  <bpmn:message id="Message_Terminvorschlaege" name="Terminvorschläge" />
+  <bpmn:message id="Message_Entscheidungsunterlage" name="Entscheidungsunterlage" />
+  <bpmn:message id="Message_Entscheidung" name="Einstellungsentscheidung" />
+  <bpmn:message id="Message_Bestaetigung" name="Bestätigung" />
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Bewerbungsverfahren">
+    <bpmndi:BPMNPlane id="BPMNPlane_Bewerbungsverfahren" bpmnElement="Collab_Bewerbungsverfahren">
+      
+      <!-- ===============================
+           POOL: KUNDE (Blackbox)
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Kunde_di" bpmnElement="Participant_Kunde" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="190" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Kunde Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Kunde_di" bpmnElement="StartEvent_Kunde">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Personalbedarf_melden_di" bpmnElement="Task_Personalbedarf_melden">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Terminvorschlaege_erhalten_di" bpmnElement="Event_Terminvorschlaege_erhalten">
+        <dc:Bounds x="472" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="450" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Entscheidungsunterlage_erhalten_di" bpmnElement="Event_Entscheidungsunterlage_erhalten">
+        <dc:Bounds x="632" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="608" y="225" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Entscheidung_treffen_di" bpmnElement="Task_Entscheidung_treffen">
+        <dc:Bounds x="720" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Bestaetigung_erhalten_di" bpmnElement="Event_Bestaetigung_erhalten">
+        <dc:Bounds x="872" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="850" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Kunde_di" bpmnElement="EndEvent_Kunde">
+        <dc:Bounds x="962" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="940" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Kunde Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_Start_Personalbedarf_di" bpmnElement="Flow_Start_Personalbedarf">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Personalbedarf_Warten_di" bpmnElement="Flow_Personalbedarf_Warten">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="472" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Terminvorschlaege_Entscheidungsunterlage_di" bpmnElement="Flow_Terminvorschlaege_Entscheidungsunterlage">
+        <di:waypoint x="508" y="200" />
+        <di:waypoint x="632" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Entscheidungsunterlage_Treffen_di" bpmnElement="Flow_Entscheidungsunterlage_Treffen">
+        <di:waypoint x="668" y="200" />
+        <di:waypoint x="720" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Entscheidung_Bestaetigung_di" bpmnElement="Flow_Entscheidung_Bestaetigung">
+        <di:waypoint x="820" y="200" />
+        <di:waypoint x="872" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Bestaetigung_Ende_di" bpmnElement="Flow_Bestaetigung_Ende">
+        <di:waypoint x="908" y="200" />
+        <di:waypoint x="962" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           POOL: DEZENTRALE PERSONALSTELLE
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Dezentrale_Personalstelle_di" bpmnElement="Participant_Dezentrale_Personalstelle" isHorizontal="true">
+        <dc:Bounds x="160" y="380" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="465" width="20" height="100" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Dezentrale Personalstelle Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Anforderung_aufnehmen_di" bpmnElement="StartEvent_Anforderung_aufnehmen">
+        <dc:Bounds x="222" y="482" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="525" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Anforderung_aufnehmen_di" bpmnElement="Task_Anforderung_aufnehmen">
+        <dc:Bounds x="310" y="460" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Anforderungsprofil_beraten_di" bpmnElement="Task_Anforderungsprofil_beraten">
+        <dc:Bounds x="470" y="460" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Anforderung_uebergeben_di" bpmnElement="Task_Anforderung_uebergeben">
+        <dc:Bounds x="630" y="460" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Dezentrale_Personalstelle_di" bpmnElement="EndEvent_Dezentrale_Personalstelle">
+        <dc:Bounds x="792" y="482" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="770" y="525" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Dezentrale Personalstelle Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_Dez_Start_Aufnehmen_di" bpmnElement="Flow_Dez_Start_Aufnehmen">
+        <di:waypoint x="258" y="500" />
+        <di:waypoint x="310" y="500" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Dez_Aufnehmen_Beraten_di" bpmnElement="Flow_Dez_Aufnehmen_Beraten">
+        <di:waypoint x="410" y="500" />
+        <di:waypoint x="470" y="500" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Dez_Beraten_Uebergeben_di" bpmnElement="Flow_Dez_Beraten_Uebergeben">
+        <di:waypoint x="570" y="500" />
+        <di:waypoint x="630" y="500" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Dez_Uebergeben_Ende_di" bpmnElement="Flow_Dez_Uebergeben_Ende">
+        <di:waypoint x="730" y="500" />
+        <di:waypoint x="792" y="500" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           POOL: ZENTRALE PERSONALSTELLE
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Zentrale_Personalstelle_di" bpmnElement="Participant_Zentrale_Personalstelle" isHorizontal="true">
+        <dc:Bounds x="160" y="680" width="2000" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="770" width="20" height="100" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Zentrale Personalstelle Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Vorgang_anlegen_di" bpmnElement="StartEvent_Vorgang_anlegen">
+        <dc:Bounds x="222" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="825" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Vorgang_anlegen_di" bpmnElement="Task_Vorgang_anlegen">
+        <dc:Bounds x="310" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Vollstaendigkeit_pruefen_di" bpmnElement="Task_Vollstaendigkeit_pruefen">
+        <dc:Bounds x="470" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Ausschreibung_erstellen_di" bpmnElement="Task_Ausschreibung_erstellen">
+        <dc:Bounds x="630" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Ausschreibung_veroeffentlichen_di" bpmnElement="Task_Ausschreibung_veroeffentlichen">
+        <dc:Bounds x="790" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Bewerbungen_entgegennehmen_di" bpmnElement="Task_Bewerbungen_entgegennehmen">
+        <dc:Bounds x="950" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Eignung_vorpruefen_di" bpmnElement="Task_Eignung_vorpruefen">
+        <dc:Bounds x="1110" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Auswahlgespraeche_terminieren_di" bpmnElement="Task_Auswahlgespraeche_terminieren">
+        <dc:Bounds x="1270" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Auswahlgespraeche_organisieren_di" bpmnElement="Task_Auswahlgespraeche_organisieren">
+        <dc:Bounds x="1430" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Auswahlentscheidung_herbeifuehren_di" bpmnElement="Task_Auswahlentscheidung_herbeifuehren">
+        <dc:Bounds x="1590" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Entscheidung_entgegennehmen_di" bpmnElement="Event_Entscheidung_entgegennehmen">
+        <dc:Bounds x="1752" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1730" y="825" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Einstellungsunterlagen_erstellen_di" bpmnElement="Task_Einstellungsunterlagen_erstellen">
+        <dc:Bounds x="1840" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Einstellung_bestaetigen_di" bpmnElement="Task_Einstellung_bestaetigen">
+        <dc:Bounds x="2000" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Zentrale_Personalstelle_di" bpmnElement="EndEvent_Zentrale_Personalstelle">
+        <dc:Bounds x="2102" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2080" y="825" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Zentrale Personalstelle Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_Zen_Start_Anlegen_di" bpmnElement="Flow_Zen_Start_Anlegen">
+        <di:waypoint x="258" y="800" />
+        <di:waypoint x="310" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Anlegen_Pruefen_di" bpmnElement="Flow_Zen_Anlegen_Pruefen">
+        <di:waypoint x="410" y="800" />
+        <di:waypoint x="470" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Pruefen_Ausschreibung_di" bpmnElement="Flow_Zen_Pruefen_Ausschreibung">
+        <di:waypoint x="570" y="800" />
+        <di:waypoint x="630" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Ausschreibung_Veroeffentlichen_di" bpmnElement="Flow_Zen_Ausschreibung_Veroeffentlichen">
+        <di:waypoint x="730" y="800" />
+        <di:waypoint x="790" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Veroeffentlichen_Entgegennehmen_di" bpmnElement="Flow_Zen_Veroeffentlichen_Entgegennehmen">
+        <di:waypoint x="890" y="800" />
+        <di:waypoint x="950" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Entgegennehmen_Vorpruefen_di" bpmnElement="Flow_Zen_Entgegennehmen_Vorpruefen">
+        <di:waypoint x="1050" y="800" />
+        <di:waypoint x="1110" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Vorpruefen_Terminieren_di" bpmnElement="Flow_Zen_Vorpruefen_Terminieren">
+        <di:waypoint x="1210" y="800" />
+        <di:waypoint x="1270" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Terminieren_Organisieren_di" bpmnElement="Flow_Zen_Terminieren_Organisieren">
+        <di:waypoint x="1370" y="800" />
+        <di:waypoint x="1430" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Organisieren_Herbeifuehren_di" bpmnElement="Flow_Zen_Organisieren_Herbeifuehren">
+        <di:waypoint x="1530" y="800" />
+        <di:waypoint x="1590" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Herbeifuehren_Entgegennehmen_di" bpmnElement="Flow_Zen_Herbeifuehren_Entgegennehmen">
+        <di:waypoint x="1690" y="800" />
+        <di:waypoint x="1752" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Entgegennehmen_Erstellen_di" bpmnElement="Flow_Zen_Entgegennehmen_Erstellen">
+        <di:waypoint x="1788" y="800" />
+        <di:waypoint x="1840" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Erstellen_Bestaetigen_di" bpmnElement="Flow_Zen_Erstellen_Bestaetigen">
+        <di:waypoint x="1940" y="800" />
+        <di:waypoint x="2000" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Bestaetigen_Ende_di" bpmnElement="Flow_Zen_Bestaetigen_Ende">
+        <di:waypoint x="2100" y="800" />
+        <di:waypoint x="2102" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           MESSAGE FLOWS
+           =============================== -->
+      
+      <!-- Message Flow: Personalbedarf (Kunde → Dezentrale Personalstelle) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Personalbedarf_di" bpmnElement="MsgFlow_Personalbedarf">
+        <di:waypoint x="360" y="240" />
+        <di:waypoint x="360" y="360" />
+        <di:waypoint x="240" y="360" />
+        <di:waypoint x="240" y="482" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="280" y="342" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Message Flow: Anforderung übergeben (Dezentrale → Zentrale Personalstelle) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Anforderung_uebergeben_di" bpmnElement="MsgFlow_Anforderung_uebergeben">
+        <di:waypoint x="680" y="540" />
+        <di:waypoint x="680" y="660" />
+        <di:waypoint x="240" y="660" />
+        <di:waypoint x="240" y="782" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="440" y="642" width="60" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Message Flow: Terminvorschläge (Zentrale Personalstelle → Kunde) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Terminvorschlaege_di" bpmnElement="MsgFlow_Terminvorschlaege">
+        <di:waypoint x="1320" y="760" />
+        <di:waypoint x="1320" y="470" />
+        <di:waypoint x="490" y="470" />
+        <di:waypoint x="490" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="870" y="452" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Message Flow: Entscheidungsunterlage (Zentrale Personalstelle → Kunde) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Entscheidungsunterlage_di" bpmnElement="MsgFlow_Entscheidungsunterlage">
+        <di:waypoint x="1640" y="760" />
+        <di:waypoint x="1640" y="450" />
+        <di:waypoint x="650" y="450" />
+        <di:waypoint x="650" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1110" y="432" width="120" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Message Flow: Einstellungsentscheidung (Kunde → Zentrale Personalstelle) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Einstellungsentscheidung_di" bpmnElement="MsgFlow_Einstellungsentscheidung">
+        <di:waypoint x="770" y="240" />
+        <di:waypoint x="770" y="510" />
+        <di:waypoint x="1770" y="510" />
+        <di:waypoint x="1770" y="782" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1220" y="492" width="120" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Message Flow: Einstellung bestätigt (Zentrale Personalstelle → Kunde) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Einstellung_bestaetigt_di" bpmnElement="MsgFlow_Einstellung_bestaetigt">
+        <di:waypoint x="2050" y="760" />
+        <di:waypoint x="2050" y="470" />
+        <di:waypoint x="890" y="470" />
+        <di:waypoint x="890" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1435" y="452" width="100" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

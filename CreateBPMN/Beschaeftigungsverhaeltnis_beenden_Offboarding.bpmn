@@ -1,0 +1,615 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0"
+  modeler:executionPlatform="Camunda Platform"
+  modeler:executionPlatformVersion="7.20.0">
+
+  <!-- =====================================================
+       COLLABORATION - Beschäftigungsverhältnis beenden inkl. Offboarding
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_Beschaeftigungsverhaeltnis_beenden">
+    
+    <!-- Participant: Kunde (Blackbox-Pool) -->
+    <bpmn:participant id="Participant_Kunde"
+                      name="Kunde"
+                      processRef="Process_Kunde" />
+    
+    <!-- Participant: Dezentrale Personalstelle -->
+    <bpmn:participant id="Participant_Dezentrale_PS"
+                      name="Dezentrale Personalstelle"
+                      processRef="Process_Dezentrale_PS" />
+    
+    <!-- Participant: Zentrale Personalstelle -->
+    <bpmn:participant id="Participant_Zentrale_PS"
+                      name="Zentrale Personalstelle"
+                      processRef="Process_Zentrale_PS" />
+    
+    <!-- Message Flows -->
+    <bpmn:messageFlow id="MsgFlow_Beendigungsmitteilung"
+                      name="Beendigungsmitteilung"
+                      sourceRef="Task_Kunde_Mitteilung"
+                      targetRef="StartEvent_Eingang" />
+    
+    <bpmn:messageFlow id="MsgFlow_Offboarding_Angaben"
+                      name="Offboarding-Angaben"
+                      sourceRef="Task_Kunde_Angaben"
+                      targetRef="Event_Angaben_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Vorgang_uebergabe"
+                      name="Vorgang übergeben"
+                      sourceRef="Task_Vorgang_uebergeben"
+                      targetRef="StartEvent_Zentrale_Vorgang" />
+    
+    <bpmn:messageFlow id="MsgFlow_Abschlussmitteilung"
+                      name="Abschlussmitteilung"
+                      sourceRef="Task_Abschlussmitteilung"
+                      targetRef="Event_Abschluss_erhalten" />
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       KUNDE PROZESS - Blackbox-Pool
+       ===================================================== -->
+  <bpmn:process id="Process_Kunde"
+                name="Beschaeftigungsverhaeltnis_beenden_Kunde"
+                isExecutable="false">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Kunde" name="Beendigungsanlass vorhanden">
+      <bpmn:outgoing>Flow_Kunde_Start_Mitteilung</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Beendigungsmitteilung übermitteln -->
+    <bpmn:userTask id="Task_Kunde_Mitteilung" name="Beendigungs­mitteilung übermitteln">
+      <bpmn:incoming>Flow_Kunde_Start_Mitteilung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Kunde_Mitteilung_Angaben</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Offboarding-Angaben bereitstellen -->
+    <bpmn:userTask id="Task_Kunde_Angaben" name="Offboarding-Angaben bereitstellen">
+      <bpmn:incoming>Flow_Kunde_Mitteilung_Angaben</bpmn:incoming>
+      <bpmn:outgoing>Flow_Kunde_Angaben_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Abschlussmitteilung erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Abschluss_erhalten" name="Abschluss­mitteilung erhalten">
+      <bpmn:incoming>Flow_Kunde_Angaben_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Kunde_Abschluss_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Abschluss" messageRef="Message_Abschlussmitteilung" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Kunde" name="Verhältnis beendet">
+      <bpmn:incoming>Flow_Kunde_Abschluss_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Kunde -->
+    <bpmn:sequenceFlow id="Flow_Kunde_Start_Mitteilung"
+                       sourceRef="StartEvent_Kunde"
+                       targetRef="Task_Kunde_Mitteilung" />
+    
+    <bpmn:sequenceFlow id="Flow_Kunde_Mitteilung_Angaben"
+                       sourceRef="Task_Kunde_Mitteilung"
+                       targetRef="Task_Kunde_Angaben" />
+    
+    <bpmn:sequenceFlow id="Flow_Kunde_Angaben_Warten"
+                       sourceRef="Task_Kunde_Angaben"
+                       targetRef="Event_Abschluss_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Kunde_Abschluss_Ende"
+                       sourceRef="Event_Abschluss_erhalten"
+                       targetRef="EndEvent_Kunde" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       DEZENTRALE PERSONALSTELLE PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Dezentrale_PS"
+                name="Beschaeftigungsverhaeltnis_beenden_Dezentrale_PS"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Eingang" name="Beendigungsanlass eingegangen">
+      <bpmn:outgoing>Flow_Dez_Start_Aufnahme</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Eingang aufnehmen -->
+    <bpmn:userTask id="Task_Eingang_aufnehmen" name="Eingang aufnehmen">
+      <bpmn:incoming>Flow_Dez_Start_Aufnahme</bpmn:incoming>
+      <bpmn:outgoing>Flow_Dez_Aufnahme_Beratung</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Kundenberatung durchführen -->
+    <bpmn:userTask id="Task_Kundenberatung" name="Kundenberatung durchführen">
+      <bpmn:incoming>Flow_Dez_Aufnahme_Beratung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Dez_Beratung_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Offboarding-Angaben erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Angaben_erhalten" name="Offboarding-Angaben erhalten">
+      <bpmn:incoming>Flow_Dez_Beratung_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Dez_Angaben_Paketieren</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Angaben" messageRef="Message_Offboarding_Angaben" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- User Task: Unterlagen paketieren -->
+    <bpmn:userTask id="Task_Unterlagen_paketieren" name="Unterlagen paketieren">
+      <bpmn:incoming>Flow_Dez_Angaben_Paketieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_Dez_Paketieren_Uebergabe</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Vorgang übergeben -->
+    <bpmn:userTask id="Task_Vorgang_uebergeben" name="Vorgang übergeben">
+      <bpmn:incoming>Flow_Dez_Paketieren_Uebergabe</bpmn:incoming>
+      <bpmn:outgoing>Flow_Dez_Uebergabe_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Dezentrale" name="Vorgang übergeben">
+      <bpmn:incoming>Flow_Dez_Uebergabe_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Dezentrale PS -->
+    <bpmn:sequenceFlow id="Flow_Dez_Start_Aufnahme"
+                       sourceRef="StartEvent_Eingang"
+                       targetRef="Task_Eingang_aufnehmen" />
+    
+    <bpmn:sequenceFlow id="Flow_Dez_Aufnahme_Beratung"
+                       sourceRef="Task_Eingang_aufnehmen"
+                       targetRef="Task_Kundenberatung" />
+    
+    <bpmn:sequenceFlow id="Flow_Dez_Beratung_Warten"
+                       sourceRef="Task_Kundenberatung"
+                       targetRef="Event_Angaben_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Dez_Angaben_Paketieren"
+                       sourceRef="Event_Angaben_erhalten"
+                       targetRef="Task_Unterlagen_paketieren" />
+    
+    <bpmn:sequenceFlow id="Flow_Dez_Paketieren_Uebergabe"
+                       sourceRef="Task_Unterlagen_paketieren"
+                       targetRef="Task_Vorgang_uebergeben" />
+    
+    <bpmn:sequenceFlow id="Flow_Dez_Uebergabe_Ende"
+                       sourceRef="Task_Vorgang_uebergeben"
+                       targetRef="EndEvent_Dezentrale" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       ZENTRALE PERSONALSTELLE PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Zentrale_PS"
+                name="Beschaeftigungsverhaeltnis_beenden_Zentrale_PS"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Zentrale_Vorgang" name="Vorgang erhalten">
+      <bpmn:outgoing>Flow_Zen_Start_Pruefung</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Service Task: Zuständigkeit und Vollständigkeit prüfen -->
+    <bpmn:serviceTask id="Task_Zustaendigkeit_pruefen" name="Zuständigkeit und Vollständigkeit prüfen">
+      <bpmn:incoming>Flow_Zen_Start_Pruefung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Pruefung_Grund</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- User Task: Beendigungsgrund und -datum festlegen -->
+    <bpmn:userTask id="Task_Grund_festlegen" name="Beendigungs­grund und -datum festlegen">
+      <bpmn:incoming>Flow_Zen_Pruefung_Grund</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Grund_Personal</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Personaladministration aktualisieren -->
+    <bpmn:userTask id="Task_Personal_aktualisieren" name="Personal­administration aktualisieren">
+      <bpmn:incoming>Flow_Zen_Grund_Personal</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Personal_Gehalt</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Gehalts-/Versorgungsabrechnung veranlassen -->
+    <bpmn:userTask id="Task_Abrechnung_veranlassen" name="Gehalts-/Versorgungs­abrechnung veranlassen">
+      <bpmn:incoming>Flow_Zen_Personal_Gehalt</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Gehalt_Meldung</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Service Task: Meldewesen ausführen -->
+    <bpmn:serviceTask id="Task_Meldewesen_ausfuehren" name="Meldewesen ausführen">
+      <bpmn:incoming>Flow_Zen_Gehalt_Meldung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Meldung_Zeugnis</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- User Task: Zeugnis und Bescheinigungen erstellen -->
+    <bpmn:userTask id="Task_Zeugnis_erstellen" name="Arbeits-/Dienst­zeugnis erstellen">
+      <bpmn:incoming>Flow_Zen_Meldung_Zeugnis</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Zeugnis_Offboarding</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Service Task: Offboarding anstoßen -->
+    <bpmn:serviceTask id="Task_Offboarding_anstossen" name="Offboarding anstoßen">
+      <bpmn:incoming>Flow_Zen_Zeugnis_Offboarding</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Offboarding_Doku</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- User Task: Offboarding dokumentieren -->
+    <bpmn:userTask id="Task_Offboarding_dokumentieren" name="Offboarding dokumentieren">
+      <bpmn:incoming>Flow_Zen_Offboarding_Doku</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Doku_Abschluss</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Abschlussmitteilung versenden -->
+    <bpmn:userTask id="Task_Abschlussmitteilung" name="Abschluss­mitteilung versenden">
+      <bpmn:incoming>Flow_Zen_Doku_Abschluss</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zen_Abschluss_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Zentrale" name="Beschäftigungs­verhältnis beendet">
+      <bpmn:incoming>Flow_Zen_Abschluss_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Zentrale PS -->
+    <bpmn:sequenceFlow id="Flow_Zen_Start_Pruefung"
+                       sourceRef="StartEvent_Zentrale_Vorgang"
+                       targetRef="Task_Zustaendigkeit_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Pruefung_Grund"
+                       sourceRef="Task_Zustaendigkeit_pruefen"
+                       targetRef="Task_Grund_festlegen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Grund_Personal"
+                       sourceRef="Task_Grund_festlegen"
+                       targetRef="Task_Personal_aktualisieren" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Personal_Gehalt"
+                       sourceRef="Task_Personal_aktualisieren"
+                       targetRef="Task_Abrechnung_veranlassen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Gehalt_Meldung"
+                       sourceRef="Task_Abrechnung_veranlassen"
+                       targetRef="Task_Meldewesen_ausfuehren" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Meldung_Zeugnis"
+                       sourceRef="Task_Meldewesen_ausfuehren"
+                       targetRef="Task_Zeugnis_erstellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Zeugnis_Offboarding"
+                       sourceRef="Task_Zeugnis_erstellen"
+                       targetRef="Task_Offboarding_anstossen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Offboarding_Doku"
+                       sourceRef="Task_Offboarding_anstossen"
+                       targetRef="Task_Offboarding_dokumentieren" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Doku_Abschluss"
+                       sourceRef="Task_Offboarding_dokumentieren"
+                       targetRef="Task_Abschlussmitteilung" />
+    
+    <bpmn:sequenceFlow id="Flow_Zen_Abschluss_Ende"
+                       sourceRef="Task_Abschlussmitteilung"
+                       targetRef="EndEvent_Zentrale" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       MESSAGE DEFINITIONEN
+       ===================================================== -->
+  <bpmn:message id="Message_Beendigungsmitteilung" name="Beendigungsmitteilung" />
+  <bpmn:message id="Message_Offboarding_Angaben" name="Offboarding-Angaben" />
+  <bpmn:message id="Message_Vorgang" name="Vorgang" />
+  <bpmn:message id="Message_Abschlussmitteilung" name="Abschlussmitteilung" />
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG - 3-Pool-Kollaboration
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Beschaeftigungsverhaeltnis_beenden">
+    <bpmndi:BPMNPlane id="BPMNPlane_Beschaeftigungsverhaeltnis_beenden" bpmnElement="Collab_Beschaeftigungsverhaeltnis_beenden">
+      
+      <!-- ===============================
+           POOL: KUNDE (BLACKBOX)
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Kunde_di" bpmnElement="Participant_Kunde" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1800" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="190" width="20" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Kunde Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Kunde_di" bpmnElement="StartEvent_Kunde">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="198" y="225" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Kunde_Mitteilung_di" bpmnElement="Task_Kunde_Mitteilung">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Kunde_Angaben_di" bpmnElement="Task_Kunde_Angaben">
+        <dc:Bounds x="470" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Abschluss_erhalten_di" bpmnElement="Event_Abschluss_erhalten">
+        <dc:Bounds x="1782" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1758" y="225" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Kunde_di" bpmnElement="EndEvent_Kunde">
+        <dc:Bounds x="1872" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1848" y="225" width="84" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence Flows - Kunde -->
+      <bpmndi:BPMNEdge id="Flow_Kunde_Start_Mitteilung_di" bpmnElement="Flow_Kunde_Start_Mitteilung">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Kunde_Mitteilung_Angaben_di" bpmnElement="Flow_Kunde_Mitteilung_Angaben">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="470" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Kunde_Angaben_Warten_di" bpmnElement="Flow_Kunde_Angaben_Warten">
+        <di:waypoint x="570" y="200" />
+        <di:waypoint x="1782" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Kunde_Abschluss_Ende_di" bpmnElement="Flow_Kunde_Abschluss_Ende">
+        <di:waypoint x="1818" y="200" />
+        <di:waypoint x="1872" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           POOL: DEZENTRALE PERSONALSTELLE
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Dezentrale_PS_di" bpmnElement="Participant_Dezentrale_PS" isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="1800" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="460" width="20" height="120" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Dezentrale PS Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Eingang_di" bpmnElement="StartEvent_Eingang">
+        <dc:Bounds x="222" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="198" y="520" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Eingang_aufnehmen_di" bpmnElement="Task_Eingang_aufnehmen">
+        <dc:Bounds x="310" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Kundenberatung_di" bpmnElement="Task_Kundenberatung">
+        <dc:Bounds x="470" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Angaben_erhalten_di" bpmnElement="Event_Angaben_erhalten">
+        <dc:Bounds x="632" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="608" y="520" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Unterlagen_paketieren_di" bpmnElement="Task_Unterlagen_paketieren">
+        <dc:Bounds x="730" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Vorgang_uebergeben_di" bpmnElement="Task_Vorgang_uebergeben">
+        <dc:Bounds x="890" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Dezentrale_di" bpmnElement="EndEvent_Dezentrale">
+        <dc:Bounds x="1052" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1028" y="520" width="84" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence Flows - Dezentrale PS -->
+      <bpmndi:BPMNEdge id="Flow_Dez_Start_Aufnahme_di" bpmnElement="Flow_Dez_Start_Aufnahme">
+        <di:waypoint x="258" y="495" />
+        <di:waypoint x="310" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Dez_Aufnahme_Beratung_di" bpmnElement="Flow_Dez_Aufnahme_Beratung">
+        <di:waypoint x="410" y="495" />
+        <di:waypoint x="470" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Dez_Beratung_Warten_di" bpmnElement="Flow_Dez_Beratung_Warten">
+        <di:waypoint x="570" y="495" />
+        <di:waypoint x="632" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Dez_Angaben_Paketieren_di" bpmnElement="Flow_Dez_Angaben_Paketieren">
+        <di:waypoint x="668" y="495" />
+        <di:waypoint x="730" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Dez_Paketieren_Uebergabe_di" bpmnElement="Flow_Dez_Paketieren_Uebergabe">
+        <di:waypoint x="830" y="495" />
+        <di:waypoint x="890" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Dez_Uebergabe_Ende_di" bpmnElement="Flow_Dez_Uebergabe_Ende">
+        <di:waypoint x="990" y="495" />
+        <di:waypoint x="1052" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           POOL: ZENTRALE PERSONALSTELLE
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Zentrale_PS_di" bpmnElement="Participant_Zentrale_PS" isHorizontal="true">
+        <dc:Bounds x="160" y="660" width="1800" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="750" width="20" height="120" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Zentrale PS Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Zentrale_Vorgang_di" bpmnElement="StartEvent_Zentrale_Vorgang">
+        <dc:Bounds x="222" y="767" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="198" y="810" width="84" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Zustaendigkeit_pruefen_di" bpmnElement="Task_Zustaendigkeit_pruefen">
+        <dc:Bounds x="310" y="745" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Grund_festlegen_di" bpmnElement="Task_Grund_festlegen">
+        <dc:Bounds x="470" y="745" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Personal_aktualisieren_di" bpmnElement="Task_Personal_aktualisieren">
+        <dc:Bounds x="630" y="745" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Abrechnung_veranlassen_di" bpmnElement="Task_Abrechnung_veranlassen">
+        <dc:Bounds x="790" y="745" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Meldewesen_ausfuehren_di" bpmnElement="Task_Meldewesen_ausfuehren">
+        <dc:Bounds x="950" y="745" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Zeugnis_erstellen_di" bpmnElement="Task_Zeugnis_erstellen">
+        <dc:Bounds x="1110" y="745" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Offboarding_anstossen_di" bpmnElement="Task_Offboarding_anstossen">
+        <dc:Bounds x="1270" y="745" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Offboarding_dokumentieren_di" bpmnElement="Task_Offboarding_dokumentieren">
+        <dc:Bounds x="1430" y="745" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Abschlussmitteilung_di" bpmnElement="Task_Abschlussmitteilung">
+        <dc:Bounds x="1590" y="745" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Zentrale_di" bpmnElement="EndEvent_Zentrale">
+        <dc:Bounds x="1752" y="767" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1728" y="810" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence Flows - Zentrale PS -->
+      <bpmndi:BPMNEdge id="Flow_Zen_Start_Pruefung_di" bpmnElement="Flow_Zen_Start_Pruefung">
+        <di:waypoint x="258" y="785" />
+        <di:waypoint x="310" y="785" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Pruefung_Grund_di" bpmnElement="Flow_Zen_Pruefung_Grund">
+        <di:waypoint x="410" y="785" />
+        <di:waypoint x="470" y="785" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Grund_Personal_di" bpmnElement="Flow_Zen_Grund_Personal">
+        <di:waypoint x="570" y="785" />
+        <di:waypoint x="630" y="785" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Personal_Gehalt_di" bpmnElement="Flow_Zen_Personal_Gehalt">
+        <di:waypoint x="730" y="785" />
+        <di:waypoint x="790" y="785" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Gehalt_Meldung_di" bpmnElement="Flow_Zen_Gehalt_Meldung">
+        <di:waypoint x="890" y="785" />
+        <di:waypoint x="950" y="785" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Meldung_Zeugnis_di" bpmnElement="Flow_Zen_Meldung_Zeugnis">
+        <di:waypoint x="1050" y="785" />
+        <di:waypoint x="1110" y="785" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Zeugnis_Offboarding_di" bpmnElement="Flow_Zen_Zeugnis_Offboarding">
+        <di:waypoint x="1210" y="785" />
+        <di:waypoint x="1270" y="785" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Offboarding_Doku_di" bpmnElement="Flow_Zen_Offboarding_Doku">
+        <di:waypoint x="1370" y="785" />
+        <di:waypoint x="1430" y="785" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Doku_Abschluss_di" bpmnElement="Flow_Zen_Doku_Abschluss">
+        <di:waypoint x="1530" y="785" />
+        <di:waypoint x="1590" y="785" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zen_Abschluss_Ende_di" bpmnElement="Flow_Zen_Abschluss_Ende">
+        <di:waypoint x="1690" y="785" />
+        <di:waypoint x="1752" y="785" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           MESSAGE FLOWS ZWISCHEN POOLS
+           =============================== -->
+      
+      <!-- Message Flow: Kunde → Dezentrale PS (Beendigungsmitteilung) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Beendigungsmitteilung_di" bpmnElement="MsgFlow_Beendigungsmitteilung">
+        <di:waypoint x="360" y="240" />
+        <di:waypoint x="360" y="360" />
+        <di:waypoint x="240" y="360" />
+        <di:waypoint x="240" y="477" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="265" y="342" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Message Flow: Kunde → Dezentrale PS (Offboarding-Angaben) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Offboarding_Angaben_di" bpmnElement="MsgFlow_Offboarding_Angaben">
+        <di:waypoint x="520" y="240" />
+        <di:waypoint x="520" y="360" />
+        <di:waypoint x="650" y="360" />
+        <di:waypoint x="650" y="477" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="545" y="342" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Message Flow: Dezentrale PS → Zentrale PS (Vorgang übergeben) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Vorgang_uebergabe_di" bpmnElement="MsgFlow_Vorgang_uebergabe">
+        <di:waypoint x="940" y="535" />
+        <di:waypoint x="940" y="640" />
+        <di:waypoint x="240" y="640" />
+        <di:waypoint x="240" y="767" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="555" y="622" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Message Flow: Zentrale PS → Kunde (Abschlussmitteilung) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Abschlussmitteilung_di" bpmnElement="MsgFlow_Abschlussmitteilung">
+        <di:waypoint x="1640" y="745" />
+        <di:waypoint x="1640" y="640" />
+        <di:waypoint x="1800" y="640" />
+        <di:waypoint x="1800" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1680" y="622" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

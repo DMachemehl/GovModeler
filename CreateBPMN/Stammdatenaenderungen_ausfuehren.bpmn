@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0"
+  modeler:executionPlatform="Camunda Platform"
+  modeler:executionPlatformVersion="7.20.0">
+
+  <!-- =====================================================
+       COLLABORATION - Stammdatenänderungen ausführen
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_Stammdatenaenderungen">
+    
+    <!-- Participant: Kunde -->
+    <bpmn:participant id="Participant_Kunde"
+                      name="Kunde"
+                      processRef="Process_Kunde" />
+    
+    <!-- Participant: Dezentrale Personalstelle -->
+    <bpmn:participant id="Participant_Dezentral"
+                      name="Dezentrale Personalstelle"
+                      processRef="Process_Dezentral" />
+    
+    <!-- Participant: Zentrale Personalstelle -->
+    <bpmn:participant id="Participant_Zentral"
+                      name="Zentrale Personalstelle"
+                      processRef="Process_Zentral" />
+    
+    <!-- Message Flows -->
+    <bpmn:messageFlow id="MsgFlow_Aenderungsmitteilung"
+                      name="Änderungsmitteilung"
+                      sourceRef="Task_Aenderung_uebermitteln"
+                      targetRef="StartEvent_Anliegen_entgegengenommen" />
+    
+    <bpmn:messageFlow id="MsgFlow_Uebergabe"
+                      name="Vorgang mit Nachweisen"
+                      sourceRef="Task_Uebergabe"
+                      targetRef="StartEvent_Vorgang_registriert" />
+    
+    <bpmn:messageFlow id="MsgFlow_Bestaetigung_Kunde"
+                      name="Änderungsbestätigung"
+                      sourceRef="Task_Aenderung_bestaetigen"
+                      targetRef="Event_Bestaetigung_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Info_Dezentral"
+                      name="Abschlussinformation"
+                      sourceRef="Task_Aenderung_bestaetigen"
+                      targetRef="Event_Info_erhalten" />
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       KUNDEN PROZESS (Blackbox-Pool)
+       ===================================================== -->
+  <bpmn:process id="Process_Kunde"
+                name="Stammdatenaenderungen_Kunde"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Kunde" name="Stammdatenänderung angefordert worden">
+      <bpmn:outgoing>Flow_Kunde_Start_Mitteilung</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Änderung übermitteln -->
+    <bpmn:userTask id="Task_Aenderung_uebermitteln" name="Änderungs-mitteilung übermittelt">
+      <bpmn:incoming>Flow_Kunde_Start_Mitteilung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Kunde_Mitteilung_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Bestätigung -->
+    <bpmn:intermediateCatchEvent id="Event_Bestaetigung_erhalten" name="Änderungs-bestätigung erhalten">
+      <bpmn:incoming>Flow_Kunde_Mitteilung_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Kunde_Bestaetigung_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Bestaetigung" messageRef="Message_Bestaetigung" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Kunde" name="Stammdaten-änderung ausgeführt worden">
+      <bpmn:incoming>Flow_Kunde_Bestaetigung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Kunde -->
+    <bpmn:sequenceFlow id="Flow_Kunde_Start_Mitteilung"
+                       sourceRef="StartEvent_Kunde"
+                       targetRef="Task_Aenderung_uebermitteln" />
+    
+    <bpmn:sequenceFlow id="Flow_Kunde_Mitteilung_Warten"
+                       sourceRef="Task_Aenderung_uebermitteln"
+                       targetRef="Event_Bestaetigung_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Kunde_Bestaetigung_Ende"
+                       sourceRef="Event_Bestaetigung_erhalten"
+                       targetRef="EndEvent_Kunde" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       DEZENTRALE PERSONALSTELLE PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Dezentral"
+                name="Stammdatenaenderungen_Dezentral"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Anliegen_entgegengenommen" name="Anliegen entgegen-genommen">
+      <bpmn:outgoing>Flow_Dezentral_Start_Beratung</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Beratung -->
+    <bpmn:userTask id="Task_Beratung" name="Kunden-beratung durchgeführt">
+      <bpmn:incoming>Flow_Dezentral_Start_Beratung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Dezentral_Beratung_Uebergabe</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Übergabe -->
+    <bpmn:userTask id="Task_Uebergabe" name="Vorgang an zentrale Personalstelle übergeben">
+      <bpmn:incoming>Flow_Dezentral_Beratung_Uebergabe</bpmn:incoming>
+      <bpmn:outgoing>Flow_Dezentral_Uebergabe_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Info -->
+    <bpmn:intermediateCatchEvent id="Event_Info_erhalten" name="Abschluss-information erhalten">
+      <bpmn:incoming>Flow_Dezentral_Uebergabe_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Dezentral_Info_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Info" messageRef="Message_Info" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Dezentral" name="Vorgang abgeschlossen">
+      <bpmn:incoming>Flow_Dezentral_Info_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Dezentral -->
+    <bpmn:sequenceFlow id="Flow_Dezentral_Start_Beratung"
+                       sourceRef="StartEvent_Anliegen_entgegengenommen"
+                       targetRef="Task_Beratung" />
+    
+    <bpmn:sequenceFlow id="Flow_Dezentral_Beratung_Uebergabe"
+                       sourceRef="Task_Beratung"
+                       targetRef="Task_Uebergabe" />
+    
+    <bpmn:sequenceFlow id="Flow_Dezentral_Uebergabe_Warten"
+                       sourceRef="Task_Uebergabe"
+                       targetRef="Event_Info_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Dezentral_Info_Ende"
+                       sourceRef="Event_Info_erhalten"
+                       targetRef="EndEvent_Dezentral" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       ZENTRALE PERSONALSTELLE PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Zentral"
+                name="Stammdatenaenderungen_Zentral"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Vorgang_registriert" name="Vorgang registriert">
+      <bpmn:outgoing>Flow_Zentral_Start_Pruefung</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Service Task: Vollständigkeit prüfen -->
+    <bpmn:serviceTask id="Task_Vollstaendigkeit_pruefen" name="Vollständigkeit automatisiert geprüft">
+      <bpmn:incoming>Flow_Zentral_Start_Pruefung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zentral_Pruefung_Aktualisierung</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- User Task: Stammdaten aktualisieren -->
+    <bpmn:userTask id="Task_Stammdaten_aktualisieren" name="Stammdaten aktualisiert">
+      <bpmn:incoming>Flow_Zentral_Pruefung_Aktualisierung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zentral_Aktualisierung_Folgeverarbeitung</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Service Task: Folgeverarbeitung -->
+    <bpmn:serviceTask id="Task_Folgeverarbeitung" name="Folge-verarbeitung angestoßen">
+      <bpmn:incoming>Flow_Zentral_Aktualisierung_Folgeverarbeitung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zentral_Folgeverarbeitung_Bestaetigung</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- User Task: Änderung bestätigen -->
+    <bpmn:userTask id="Task_Aenderung_bestaetigen" name="Änderung bestätigt">
+      <bpmn:incoming>Flow_Zentral_Folgeverarbeitung_Bestaetigung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zentral_Bestaetigung_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Zentral" name="Stammdaten-änderung abgeschlossen">
+      <bpmn:incoming>Flow_Zentral_Bestaetigung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Zentral -->
+    <bpmn:sequenceFlow id="Flow_Zentral_Start_Pruefung"
+                       sourceRef="StartEvent_Vorgang_registriert"
+                       targetRef="Task_Vollstaendigkeit_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zentral_Pruefung_Aktualisierung"
+                       sourceRef="Task_Vollstaendigkeit_pruefen"
+                       targetRef="Task_Stammdaten_aktualisieren" />
+    
+    <bpmn:sequenceFlow id="Flow_Zentral_Aktualisierung_Folgeverarbeitung"
+                       sourceRef="Task_Stammdaten_aktualisieren"
+                       targetRef="Task_Folgeverarbeitung" />
+    
+    <bpmn:sequenceFlow id="Flow_Zentral_Folgeverarbeitung_Bestaetigung"
+                       sourceRef="Task_Folgeverarbeitung"
+                       targetRef="Task_Aenderung_bestaetigen" />
+    
+    <bpmn:sequenceFlow id="Flow_Zentral_Bestaetigung_Ende"
+                       sourceRef="Task_Aenderung_bestaetigen"
+                       targetRef="EndEvent_Zentral" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       MESSAGE DEFINITIONEN
+       ===================================================== -->
+  <bpmn:message id="Message_Aenderungsmitteilung" name="Änderungsmitteilung" />
+  <bpmn:message id="Message_Uebergabe" name="Vorgang mit Nachweisen" />
+  <bpmn:message id="Message_Bestaetigung" name="Änderungsbestätigung" />
+  <bpmn:message id="Message_Info" name="Abschlussinformation" />
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Stammdatenaenderungen">
+    <bpmndi:BPMNPlane id="BPMNPlane_Stammdatenaenderungen" bpmnElement="Collab_Stammdatenaenderungen">
+      
+      <!-- ===============================
+           POOL: KUNDE (OBEN)
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Kunde_di" bpmnElement="Participant_Kunde" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="190" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Kunde Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Kunde_di" bpmnElement="StartEvent_Kunde">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="225" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Aenderung_uebermitteln_di" bpmnElement="Task_Aenderung_uebermitteln">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Bestaetigung_erhalten_di" bpmnElement="Event_Bestaetigung_erhalten">
+        <dc:Bounds x="472" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="450" y="225" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Kunde_di" bpmnElement="EndEvent_Kunde">
+        <dc:Bounds x="562" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="540" y="225" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Kunde Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_Kunde_Start_Mitteilung_di" bpmnElement="Flow_Kunde_Start_Mitteilung">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Kunde_Mitteilung_Warten_di" bpmnElement="Flow_Kunde_Mitteilung_Warten">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="472" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Kunde_Bestaetigung_Ende_di" bpmnElement="Flow_Kunde_Bestaetigung_Ende">
+        <di:waypoint x="508" y="200" />
+        <di:waypoint x="562" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           POOL: DEZENTRALE PERSONALSTELLE (MITTE)
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Dezentral_di" bpmnElement="Participant_Dezentral" isHorizontal="true">
+        <dc:Bounds x="160" y="380" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="455" width="20" height="120" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Dezentral Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Anliegen_entgegengenommen_di" bpmnElement="StartEvent_Anliegen_entgegengenommen">
+        <dc:Bounds x="222" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="520" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Beratung_di" bpmnElement="Task_Beratung">
+        <dc:Bounds x="310" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Uebergabe_di" bpmnElement="Task_Uebergabe">
+        <dc:Bounds x="470" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Info_erhalten_di" bpmnElement="Event_Info_erhalten">
+        <dc:Bounds x="632" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="610" y="520" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Dezentral_di" bpmnElement="EndEvent_Dezentral">
+        <dc:Bounds x="722" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="700" y="520" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Dezentral Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_Dezentral_Start_Beratung_di" bpmnElement="Flow_Dezentral_Start_Beratung">
+        <di:waypoint x="258" y="495" />
+        <di:waypoint x="310" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Dezentral_Beratung_Uebergabe_di" bpmnElement="Flow_Dezentral_Beratung_Uebergabe">
+        <di:waypoint x="410" y="495" />
+        <di:waypoint x="470" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Dezentral_Uebergabe_Warten_di" bpmnElement="Flow_Dezentral_Uebergabe_Warten">
+        <di:waypoint x="570" y="495" />
+        <di:waypoint x="632" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Dezentral_Info_Ende_di" bpmnElement="Flow_Dezentral_Info_Ende">
+        <di:waypoint x="668" y="495" />
+        <di:waypoint x="722" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           POOL: ZENTRALE PERSONALSTELLE (UNTEN)
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Zentral_di" bpmnElement="Participant_Zentral" isHorizontal="true">
+        <dc:Bounds x="160" y="680" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="750" width="20" height="120" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Zentral Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Vorgang_registriert_di" bpmnElement="StartEvent_Vorgang_registriert">
+        <dc:Bounds x="222" y="777" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="820" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Vollstaendigkeit_pruefen_di" bpmnElement="Task_Vollstaendigkeit_pruefen">
+        <dc:Bounds x="310" y="755" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Stammdaten_aktualisieren_di" bpmnElement="Task_Stammdaten_aktualisieren">
+        <dc:Bounds x="470" y="755" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Folgeverarbeitung_di" bpmnElement="Task_Folgeverarbeitung">
+        <dc:Bounds x="630" y="755" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Aenderung_bestaetigen_di" bpmnElement="Task_Aenderung_bestaetigen">
+        <dc:Bounds x="790" y="755" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Zentral_di" bpmnElement="EndEvent_Zentral">
+        <dc:Bounds x="952" y="777" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="930" y="820" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Zentral Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_Zentral_Start_Pruefung_di" bpmnElement="Flow_Zentral_Start_Pruefung">
+        <di:waypoint x="258" y="795" />
+        <di:waypoint x="310" y="795" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zentral_Pruefung_Aktualisierung_di" bpmnElement="Flow_Zentral_Pruefung_Aktualisierung">
+        <di:waypoint x="410" y="795" />
+        <di:waypoint x="470" y="795" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zentral_Aktualisierung_Folgeverarbeitung_di" bpmnElement="Flow_Zentral_Aktualisierung_Folgeverarbeitung">
+        <di:waypoint x="570" y="795" />
+        <di:waypoint x="630" y="795" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zentral_Folgeverarbeitung_Bestaetigung_di" bpmnElement="Flow_Zentral_Folgeverarbeitung_Bestaetigung">
+        <di:waypoint x="730" y="795" />
+        <di:waypoint x="790" y="795" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zentral_Bestaetigung_Ende_di" bpmnElement="Flow_Zentral_Bestaetigung_Ende">
+        <di:waypoint x="890" y="795" />
+        <di:waypoint x="952" y="795" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           MESSAGE FLOWS
+           =============================== -->
+      
+      <!-- Message Flow: Kunde → Dezentral -->
+      <bpmndi:BPMNEdge id="MsgFlow_Aenderungsmitteilung_di" bpmnElement="MsgFlow_Aenderungsmitteilung">
+        <di:waypoint x="360" y="240" />
+        <di:waypoint x="360" y="360" />
+        <di:waypoint x="240" y="360" />
+        <di:waypoint x="240" y="477" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="260" y="342" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Message Flow: Dezentral → Zentral -->
+      <bpmndi:BPMNEdge id="MsgFlow_Uebergabe_di" bpmnElement="MsgFlow_Uebergabe">
+        <di:waypoint x="520" y="535" />
+        <di:waypoint x="520" y="656" />
+        <di:waypoint x="240" y="656" />
+        <di:waypoint x="240" y="777" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="340" y="638" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Message Flow: Zentral → Kunde -->
+      <bpmndi:BPMNEdge id="MsgFlow_Bestaetigung_Kunde_di" bpmnElement="MsgFlow_Bestaetigung_Kunde">
+        <di:waypoint x="840" y="755" />
+        <di:waypoint x="840" y="360" />
+        <di:waypoint x="490" y="360" />
+        <di:waypoint x="490" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="860" y="542" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Message Flow: Zentral → Dezentral -->
+      <bpmndi:BPMNEdge id="MsgFlow_Info_Dezentral_di" bpmnElement="MsgFlow_Info_Dezentral">
+        <di:waypoint x="840" y="755" />
+        <di:waypoint x="840" y="656" />
+        <di:waypoint x="650" y="656" />
+        <di:waypoint x="650" y="513" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="710" y="638" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>
