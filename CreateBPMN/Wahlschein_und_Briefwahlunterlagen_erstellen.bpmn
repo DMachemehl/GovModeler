@@ -1,0 +1,575 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0">
+
+  <!-- =====================================================
+       COLLABORATION - Wahlschein und Briefwahlunterlagen
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_Wahlschein_Briefwahl">
+    
+    <!-- Participant: Bürger -->
+    <bpmn:participant id="Participant_Buerger"
+                      name="Buerger"
+                      processRef="Process_Buerger" />
+    
+    <!-- Participant: IT -->
+    <bpmn:participant id="Participant_IT"
+                      name="IT"
+                      processRef="Process_IT" />
+    
+    <!-- Participant: Wahlamt -->
+    <bpmn:participant id="Participant_Wahlamt"
+                      name="Wahlamt"
+                      processRef="Process_Wahlamt" />
+    
+    <!-- Message Flows -->
+    <bpmn:messageFlow id="MsgFlow_Antrag"
+                      name="Briefwahlantrag"
+                      sourceRef="Task_Antrag_absenden"
+                      targetRef="Task_Antrag_entgegennehmen" />
+    
+    <bpmn:messageFlow id="MsgFlow_Antragsbestaetigung"
+                      name="Antragsbestaetigung"
+                      sourceRef="Task_Status_melden"
+                      targetRef="Event_Bestaetigung_empfangen" />
+    
+    <bpmn:messageFlow id="MsgFlow_Antragsdaten"
+                      name="Antragsdaten zur Pruefung"
+                      sourceRef="Task_Antrag_entgegennehmen"
+                      targetRef="Task_Antrag_pruefen" />
+    
+    <bpmn:messageFlow id="MsgFlow_Freigabe"
+                      name="Freigabe"
+                      sourceRef="Task_Antrag_freigeben"
+                      targetRef="Task_Freigabe_verarbeiten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Versandstatus_Wahlamt"
+                      name="Versandstatus"
+                      sourceRef="Task_Versandauftrag_erstellen"
+                      targetRef="Task_Versandstatus_nachverfolgen" />
+                      
+    <bpmn:messageFlow id="MsgFlow_Briefwahlunterlagen"
+                      name="Wahlschein und Briefwahlunterlagen"
+                      sourceRef="Task_Versandauftrag_erstellen"
+                      targetRef="Event_Unterlagen_empfangen" />
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       BÜRGER PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Buerger"
+                name="Briefwahl_Buerger"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Buerger" name="Wahl anstehend">
+      <bpmn:outgoing>Flow_Start_Antrag</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Task: Antrag absenden -->
+    <bpmn:userTask id="Task_Antrag_absenden" name="Briefwahlantrag absenden">
+      <bpmn:incoming>Flow_Start_Antrag</bpmn:incoming>
+      <bpmn:outgoing>Flow_Antrag_Bestaetigung</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Event: Bestätigung empfangen -->
+    <bpmn:intermediateCatchEvent id="Event_Bestaetigung_empfangen" name="Antragsbestaetigung empfangen">
+      <bpmn:incoming>Flow_Antrag_Bestaetigung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bestaetigung_Warten</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Bestaetigung" messageRef="Message_Bestaetigung" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- Event: Unterlagen empfangen -->
+    <bpmn:intermediateCatchEvent id="Event_Unterlagen_empfangen" name="Briefwahlunterlagen empfangen">
+      <bpmn:incoming>Flow_Bestaetigung_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Unterlagen_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Unterlagen" messageRef="Message_Unterlagen" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Buerger" name="Briefwahl moeglich">
+      <bpmn:incoming>Flow_Unterlagen_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Bürger -->
+    <bpmn:sequenceFlow id="Flow_Start_Antrag"
+                       sourceRef="StartEvent_Buerger"
+                       targetRef="Task_Antrag_absenden" />
+    
+    <bpmn:sequenceFlow id="Flow_Antrag_Bestaetigung"
+                       sourceRef="Task_Antrag_absenden"
+                       targetRef="Event_Bestaetigung_empfangen" />
+    
+    <bpmn:sequenceFlow id="Flow_Bestaetigung_Warten"
+                       sourceRef="Event_Bestaetigung_empfangen"
+                       targetRef="Event_Unterlagen_empfangen" />
+    
+    <bpmn:sequenceFlow id="Flow_Unterlagen_Ende"
+                       sourceRef="Event_Unterlagen_empfangen"
+                       targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       IT-PROZESS mit Lanes
+       ===================================================== -->
+  <bpmn:process id="Process_IT"
+                name="IT_Briefwahl"
+                isExecutable="true">
+    
+    <!-- Lane: Webportal -->
+    <bpmn:laneSet id="LaneSet_IT">
+      <bpmn:lane id="Lane_Webportal" name="Webportal">
+        <bpmn:flowNodeRef>Task_Antrag_entgegennehmen</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Status_melden</bpmn:flowNodeRef>
+      </bpmn:lane>
+      
+      <bpmn:lane id="Lane_Fachverfahren" name="Fachverfahren Wahlen">
+        <bpmn:flowNodeRef>Task_Daten_pruefen</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Freigabe_verarbeiten</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Unterlagen_erzeugen</bpmn:flowNodeRef>
+      </bpmn:lane>
+      
+      <bpmn:lane id="Lane_Versanddienst" name="Versanddienst">
+        <bpmn:flowNodeRef>Task_Versandauftrag_erstellen</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_IT</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    
+    <!-- Task 1: Antrag entgegennehmen (Webportal) -->
+    <bpmn:serviceTask id="Task_Antrag_entgegennehmen" name="Antrag entgegennehmen und erfassen">
+      <bpmn:outgoing>Flow_IT_Entgegennehmen_Pruefen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Task 2: Daten prüfen (Fachverfahren) -->
+    <bpmn:serviceTask id="Task_Daten_pruefen" name="Wahlberechtigung und Daten pruefen">
+      <bpmn:incoming>Flow_IT_Entgegennehmen_Pruefen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Pruefen_Status</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Task 3: Status melden (Webportal) -->
+    <bpmn:serviceTask id="Task_Status_melden" name="Status melden">
+      <bpmn:incoming>Flow_IT_Pruefen_Status</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Status_Freigabe</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Task 4: Freigabe verarbeiten (Fachverfahren) -->
+    <bpmn:serviceTask id="Task_Freigabe_verarbeiten" name="Freigabe verarbeiten">
+      <bpmn:incoming>Flow_IT_Status_Freigabe</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Freigabe_Erzeugen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Task 5: Unterlagen erzeugen (Fachverfahren) -->
+    <bpmn:serviceTask id="Task_Unterlagen_erzeugen" name="Wahlschein und Briefwahlunterlagen erzeugen">
+      <bpmn:incoming>Flow_IT_Freigabe_Erzeugen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Erzeugen_Versand</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Task 6: Versandauftrag erstellen (Versanddienst) -->
+    <bpmn:serviceTask id="Task_Versandauftrag_erstellen" name="Versandauftrag erstellen und Status melden">
+      <bpmn:incoming>Flow_IT_Erzeugen_Versand</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Versand_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_IT" name="Unterlagen versendet">
+      <bpmn:incoming>Flow_IT_Versand_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - IT -->
+    <bpmn:sequenceFlow id="Flow_IT_Entgegennehmen_Pruefen"
+                       sourceRef="Task_Antrag_entgegennehmen"
+                       targetRef="Task_Daten_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Pruefen_Status"
+                       sourceRef="Task_Daten_pruefen"
+                       targetRef="Task_Status_melden" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Status_Freigabe"
+                       sourceRef="Task_Status_melden"
+                       targetRef="Task_Freigabe_verarbeiten" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Freigabe_Erzeugen"
+                       sourceRef="Task_Freigabe_verarbeiten"
+                       targetRef="Task_Unterlagen_erzeugen" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Erzeugen_Versand"
+                       sourceRef="Task_Unterlagen_erzeugen"
+                       targetRef="Task_Versandauftrag_erstellen" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Versand_Ende"
+                       sourceRef="Task_Versandauftrag_erstellen"
+                       targetRef="EndEvent_IT" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       WAHLAMT PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Wahlamt"
+                name="Wahlamt_Briefwahl"
+                isExecutable="true">
+    
+    <!-- Task 1: Antrag prüfen -->
+    <bpmn:userTask id="Task_Antrag_pruefen" name="Antrag pruefen">
+      <bpmn:outgoing>Flow_Wahlamt_Pruefen_Freigeben</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Task 2: Antrag freigeben -->
+    <bpmn:userTask id="Task_Antrag_freigeben" name="Antrag freigeben">
+      <bpmn:incoming>Flow_Wahlamt_Pruefen_Freigeben</bpmn:incoming>
+      <bpmn:outgoing>Flow_Wahlamt_Freigeben_Versand</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Task 3: Versandstatus nachverfolgen -->
+    <bpmn:userTask id="Task_Versandstatus_nachverfolgen" name="Versandstatus nachverfolgen">
+      <bpmn:incoming>Flow_Wahlamt_Freigeben_Versand</bpmn:incoming>
+      <bpmn:outgoing>Flow_Wahlamt_Versand_Dokumentieren</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Task 4: Vorgang dokumentieren -->
+    <bpmn:userTask id="Task_Vorgang_dokumentieren" name="Vorgang dokumentieren">
+      <bpmn:incoming>Flow_Wahlamt_Versand_Dokumentieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_Wahlamt_Dokumentieren_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Wahlamt" name="Prozess dokumentiert">
+      <bpmn:incoming>Flow_Wahlamt_Dokumentieren_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Wahlamt -->
+    <bpmn:sequenceFlow id="Flow_Wahlamt_Pruefen_Freigeben"
+                       sourceRef="Task_Antrag_pruefen"
+                       targetRef="Task_Antrag_freigeben" />
+    
+    <bpmn:sequenceFlow id="Flow_Wahlamt_Freigeben_Versand"
+                       sourceRef="Task_Antrag_freigeben"
+                       targetRef="Task_Versandstatus_nachverfolgen" />
+    
+    <bpmn:sequenceFlow id="Flow_Wahlamt_Versand_Dokumentieren"
+                       sourceRef="Task_Versandstatus_nachverfolgen"
+                       targetRef="Task_Vorgang_dokumentieren" />
+    
+    <bpmn:sequenceFlow id="Flow_Wahlamt_Dokumentieren_Ende"
+                       sourceRef="Task_Vorgang_dokumentieren"
+                       targetRef="EndEvent_Wahlamt" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       MESSAGE DEFINITIONEN
+       ===================================================== -->
+  <bpmn:message id="Message_Antrag" name="Briefwahlantrag" />
+  <bpmn:message id="Message_Bestaetigung" name="Antragsbestaetigung" />
+  <bpmn:message id="Message_Unterlagen" name="Wahlschein und Briefwahlunterlagen" />
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Wahlschein_Briefwahl">
+    <bpmndi:BPMNPlane id="BPMNPlane_Wahlschein_Briefwahl" bpmnElement="Collab_Wahlschein_Briefwahl">
+      
+      <!-- ===============================
+           POOL: BÜRGER
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="190" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Bürger Process Elements (horizontale Anordnung y=160) -->
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="225" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Antrag_absenden_di" bpmnElement="Task_Antrag_absenden">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Bestaetigung_empfangen_di" bpmnElement="Event_Bestaetigung_empfangen">
+        <dc:Bounds x="472" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="450" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Unterlagen_empfangen_di" bpmnElement="Event_Unterlagen_empfangen">
+        <dc:Bounds x="632" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="610" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="792" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="770" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===============================
+           POOL: IT mit Lanes
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="1200" height="300" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="505" width="20" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Lane: Webportal -->
+      <bpmndi:BPMNShape id="Lane_Webportal_di" bpmnElement="Lane_Webportal" isHorizontal="true">
+        <dc:Bounds x="190" y="370" width="1170" height="100" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="405" width="20" height="60" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Lane: Fachverfahren Wahlen -->
+      <bpmndi:BPMNShape id="Lane_Fachverfahren_di" bpmnElement="Lane_Fachverfahren" isHorizontal="true">
+        <dc:Bounds x="190" y="470" width="1170" height="100" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="485" width="20" height="80" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Lane: Versanddienst -->
+      <bpmndi:BPMNShape id="Lane_Versanddienst_di" bpmnElement="Lane_Versanddienst" isHorizontal="true">
+        <dc:Bounds x="190" y="570" width="1170" height="100" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="590" width="20" height="70" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- IT Process Elements (horizontale Anordnung y=390/490/590 je nach Lane) -->
+      <!-- Webportal Lane (y=390 für Tasks, y=412 für Events) -->
+      <bpmndi:BPMNShape id="Task_Antrag_entgegennehmen_di" bpmnElement="Task_Antrag_entgegennehmen">
+        <dc:Bounds x="310" y="390" width="100" height="60" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Status_melden_di" bpmnElement="Task_Status_melden">
+        <dc:Bounds x="630" y="390" width="100" height="60" />
+      </bpmndi:BPMNShape>
+      
+      <!-- Fachverfahren Lane (y=490 für Tasks) -->
+      <bpmndi:BPMNShape id="Task_Daten_pruefen_di" bpmnElement="Task_Daten_pruefen">
+        <dc:Bounds x="470" y="490" width="100" height="60" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Freigabe_verarbeiten_di" bpmnElement="Task_Freigabe_verarbeiten">
+        <dc:Bounds x="790" y="490" width="100" height="60" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Unterlagen_erzeugen_di" bpmnElement="Task_Unterlagen_erzeugen">
+        <dc:Bounds x="950" y="490" width="100" height="60" />
+      </bpmndi:BPMNShape>
+      
+      <!-- Versanddienst Lane (y=590 für Tasks, y=612 für Events) -->
+      <bpmndi:BPMNShape id="Task_Versandauftrag_erstellen_di" bpmnElement="Task_Versandauftrag_erstellen">
+        <dc:Bounds x="1110" y="590" width="100" height="60" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_IT_di" bpmnElement="EndEvent_IT">
+        <dc:Bounds x="1272" y="612" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1250" y="655" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===============================
+           POOL: WAHLAMT
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Wahlamt_di" bpmnElement="Participant_Wahlamt" isHorizontal="true">
+        <dc:Bounds x="160" y="710" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="820" width="20" height="60" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Wahlamt Process Elements (horizontale Anordnung y=800) -->
+      <bpmndi:BPMNShape id="Task_Antrag_pruefen_di" bpmnElement="Task_Antrag_pruefen">
+        <dc:Bounds x="310" y="800" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Antrag_freigeben_di" bpmnElement="Task_Antrag_freigeben">
+        <dc:Bounds x="470" y="800" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Versandstatus_nachverfolgen_di" bpmnElement="Task_Versandstatus_nachverfolgen">
+        <dc:Bounds x="630" y="800" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Vorgang_dokumentieren_di" bpmnElement="Task_Vorgang_dokumentieren">
+        <dc:Bounds x="790" y="800" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Wahlamt_di" bpmnElement="EndEvent_Wahlamt">
+        <dc:Bounds x="952" y="822" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="930" y="865" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===============================
+           SEQUENCE FLOWS - BÜRGER
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_Start_Antrag_di" bpmnElement="Flow_Start_Antrag">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Antrag_Bestaetigung_di" bpmnElement="Flow_Antrag_Bestaetigung">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="472" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Bestaetigung_Warten_di" bpmnElement="Flow_Bestaetigung_Warten">
+        <di:waypoint x="508" y="200" />
+        <di:waypoint x="632" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Unterlagen_Ende_di" bpmnElement="Flow_Unterlagen_Ende">
+        <di:waypoint x="668" y="200" />
+        <di:waypoint x="792" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           SEQUENCE FLOWS - IT
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_IT_Entgegennehmen_Pruefen_di" bpmnElement="Flow_IT_Entgegennehmen_Pruefen">
+        <di:waypoint x="410" y="420" />
+        <di:waypoint x="440" y="420" />
+        <di:waypoint x="440" y="520" />
+        <di:waypoint x="470" y="520" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Pruefen_Status_di" bpmnElement="Flow_IT_Pruefen_Status">
+        <di:waypoint x="570" y="520" />
+        <di:waypoint x="600" y="520" />
+        <di:waypoint x="600" y="420" />
+        <di:waypoint x="630" y="420" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Status_Freigabe_di" bpmnElement="Flow_IT_Status_Freigabe">
+        <di:waypoint x="730" y="420" />
+        <di:waypoint x="760" y="420" />
+        <di:waypoint x="760" y="520" />
+        <di:waypoint x="790" y="520" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Freigabe_Erzeugen_di" bpmnElement="Flow_IT_Freigabe_Erzeugen">
+        <di:waypoint x="890" y="520" />
+        <di:waypoint x="950" y="520" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Erzeugen_Versand_di" bpmnElement="Flow_IT_Erzeugen_Versand">
+        <di:waypoint x="1050" y="520" />
+        <di:waypoint x="1080" y="520" />
+        <di:waypoint x="1080" y="620" />
+        <di:waypoint x="1110" y="620" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Versand_Ende_di" bpmnElement="Flow_IT_Versand_Ende">
+        <di:waypoint x="1210" y="620" />
+        <di:waypoint x="1241" y="620" />
+        <di:waypoint x="1241" y="630" />
+        <di:waypoint x="1272" y="630" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           SEQUENCE FLOWS - WAHLAMT
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_Wahlamt_Pruefen_Freigeben_di" bpmnElement="Flow_Wahlamt_Pruefen_Freigeben">
+        <di:waypoint x="410" y="840" />
+        <di:waypoint x="470" y="840" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Wahlamt_Freigeben_Versand_di" bpmnElement="Flow_Wahlamt_Freigeben_Versand">
+        <di:waypoint x="570" y="840" />
+        <di:waypoint x="630" y="840" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Wahlamt_Versand_Dokumentieren_di" bpmnElement="Flow_Wahlamt_Versand_Dokumentieren">
+        <di:waypoint x="730" y="840" />
+        <di:waypoint x="790" y="840" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Wahlamt_Dokumentieren_Ende_di" bpmnElement="Flow_Wahlamt_Dokumentieren_Ende">
+        <di:waypoint x="890" y="840" />
+        <di:waypoint x="952" y="840" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           MESSAGE FLOWS
+           =============================== -->
+      <bpmndi:BPMNEdge id="MsgFlow_Antrag_di" bpmnElement="MsgFlow_Antrag">
+        <di:waypoint x="360" y="240" />
+        <di:waypoint x="360" y="390" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="280" y="305" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Antragsbestaetigung_di" bpmnElement="MsgFlow_Antragsbestaetigung">
+        <di:waypoint x="680" y="390" />
+        <di:waypoint x="680" y="290" />
+        <di:waypoint x="490" y="290" />
+        <di:waypoint x="490" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="530" y="265" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Antragsdaten_di" bpmnElement="MsgFlow_Antragsdaten">
+        <di:waypoint x="360" y="450" />
+        <di:waypoint x="360" y="800" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="370" y="615" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Freigabe_di" bpmnElement="MsgFlow_Freigabe">
+        <di:waypoint x="520" y="800" />
+        <di:waypoint x="520" y="675" />
+        <di:waypoint x="840" y="675" />
+        <di:waypoint x="840" y="550" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="630" y="655" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Versandstatus_Wahlamt_di" bpmnElement="MsgFlow_Versandstatus_Wahlamt">
+        <di:waypoint x="1160" y="650" />
+        <di:waypoint x="1160" y="725" />
+        <di:waypoint x="680" y="725" />
+        <di:waypoint x="680" y="800" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="860" y="705" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Briefwahlunterlagen_di" bpmnElement="MsgFlow_Briefwahlunterlagen">
+        <di:waypoint x="1160" y="590" />
+        <di:waypoint x="1160" y="290" />
+        <di:waypoint x="650" y="290" />
+        <di:waypoint x="650" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="850" y="260" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>
