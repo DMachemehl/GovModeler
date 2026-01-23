@@ -14,8 +14,8 @@ Die Prozesse müssen folgenden Anforderungen genügen:
 ### Grundprinzipien:
 - **Happy Path Only**: Beschreibe immer nur den optimalen Prozessablauf ohne Alternativpfade, Fehlerfälle oder parallele Abläufe
 - **Sequentielle Schritte**: Alle Prozessschritte erfolgen nacheinander, keine parallelen Verzweigungen
-- **3-Pool-Kollaboration**: Jeder Prozess wird mit 3 Pools modelliert: Kunde (Blackbox-Pool), zentrale und dezentrale Personalstelle (Pools mit Aktivitäten)
-- **Fokus Kunde**: Prozess soll immer vom Kunden aus beschrieben werden, der Kunde wird immer als Blackbox-Pool dargestellt, die Aktivitäten der Personalstellen werden nicht modelliert.
+- **3-Pool-Kollaboration**: Jeder Prozess wird mit 3 Pools modelliert: Kunde, zentrale und dezentrale Personalstelle (Pools mit Aktivitäten)
+- **Fokus Kunde**: Prozess soll immer vom Kunden aus beschrieben werden
 
 ## Workflow
 
@@ -30,11 +30,11 @@ Wenn der Nutzer einen Prozessnamen nennt, erstelle eine strukturierte Prozessbes
 #### Detaillierte Prozessbeschreibung
 - **Startereignis**: Im Perfekt formulieren (z.B. "Antrag eingegangen", "Kind geboren")
 - **Prozessschritte**: In chronologischer Reihenfolge mit folgender Struktur:
-  - Gruppierung der Schritte nach Pools (Kunde, Behörde)
+  - Gruppierung der Schritte nach Pools (Kunde, Personalstelle dezentral, Personalstelle zentral)
   - Schritt-Nummer und Name (Substantiv + Verb, z.B. "Zuständigkeit prüfen")
-  - Akteur in Klammern (Behörde, oder Kunde)
+  - Akteur in Klammern (Personalstelle dezentral, Personalstelle zentral, oder Kunde)
   - Kurze Beschreibung der Aktivität
-  - Bei Nachrichtenaustausch: Notation "Akteur → Akteur" (z.B. "Behörde → Kunde")
+  - Bei Nachrichtenaustausch: Notation "Akteur → Akteur" (z.B. "Personalstelle dezentral, Personalstelle zentral → Kunde")
 - **Endereignis**: Im Perfekt oder als Zustand (z.B. "Antrag bearbeitet", "Prozess abgeschlossen")
 
 #### Prozessbeschreibungs-Regeln:
@@ -91,7 +91,7 @@ Diese Dokumente MÜSSEN vor der BPMN-Modell-Erstellung gelesen werden:
 
 ### 1. BPMN_Template.xml
 - Pfad: `vscode-vfs://github%2B7b2276223a312c22726566223a7b2274797065223a342c226964223a22312d6175737761686c2d6465722d706f6f6c732d6b6f69227d7d/DMachemehl/GovModeler/BPMN_Template.xml`
-- Vollständiges BPMN-Template mit 2-Pool-Kollaboration (Kunde, Organisation/Behörde)
+- Vollständiges BPMN-Template mit 3-Pool-Kollaboration (Kunde, Personalstelle dezentral, Personalstelle zentrale)
 - Message Flow Definitionen
 - Vollständige BPMN-DI Visualisierung
 
