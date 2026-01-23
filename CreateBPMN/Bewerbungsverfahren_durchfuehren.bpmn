@@ -1,0 +1,755 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0"
+  modeler:executionPlatform="Camunda Platform"
+  modeler:executionPlatformVersion="7.20.0">
+
+  <!-- =====================================================
+       COLLABORATION - Bewerbungsverfahren durchführen
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_Bewerbungsverfahren">
+    
+    <!-- Participant: Kunde -->
+    <bpmn:participant id="Participant_Kunde"
+                      name="Kunde"
+                      processRef="Process_Kunde" />
+    
+    <!-- Participant: Personalstelle dezentral -->
+    <bpmn:participant id="Participant_PS_Dezentral"
+                      name="Personalstelle dezentral"
+                      processRef="Process_PS_Dezentral" />
+    
+    <!-- Participant: Personalstelle zentral -->
+    <bpmn:participant id="Participant_PS_Zentral"
+                      name="Personalstelle zentral"
+                      processRef="Process_PS_Zentral" />
+    
+    <!-- Message Flows -->
+    <bpmn:messageFlow id="MsgFlow_Bedarf_melden"
+                      name="Personalbedarf"
+                      sourceRef="Task_Bedarf_melden"
+                      targetRef="Event_Bedarf_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Beratung"
+                      name="Beratung"
+                      sourceRef="Task_Bedarf_beraten"
+                      targetRef="Event_Beratung_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Unterlagen_konsolidiert"
+                      name="Bedarfsunterlagen"
+                      sourceRef="Task_Unterlagen_konsolidieren"
+                      targetRef="Event_Unterlagen_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Profil_freigeben"
+                      name="Profilfreigabe"
+                      sourceRef="Task_Profil_freigeben"
+                      targetRef="Event_Freigabe_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Auswahlentscheidung"
+                      name="Auswahlentscheidung"
+                      sourceRef="Task_Auswahlentscheidung"
+                      targetRef="Event_Entscheidung_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Termine_Unterlagen"
+                      name="Termine/Unterlagen"
+                      sourceRef="Task_Gespraeche_terminieren"
+                      targetRef="Event_Termine_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Teilnahme"
+                      name="Teilnahme"
+                      sourceRef="Task_Teilnahme_sicherstellen"
+                      targetRef="Event_Teilnahme_erfasst" />
+    
+    <bpmn:messageFlow id="MsgFlow_Abschluss"
+                      name="Abschlussmitteilung"
+                      sourceRef="Task_Absagen_erteilen"
+                      targetRef="Event_Abschluss_erhalten" />
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       KUNDE PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Kunde"
+                name="Bewerbungsverfahren_Kunde"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Kunde" name="Personalbedarf entstanden">
+      <bpmn:outgoing>Flow_Start_Melden</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Personalbedarf melden -->
+    <bpmn:userTask id="Task_Bedarf_melden" name="Personalbedarf melden">
+      <bpmn:incoming>Flow_Start_Melden</bpmn:incoming>
+      <bpmn:outgoing>Flow_Melden_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Beratung erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Beratung_erhalten" name="Beratung erhalten">
+      <bpmn:incoming>Flow_Melden_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Beratung_Freigabe</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Beratung" messageRef="Message_Beratung" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- User Task: Anforderungsprofil freigeben -->
+    <bpmn:userTask id="Task_Profil_freigeben" name="Anforderungsprofil freigeben">
+      <bpmn:incoming>Flow_Beratung_Freigabe</bpmn:incoming>
+      <bpmn:outgoing>Flow_Freigabe_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Termine erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Termine_erhalten" name="Termine erhalten">
+      <bpmn:incoming>Flow_Freigabe_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Termine_Teilnahme</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Termine" messageRef="Message_Termine" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- User Task: Teilnahme an Vorstellungsgesprächen -->
+    <bpmn:userTask id="Task_Teilnahme_sicherstellen" name="Teilnahme an Vorstellungsgesprächen sicherstellen">
+      <bpmn:incoming>Flow_Termine_Teilnahme</bpmn:incoming>
+      <bpmn:outgoing>Flow_Teilnahme_Entscheidung</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Auswahlentscheidung übermitteln -->
+    <bpmn:userTask id="Task_Auswahlentscheidung" name="Auswahlentscheidung übermitteln">
+      <bpmn:incoming>Flow_Teilnahme_Entscheidung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Entscheidung_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Abschlussmitteilung erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Abschluss_erhalten" name="Abschlussmitteilung erhalten">
+      <bpmn:incoming>Flow_Entscheidung_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Abschluss_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Abschluss" messageRef="Message_Abschluss" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Kunde" name="Verfahren abgeschlossen">
+      <bpmn:incoming>Flow_Abschluss_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Kunde -->
+    <bpmn:sequenceFlow id="Flow_Start_Melden"
+                       sourceRef="StartEvent_Kunde"
+                       targetRef="Task_Bedarf_melden" />
+    
+    <bpmn:sequenceFlow id="Flow_Melden_Warten"
+                       sourceRef="Task_Bedarf_melden"
+                       targetRef="Event_Beratung_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Beratung_Freigabe"
+                       sourceRef="Event_Beratung_erhalten"
+                       targetRef="Task_Profil_freigeben" />
+    
+    <bpmn:sequenceFlow id="Flow_Freigabe_Warten"
+                       sourceRef="Task_Profil_freigeben"
+                       targetRef="Event_Termine_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Termine_Teilnahme"
+                       sourceRef="Event_Termine_erhalten"
+                       targetRef="Task_Teilnahme_sicherstellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Teilnahme_Entscheidung"
+                       sourceRef="Task_Teilnahme_sicherstellen"
+                       targetRef="Task_Auswahlentscheidung" />
+    
+    <bpmn:sequenceFlow id="Flow_Entscheidung_Warten"
+                       sourceRef="Task_Auswahlentscheidung"
+                       targetRef="Event_Abschluss_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Abschluss_Ende"
+                       sourceRef="Event_Abschluss_erhalten"
+                       targetRef="EndEvent_Kunde" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       PERSONALSTELLE DEZENTRAL PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_PS_Dezentral"
+                name="Bewerbungsverfahren_PS_Dezentral"
+                isExecutable="true">
+    
+    <!-- Intermediate Catch Event: Bedarf erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Bedarf_erhalten" name="Bedarf erhalten">
+      <bpmn:outgoing>Flow_Bedarf_Beraten</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Bedarf" messageRef="Message_Bedarf" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- User Task: Bedarf klären und beraten -->
+    <bpmn:userTask id="Task_Bedarf_beraten" name="Bedarf klären und beraten">
+      <bpmn:incoming>Flow_Bedarf_Beraten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Beraten_Konsolidieren</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Bedarfsunterlagen konsolidieren -->
+    <bpmn:userTask id="Task_Unterlagen_konsolidieren" name="Bedarfsunterlagen konsolidieren">
+      <bpmn:incoming>Flow_Beraten_Konsolidieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_Konsolidieren_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_PS_Dezentral" name="Bedarfsunterlagen weitergeleitet">
+      <bpmn:incoming>Flow_Konsolidieren_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - PS Dezentral -->
+    <bpmn:sequenceFlow id="Flow_Bedarf_Beraten"
+                       sourceRef="Event_Bedarf_erhalten"
+                       targetRef="Task_Bedarf_beraten" />
+    
+    <bpmn:sequenceFlow id="Flow_Beraten_Konsolidieren"
+                       sourceRef="Task_Bedarf_beraten"
+                       targetRef="Task_Unterlagen_konsolidieren" />
+    
+    <bpmn:sequenceFlow id="Flow_Konsolidieren_Ende"
+                       sourceRef="Task_Unterlagen_konsolidieren"
+                       targetRef="EndEvent_PS_Dezentral" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       PERSONALSTELLE ZENTRAL PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_PS_Zentral"
+                name="Bewerbungsverfahren_PS_Zentral"
+                isExecutable="true">
+    
+    <!-- Intermediate Catch Event: Bedarfsunterlagen erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Unterlagen_erhalten" name="Bedarfsunterlagen erhalten">
+      <bpmn:outgoing>Flow_Unterlagen_Pruefen</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Unterlagen" messageRef="Message_Unterlagen" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- Service Task: Vollständigkeit automatisiert prüfen -->
+    <bpmn:serviceTask id="Task_Vollstaendigkeit_pruefen" name="Vollständigkeit automatisiert prüfen">
+      <bpmn:incoming>Flow_Unterlagen_Pruefen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Pruefen_Warten</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Intermediate Catch Event: Freigabe erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Freigabe_erhalten" name="Freigabe erhalten">
+      <bpmn:incoming>Flow_Pruefen_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Freigabe_Erstellen</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Freigabe" messageRef="Message_Freigabe" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- User Task: Ausschreibung erstellen -->
+    <bpmn:userTask id="Task_Ausschreibung_erstellen" name="Ausschreibung erstellen">
+      <bpmn:incoming>Flow_Freigabe_Erstellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Erstellen_Veroeffentlichen</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Ausschreibung veröffentlichen -->
+    <bpmn:userTask id="Task_Ausschreibung_veroeffentlichen" name="Ausschreibung veröffentlichen">
+      <bpmn:incoming>Flow_Erstellen_Veroeffentlichen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Veroeffentlichen_Entgegennehmen</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Bewerbungen entgegennehmen -->
+    <bpmn:userTask id="Task_Bewerbungen_entgegennehmen" name="Bewerbungen entgegennehmen und erfassen">
+      <bpmn:incoming>Flow_Veroeffentlichen_Entgegennehmen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Entgegennehmen_Auswahl</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Bewerberauswahl durchführen -->
+    <bpmn:userTask id="Task_Bewerberauswahl" name="Bewerberauswahl durchführen">
+      <bpmn:incoming>Flow_Entgegennehmen_Auswahl</bpmn:incoming>
+      <bpmn:outgoing>Flow_Auswahl_Terminieren</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Vorstellungsgespräche terminieren -->
+    <bpmn:userTask id="Task_Gespraeche_terminieren" name="Vorstellungsgespräche terminieren">
+      <bpmn:incoming>Flow_Auswahl_Terminieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_Terminieren_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Teilnahme erfasst -->
+    <bpmn:intermediateCatchEvent id="Event_Teilnahme_erfasst" name="Teilnahme erfasst">
+      <bpmn:incoming>Flow_Terminieren_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Teilnahme_Konsolidieren</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Teilnahme" messageRef="Message_Teilnahme" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- User Task: Gesprächsergebnisse konsolidieren -->
+    <bpmn:userTask id="Task_Ergebnisse_konsolidieren" name="Gesprächsergebnisse konsolidieren">
+      <bpmn:incoming>Flow_Teilnahme_Konsolidieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_Konsolidieren_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Auswahlentscheidung erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Entscheidung_erhalten" name="Entscheidung erhalten">
+      <bpmn:incoming>Flow_Konsolidieren_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Entscheidung_Absagen</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Entscheidung" messageRef="Message_Entscheidung" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- User Task: Absageschreiben erteilen -->
+    <bpmn:userTask id="Task_Absagen_erteilen" name="Absageschreiben erteilen">
+      <bpmn:incoming>Flow_Entscheidung_Absagen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Absagen_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_PS_Zentral" name="Bewerbungsverfahren abgeschlossen">
+      <bpmn:incoming>Flow_Absagen_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - PS Zentral -->
+    <bpmn:sequenceFlow id="Flow_Unterlagen_Pruefen"
+                       sourceRef="Event_Unterlagen_erhalten"
+                       targetRef="Task_Vollstaendigkeit_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Pruefen_Warten"
+                       sourceRef="Task_Vollstaendigkeit_pruefen"
+                       targetRef="Event_Freigabe_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Freigabe_Erstellen"
+                       sourceRef="Event_Freigabe_erhalten"
+                       targetRef="Task_Ausschreibung_erstellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Erstellen_Veroeffentlichen"
+                       sourceRef="Task_Ausschreibung_erstellen"
+                       targetRef="Task_Ausschreibung_veroeffentlichen" />
+    
+    <bpmn:sequenceFlow id="Flow_Veroeffentlichen_Entgegennehmen"
+                       sourceRef="Task_Ausschreibung_veroeffentlichen"
+                       targetRef="Task_Bewerbungen_entgegennehmen" />
+    
+    <bpmn:sequenceFlow id="Flow_Entgegennehmen_Auswahl"
+                       sourceRef="Task_Bewerbungen_entgegennehmen"
+                       targetRef="Task_Bewerberauswahl" />
+    
+    <bpmn:sequenceFlow id="Flow_Auswahl_Terminieren"
+                       sourceRef="Task_Bewerberauswahl"
+                       targetRef="Task_Gespraeche_terminieren" />
+    
+    <bpmn:sequenceFlow id="Flow_Terminieren_Warten"
+                       sourceRef="Task_Gespraeche_terminieren"
+                       targetRef="Event_Teilnahme_erfasst" />
+    
+    <bpmn:sequenceFlow id="Flow_Teilnahme_Konsolidieren"
+                       sourceRef="Event_Teilnahme_erfasst"
+                       targetRef="Task_Ergebnisse_konsolidieren" />
+    
+    <bpmn:sequenceFlow id="Flow_Konsolidieren_Warten"
+                       sourceRef="Task_Ergebnisse_konsolidieren"
+                       targetRef="Event_Entscheidung_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Entscheidung_Absagen"
+                       sourceRef="Event_Entscheidung_erhalten"
+                       targetRef="Task_Absagen_erteilen" />
+    
+    <bpmn:sequenceFlow id="Flow_Absagen_Ende"
+                       sourceRef="Task_Absagen_erteilen"
+                       targetRef="EndEvent_PS_Zentral" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       MESSAGE DEFINITIONEN
+       ===================================================== -->
+  <bpmn:message id="Message_Bedarf" name="Personalbedarf" />
+  <bpmn:message id="Message_Beratung" name="Beratung" />
+  <bpmn:message id="Message_Unterlagen" name="Bedarfsunterlagen" />
+  <bpmn:message id="Message_Freigabe" name="Profilfreigabe" />
+  <bpmn:message id="Message_Termine" name="Termine/Unterlagen" />
+  <bpmn:message id="Message_Teilnahme" name="Teilnahme" />
+  <bpmn:message id="Message_Entscheidung" name="Auswahlentscheidung" />
+  <bpmn:message id="Message_Abschluss" name="Abschlussmitteilung" />
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Bewerbungsverfahren">
+    <bpmndi:BPMNPlane id="BPMNPlane_Bewerbungsverfahren" bpmnElement="Collab_Bewerbungsverfahren">
+      
+      <!-- ===============================
+           POOL: KUNDE
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Kunde_di" bpmnElement="Participant_Kunde" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1800" height="300" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="215" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Kunde Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Kunde_di" bpmnElement="StartEvent_Kunde">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Bedarf_melden_di" bpmnElement="Task_Bedarf_melden">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Beratung_erhalten_di" bpmnElement="Event_Beratung_erhalten">
+        <dc:Bounds x="472" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="450" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Profil_freigeben_di" bpmnElement="Task_Profil_freigeben">
+        <dc:Bounds x="560" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Termine_erhalten_di" bpmnElement="Event_Termine_erhalten">
+        <dc:Bounds x="722" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="700" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Teilnahme_sicherstellen_di" bpmnElement="Task_Teilnahme_sicherstellen">
+        <dc:Bounds x="810" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Auswahlentscheidung_di" bpmnElement="Task_Auswahlentscheidung">
+        <dc:Bounds x="970" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Abschluss_erhalten_di" bpmnElement="Event_Abschluss_erhalten">
+        <dc:Bounds x="1132" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1110" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Kunde_di" bpmnElement="EndEvent_Kunde">
+        <dc:Bounds x="1222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1200" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===============================
+           POOL: PERSONALSTELLE DEZENTRAL
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_PS_Dezentral_di" bpmnElement="Participant_PS_Dezentral" isHorizontal="true">
+        <dc:Bounds x="160" y="420" width="1800" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="520" width="20" height="130" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- PS Dezentral Process Elements -->
+      <bpmndi:BPMNShape id="Event_Bedarf_erhalten_di" bpmnElement="Event_Bedarf_erhalten">
+        <dc:Bounds x="342" y="517" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="320" y="560" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Bedarf_beraten_di" bpmnElement="Task_Bedarf_beraten">
+        <dc:Bounds x="440" y="495" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Unterlagen_konsolidieren_di" bpmnElement="Task_Unterlagen_konsolidieren">
+        <dc:Bounds x="600" y="495" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_PS_Dezentral_di" bpmnElement="EndEvent_PS_Dezentral">
+        <dc:Bounds x="762" y="517" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="740" y="560" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===============================
+           POOL: PERSONALSTELLE ZENTRAL
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_PS_Zentral_di" bpmnElement="Participant_PS_Zentral" isHorizontal="true">
+        <dc:Bounds x="160" y="710" width="1800" height="300" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="835" width="20" height="130" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- PS Zentral Process Elements -->
+      <bpmndi:BPMNShape id="Event_Unterlagen_erhalten_di" bpmnElement="Event_Unterlagen_erhalten">
+        <dc:Bounds x="632" y="842" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="610" y="885" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Vollstaendigkeit_pruefen_di" bpmnElement="Task_Vollstaendigkeit_pruefen">
+        <dc:Bounds x="730" y="820" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Freigabe_erhalten_di" bpmnElement="Event_Freigabe_erhalten">
+        <dc:Bounds x="592" y="842" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="570" y="885" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Ausschreibung_erstellen_di" bpmnElement="Task_Ausschreibung_erstellen">
+        <dc:Bounds x="490" y="820" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Ausschreibung_veroeffentlichen_di" bpmnElement="Task_Ausschreibung_veroeffentlichen">
+        <dc:Bounds x="390" y="820" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Bewerbungen_entgegennehmen_di" bpmnElement="Task_Bewerbungen_entgegennehmen">
+        <dc:Bounds x="290" y="820" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Bewerberauswahl_di" bpmnElement="Task_Bewerberauswahl">
+        <dc:Bounds x="890" y="820" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Gespraeche_terminieren_di" bpmnElement="Task_Gespraeche_terminieren">
+        <dc:Bounds x="1050" y="820" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Teilnahme_erfasst_di" bpmnElement="Event_Teilnahme_erfasst">
+        <dc:Bounds x="842" y="842" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="820" y="885" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Ergebnisse_konsolidieren_di" bpmnElement="Task_Ergebnisse_konsolidieren">
+        <dc:Bounds x="1210" y="820" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Entscheidung_erhalten_di" bpmnElement="Event_Entscheidung_erhalten">
+        <dc:Bounds x="1002" y="842" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="980" y="885" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Absagen_erteilen_di" bpmnElement="Task_Absagen_erteilen">
+        <dc:Bounds x="1370" y="820" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_PS_Zentral_di" bpmnElement="EndEvent_PS_Zentral">
+        <dc:Bounds x="1532" y="842" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1510" y="885" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===============================
+           SEQUENCE FLOWS - KUNDE
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_Start_Melden_di" bpmnElement="Flow_Start_Melden">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Melden_Warten_di" bpmnElement="Flow_Melden_Warten">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="472" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Beratung_Freigabe_di" bpmnElement="Flow_Beratung_Freigabe">
+        <di:waypoint x="508" y="200" />
+        <di:waypoint x="560" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Freigabe_Warten_di" bpmnElement="Flow_Freigabe_Warten">
+        <di:waypoint x="660" y="200" />
+        <di:waypoint x="722" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Termine_Teilnahme_di" bpmnElement="Flow_Termine_Teilnahme">
+        <di:waypoint x="758" y="200" />
+        <di:waypoint x="810" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Teilnahme_Entscheidung_di" bpmnElement="Flow_Teilnahme_Entscheidung">
+        <di:waypoint x="910" y="200" />
+        <di:waypoint x="970" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Entscheidung_Warten_di" bpmnElement="Flow_Entscheidung_Warten">
+        <di:waypoint x="1070" y="200" />
+        <di:waypoint x="1132" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Abschluss_Ende_di" bpmnElement="Flow_Abschluss_Ende">
+        <di:waypoint x="1168" y="200" />
+        <di:waypoint x="1222" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           SEQUENCE FLOWS - PS DEZENTRAL
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_Bedarf_Beraten_di" bpmnElement="Flow_Bedarf_Beraten">
+        <di:waypoint x="378" y="535" />
+        <di:waypoint x="440" y="535" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Beraten_Konsolidieren_di" bpmnElement="Flow_Beraten_Konsolidieren">
+        <di:waypoint x="540" y="535" />
+        <di:waypoint x="600" y="535" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Konsolidieren_Ende_di" bpmnElement="Flow_Konsolidieren_Ende">
+        <di:waypoint x="700" y="535" />
+        <di:waypoint x="762" y="535" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           SEQUENCE FLOWS - PS ZENTRAL
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_Unterlagen_Pruefen_di" bpmnElement="Flow_Unterlagen_Pruefen">
+        <di:waypoint x="668" y="860" />
+        <di:waypoint x="730" y="860" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Pruefen_Warten_di" bpmnElement="Flow_Pruefen_Warten">
+        <di:waypoint x="780" y="820" />
+        <di:waypoint x="780" y="770" />
+        <di:waypoint x="610" y="770" />
+        <di:waypoint x="610" y="842" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Freigabe_Erstellen_di" bpmnElement="Flow_Freigabe_Erstellen">
+        <di:waypoint x="592" y="860" />
+        <di:waypoint x="590" y="860" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Erstellen_Veroeffentlichen_di" bpmnElement="Flow_Erstellen_Veroeffentlichen">
+        <di:waypoint x="490" y="860" />
+        <di:waypoint x="490" y="860" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Veroeffentlichen_Entgegennehmen_di" bpmnElement="Flow_Veroeffentlichen_Entgegennehmen">
+        <di:waypoint x="390" y="860" />
+        <di:waypoint x="390" y="860" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Entgegennehmen_Auswahl_di" bpmnElement="Flow_Entgegennehmen_Auswahl">
+        <di:waypoint x="340" y="820" />
+        <di:waypoint x="340" y="750" />
+        <di:waypoint x="940" y="750" />
+        <di:waypoint x="940" y="820" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Auswahl_Terminieren_di" bpmnElement="Flow_Auswahl_Terminieren">
+        <di:waypoint x="990" y="860" />
+        <di:waypoint x="1050" y="860" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Terminieren_Warten_di" bpmnElement="Flow_Terminieren_Warten">
+        <di:waypoint x="1100" y="820" />
+        <di:waypoint x="1100" y="760" />
+        <di:waypoint x="860" y="760" />
+        <di:waypoint x="860" y="842" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Teilnahme_Konsolidieren_di" bpmnElement="Flow_Teilnahme_Konsolidieren">
+        <di:waypoint x="878" y="860" />
+        <di:waypoint x="1080" y="860" />
+        <di:waypoint x="1080" y="950" />
+        <di:waypoint x="1260" y="950" />
+        <di:waypoint x="1260" y="900" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Konsolidieren_Warten_di" bpmnElement="Flow_Konsolidieren_Warten">
+        <di:waypoint x="1210" y="860" />
+        <di:waypoint x="1038" y="860" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Entscheidung_Absagen_di" bpmnElement="Flow_Entscheidung_Absagen">
+        <di:waypoint x="1038" y="860" />
+        <di:waypoint x="1204" y="860" />
+        <di:waypoint x="1204" y="940" />
+        <di:waypoint x="1420" y="940" />
+        <di:waypoint x="1420" y="900" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Absagen_Ende_di" bpmnElement="Flow_Absagen_Ende">
+        <di:waypoint x="1470" y="860" />
+        <di:waypoint x="1532" y="860" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           MESSAGE FLOWS
+           =============================== -->
+      <bpmndi:BPMNEdge id="MsgFlow_Bedarf_melden_di" bpmnElement="MsgFlow_Bedarf_melden">
+        <di:waypoint x="360" y="240" />
+        <di:waypoint x="360" y="517" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="280" y="370" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Beratung_di" bpmnElement="MsgFlow_Beratung">
+        <di:waypoint x="490" y="495" />
+        <di:waypoint x="490" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="410" y="350" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Unterlagen_konsolidiert_di" bpmnElement="MsgFlow_Unterlagen_konsolidiert">
+        <di:waypoint x="650" y="575" />
+        <di:waypoint x="650" y="842" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="570" y="700" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Profil_freigeben_di" bpmnElement="MsgFlow_Profil_freigeben">
+        <di:waypoint x="610" y="240" />
+        <di:waypoint x="610" y="842" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="530" y="530" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Termine_Unterlagen_di" bpmnElement="MsgFlow_Termine_Unterlagen">
+        <di:waypoint x="1100" y="820" />
+        <di:waypoint x="1100" y="600" />
+        <di:waypoint x="740" y="600" />
+        <di:waypoint x="740" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="660" y="410" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Teilnahme_di" bpmnElement="MsgFlow_Teilnahme">
+        <di:waypoint x="860" y="240" />
+        <di:waypoint x="860" y="842" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="780" y="530" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Auswahlentscheidung_di" bpmnElement="MsgFlow_Auswahlentscheidung">
+        <di:waypoint x="1020" y="240" />
+        <di:waypoint x="1020" y="842" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="940" y="530" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Abschluss_di" bpmnElement="MsgFlow_Abschluss">
+        <di:waypoint x="1420" y="820" />
+        <di:waypoint x="1420" y="600" />
+        <di:waypoint x="1150" y="600" />
+        <di:waypoint x="1150" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1070" y="410" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>
