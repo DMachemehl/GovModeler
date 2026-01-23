@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0"
+  id="Definitions_Stammdatenaenderungen_KMPersonal">
+
+  <!-- =====================================================
+       COLLABORATION - Stammdatenaenderungen ausfuehren (KM.Personal)
+       Pflege von Persoenlichen Daten, Betrieblichen Funktionen,
+       Kostenstellen, Adressen, Bankverbindung etc.
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_Stammdatenaenderungen_KMPersonal">
+    
+    <!-- Participant: Buerger (Mitarbeitende/Antragstellende) -->
+    <bpmn:participant id="Participant_Buerger"
+                      name="Buerger"
+                      processRef="Process_Buerger" />
+    
+    <!-- Participant: IT (KM.Personal) -->
+    <bpmn:participant id="Participant_IT"
+                      name="IT (KM.Personal)"
+                      processRef="Process_IT" />
+    
+    <!-- Participant: Behoerde/Organisation (Personalstelle) -->
+    <bpmn:participant id="Participant_Behoerde"
+                      name="Personalstelle"
+                      processRef="Process_Behoerde" />
+    
+    <!-- Message Flows zwischen Participanten -->
+    <bpmn:messageFlow id="MsgFlow_Antrag_an_IT"
+                      name="Aenderungsantrag"
+                      sourceRef="Task_Antrag_absenden"
+                      targetRef="StartEvent_IT" />
+    
+    <bpmn:messageFlow id="MsgFlow_Zuweisung_an_Behoerde"
+                      name="Vorgang zuweisen"
+                      sourceRef="Task_Antrag_zuweisen"
+                      targetRef="StartEvent_Behoerde" />
+    
+    <bpmn:messageFlow id="MsgFlow_Freigabe_an_IT"
+                      name="Freigabe"
+                      sourceRef="Task_Stammdaten_aktualisieren"
+                      targetRef="Event_Freigabe_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Bestaetigung_an_Buerger"
+                      name="Bestaetigung"
+                      sourceRef="Task_Stammdaten_speichern"
+                      targetRef="Event_Bestaetigung_erhalten" />
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       BUERGER PROZESS - Antragstellung Stammdatenaenderung
+       ===================================================== -->
+  <bpmn:process id="Process_Buerger"
+                name="Stammdatenaenderungen_Buerger"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Buerger" name="Aenderungsbedarf gemeldet">
+      <bpmn:outgoing>Flow_B_Start_Erfassen</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Aenderungsantrag erfassen -->
+    <bpmn:userTask id="Task_Antrag_erfassen" name="Aenderungsantrag erfassen">
+      <bpmn:incoming>Flow_B_Start_Erfassen</bpmn:incoming>
+      <bpmn:outgoing>Flow_B_Erfassen_Absenden</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Aenderungsantrag absenden -->
+    <bpmn:userTask id="Task_Antrag_absenden" name="Aenderungsantrag absenden">
+      <bpmn:incoming>Flow_B_Erfassen_Absenden</bpmn:incoming>
+      <bpmn:outgoing>Flow_B_Absenden_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Bestaetigung erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Bestaetigung_erhalten" name="Bestaetigung erhalten">
+      <bpmn:incoming>Flow_B_Absenden_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_B_Bestaetigung_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgEventDef_Bestaetigung" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Buerger" name="Stammdaten aktualisiert">
+      <bpmn:incoming>Flow_B_Bestaetigung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Buerger -->
+    <bpmn:sequenceFlow id="Flow_B_Start_Erfassen"
+                       sourceRef="StartEvent_Buerger"
+                       targetRef="Task_Antrag_erfassen" />
+    
+    <bpmn:sequenceFlow id="Flow_B_Erfassen_Absenden"
+                       sourceRef="Task_Antrag_erfassen"
+                       targetRef="Task_Antrag_absenden" />
+    
+    <bpmn:sequenceFlow id="Flow_B_Absenden_Warten"
+                       sourceRef="Task_Antrag_absenden"
+                       targetRef="Event_Bestaetigung_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_B_Bestaetigung_Ende"
+                       sourceRef="Event_Bestaetigung_erhalten"
+                       targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       IT PROZESS - KM.Personal Datenverarbeitung
+       ===================================================== -->
+  <bpmn:process id="Process_IT"
+                name="Stammdatenaenderungen_IT"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_IT" name="Aenderungsantrag eingegangen">
+      <bpmn:outgoing>Flow_IT_Start_Validieren</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgEventDef_IT_Start" />
+    </bpmn:startEvent>
+    
+    <!-- Service Task: Aenderungsdaten validieren -->
+    <bpmn:serviceTask id="Task_Daten_validieren" name="Aenderungsdaten validieren">
+      <bpmn:incoming>Flow_IT_Start_Validieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Validieren_Zuweisen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Service Task: Antrag zur Bearbeitung zuweisen -->
+    <bpmn:serviceTask id="Task_Antrag_zuweisen" name="Antrag zur Bearbeitung zuweisen">
+      <bpmn:incoming>Flow_IT_Validieren_Zuweisen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Zuweisen_Warten</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Intermediate Catch Event: Freigabe erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Freigabe_erhalten" name="Freigabe erhalten">
+      <bpmn:incoming>Flow_IT_Zuweisen_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Freigabe_Speichern</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgEventDef_Freigabe" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- Service Task: Stammdaten speichern und bestaetigen -->
+    <bpmn:serviceTask id="Task_Stammdaten_speichern" name="Stammdaten speichern und bestaetigen">
+      <bpmn:incoming>Flow_IT_Freigabe_Speichern</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Speichern_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_IT" name="Daten persistiert">
+      <bpmn:incoming>Flow_IT_Speichern_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - IT -->
+    <bpmn:sequenceFlow id="Flow_IT_Start_Validieren"
+                       sourceRef="StartEvent_IT"
+                       targetRef="Task_Daten_validieren" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Validieren_Zuweisen"
+                       sourceRef="Task_Daten_validieren"
+                       targetRef="Task_Antrag_zuweisen" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Zuweisen_Warten"
+                       sourceRef="Task_Antrag_zuweisen"
+                       targetRef="Event_Freigabe_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Freigabe_Speichern"
+                       sourceRef="Event_Freigabe_erhalten"
+                       targetRef="Task_Stammdaten_speichern" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Speichern_Ende"
+                       sourceRef="Task_Stammdaten_speichern"
+                       targetRef="EndEvent_IT" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       BEHOERDE PROZESS - Personalstelle Bearbeitung
+       ===================================================== -->
+  <bpmn:process id="Process_Behoerde"
+                name="Stammdatenaenderungen_Behoerde"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Behoerde" name="Vorgang eingegangen">
+      <bpmn:outgoing>Flow_Beh_Start_Pruefen</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgEventDef_Beh_Start" />
+    </bpmn:startEvent>
+    
+    <!-- User Task: Aenderungsantrag pruefen -->
+    <bpmn:userTask id="Task_Antrag_pruefen" name="Aenderungsantrag pruefen">
+      <bpmn:incoming>Flow_Beh_Start_Pruefen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Beh_Pruefen_Aktualisieren</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Stammdaten aktualisieren (Freigabe) -->
+    <bpmn:userTask id="Task_Stammdaten_aktualisieren" name="Stammdaten aktualisieren">
+      <bpmn:incoming>Flow_Beh_Pruefen_Aktualisieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_Beh_Aktualisieren_Abschluss</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Abschluss bestaetigen -->
+    <bpmn:userTask id="Task_Abschluss_bestaetigen" name="Abschluss bestaetigen">
+      <bpmn:incoming>Flow_Beh_Aktualisieren_Abschluss</bpmn:incoming>
+      <bpmn:outgoing>Flow_Beh_Abschluss_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Behoerde" name="Vorgang abgeschlossen">
+      <bpmn:incoming>Flow_Beh_Abschluss_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Behoerde -->
+    <bpmn:sequenceFlow id="Flow_Beh_Start_Pruefen"
+                       sourceRef="StartEvent_Behoerde"
+                       targetRef="Task_Antrag_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Beh_Pruefen_Aktualisieren"
+                       sourceRef="Task_Antrag_pruefen"
+                       targetRef="Task_Stammdaten_aktualisieren" />
+    
+    <bpmn:sequenceFlow id="Flow_Beh_Aktualisieren_Abschluss"
+                       sourceRef="Task_Stammdaten_aktualisieren"
+                       targetRef="Task_Abschluss_bestaetigen" />
+    
+    <bpmn:sequenceFlow id="Flow_Beh_Abschluss_Ende"
+                       sourceRef="Task_Abschluss_bestaetigen"
+                       targetRef="EndEvent_Behoerde" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       BPMN DIAGRAM INTERCHANGE (BPMN-DI)
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Stammdatenaenderungen_KMPersonal">
+    <bpmndi:BPMNPlane id="BPMNPlane_Stammdatenaenderungen_KMPersonal" bpmnElement="Collab_Stammdatenaenderungen_KMPersonal">
+      
+      <!-- ===== POOL: BUERGER ===== -->
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- Buerger: Start Event -->
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="225" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Buerger: Task 1 - Aenderungsantrag erfassen -->
+      <bpmndi:BPMNShape id="Task_Antrag_erfassen_di" bpmnElement="Task_Antrag_erfassen">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- Buerger: Task 2 - Aenderungsantrag absenden -->
+      <bpmndi:BPMNShape id="Task_Antrag_absenden_di" bpmnElement="Task_Antrag_absenden">
+        <dc:Bounds x="470" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- Buerger: Intermediate Catch Event - Bestaetigung erhalten -->
+      <bpmndi:BPMNShape id="Event_Bestaetigung_erhalten_di" bpmnElement="Event_Bestaetigung_erhalten">
+        <dc:Bounds x="632" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="614" y="225" width="73" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Buerger: End Event -->
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="732" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="709" y="225" width="82" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===== POOL: IT (KM.Personal) ===== -->
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="1200" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- IT: Start Event -->
+      <bpmndi:BPMNShape id="StartEvent_IT_di" bpmnElement="StartEvent_IT">
+        <dc:Bounds x="222" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="520" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- IT: Task 1 - Aenderungsdaten validieren -->
+      <bpmndi:BPMNShape id="Task_Daten_validieren_di" bpmnElement="Task_Daten_validieren">
+        <dc:Bounds x="310" y="455" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- IT: Task 2 - Antrag zuweisen -->
+      <bpmndi:BPMNShape id="Task_Antrag_zuweisen_di" bpmnElement="Task_Antrag_zuweisen">
+        <dc:Bounds x="470" y="455" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- IT: Intermediate Catch Event - Freigabe erhalten -->
+      <bpmndi:BPMNShape id="Event_Freigabe_erhalten_di" bpmnElement="Event_Freigabe_erhalten">
+        <dc:Bounds x="632" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="614" y="520" width="73" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- IT: Task 3 - Stammdaten speichern -->
+      <bpmndi:BPMNShape id="Task_Stammdaten_speichern_di" bpmnElement="Task_Stammdaten_speichern">
+        <dc:Bounds x="730" y="455" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- IT: End Event -->
+      <bpmndi:BPMNShape id="EndEvent_IT_di" bpmnElement="EndEvent_IT">
+        <dc:Bounds x="892" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="872" y="520" width="77" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===== POOL: BEHOERDE (Personalstelle) ===== -->
+      <bpmndi:BPMNShape id="Participant_Behoerde_di" bpmnElement="Participant_Behoerde" isHorizontal="true">
+        <dc:Bounds x="160" y="660" width="1200" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- Behoerde: Start Event -->
+      <bpmndi:BPMNShape id="StartEvent_Behoerde_di" bpmnElement="StartEvent_Behoerde">
+        <dc:Bounds x="222" y="767" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="199" y="810" width="82" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Behoerde: Task 1 - Aenderungsantrag pruefen -->
+      <bpmndi:BPMNShape id="Task_Antrag_pruefen_di" bpmnElement="Task_Antrag_pruefen">
+        <dc:Bounds x="310" y="745" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- Behoerde: Task 2 - Stammdaten aktualisieren -->
+      <bpmndi:BPMNShape id="Task_Stammdaten_aktualisieren_di" bpmnElement="Task_Stammdaten_aktualisieren">
+        <dc:Bounds x="470" y="745" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- Behoerde: Task 3 - Abschluss bestaetigen -->
+      <bpmndi:BPMNShape id="Task_Abschluss_bestaetigen_di" bpmnElement="Task_Abschluss_bestaetigen">
+        <dc:Bounds x="630" y="745" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- Behoerde: End Event -->
+      <bpmndi:BPMNShape id="EndEvent_Behoerde_di" bpmnElement="EndEvent_Behoerde">
+        <dc:Bounds x="792" y="767" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="768" y="810" width="85" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===== SEQUENCE FLOWS: BUERGER ===== -->
+      <bpmndi:BPMNEdge id="Flow_B_Start_Erfassen_di" bpmnElement="Flow_B_Start_Erfassen">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_B_Erfassen_Absenden_di" bpmnElement="Flow_B_Erfassen_Absenden">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="470" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_B_Absenden_Warten_di" bpmnElement="Flow_B_Absenden_Warten">
+        <di:waypoint x="570" y="200" />
+        <di:waypoint x="632" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_B_Bestaetigung_Ende_di" bpmnElement="Flow_B_Bestaetigung_Ende">
+        <di:waypoint x="668" y="200" />
+        <di:waypoint x="732" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===== SEQUENCE FLOWS: IT ===== -->
+      <bpmndi:BPMNEdge id="Flow_IT_Start_Validieren_di" bpmnElement="Flow_IT_Start_Validieren">
+        <di:waypoint x="258" y="495" />
+        <di:waypoint x="310" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Validieren_Zuweisen_di" bpmnElement="Flow_IT_Validieren_Zuweisen">
+        <di:waypoint x="410" y="495" />
+        <di:waypoint x="470" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Zuweisen_Warten_di" bpmnElement="Flow_IT_Zuweisen_Warten">
+        <di:waypoint x="570" y="495" />
+        <di:waypoint x="632" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Freigabe_Speichern_di" bpmnElement="Flow_IT_Freigabe_Speichern">
+        <di:waypoint x="668" y="495" />
+        <di:waypoint x="730" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Speichern_Ende_di" bpmnElement="Flow_IT_Speichern_Ende">
+        <di:waypoint x="830" y="495" />
+        <di:waypoint x="892" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===== SEQUENCE FLOWS: BEHOERDE ===== -->
+      <bpmndi:BPMNEdge id="Flow_Beh_Start_Pruefen_di" bpmnElement="Flow_Beh_Start_Pruefen">
+        <di:waypoint x="258" y="785" />
+        <di:waypoint x="310" y="785" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Beh_Pruefen_Aktualisieren_di" bpmnElement="Flow_Beh_Pruefen_Aktualisieren">
+        <di:waypoint x="410" y="785" />
+        <di:waypoint x="470" y="785" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Beh_Aktualisieren_Abschluss_di" bpmnElement="Flow_Beh_Aktualisieren_Abschluss">
+        <di:waypoint x="570" y="785" />
+        <di:waypoint x="630" y="785" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Beh_Abschluss_Ende_di" bpmnElement="Flow_Beh_Abschluss_Ende">
+        <di:waypoint x="730" y="785" />
+        <di:waypoint x="792" y="785" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===== MESSAGE FLOWS ===== -->
+      <!-- Buerger -> IT: Aenderungsantrag -->
+      <bpmndi:BPMNEdge id="MsgFlow_Antrag_an_IT_di" bpmnElement="MsgFlow_Antrag_an_IT">
+        <di:waypoint x="520" y="240" />
+        <di:waypoint x="520" y="345" />
+        <di:waypoint x="240" y="345" />
+        <di:waypoint x="240" y="477" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="342" y="325" width="85" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <!-- IT -> Behoerde: Vorgang zuweisen -->
+      <bpmndi:BPMNEdge id="MsgFlow_Zuweisung_an_Behoerde_di" bpmnElement="MsgFlow_Zuweisung_an_Behoerde">
+        <di:waypoint x="520" y="535" />
+        <di:waypoint x="520" y="635" />
+        <di:waypoint x="240" y="635" />
+        <di:waypoint x="240" y="767" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="343" y="615" width="83" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Behoerde -> IT: Freigabe -->
+      <bpmndi:BPMNEdge id="MsgFlow_Freigabe_an_IT_di" bpmnElement="MsgFlow_Freigabe_an_IT">
+        <di:waypoint x="520" y="745" />
+        <di:waypoint x="520" y="635" />
+        <di:waypoint x="650" y="635" />
+        <di:waypoint x="650" y="513" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="565" y="615" width="42" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <!-- IT -> Buerger: Bestaetigung -->
+      <bpmndi:BPMNEdge id="MsgFlow_Bestaetigung_an_Buerger_di" bpmnElement="MsgFlow_Bestaetigung_an_Buerger">
+        <di:waypoint x="780" y="455" />
+        <di:waypoint x="780" y="345" />
+        <di:waypoint x="650" y="345" />
+        <di:waypoint x="650" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="690" y="325" width="58" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>
