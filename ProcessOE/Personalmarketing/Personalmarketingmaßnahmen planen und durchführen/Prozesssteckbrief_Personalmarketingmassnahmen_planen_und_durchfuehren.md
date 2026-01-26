@@ -1,23 +1,24 @@
 # Prozesssteckbrief: Personalmarketingmaßnahmen planen und durchführen
 
 ## Zusammenfassung
-Der Prozess **"Personalmarketingmaßnahmen planen und durchführen"** dient der strukturierten Konzeption, Erstellung und Ausspielung von Maßnahmen zur Personalgewinnung. Er beginnt mit der Feststellung des Personalmarketingbedarfs in der Behörde, führt über die technische Konfiguration und Ausspielung durch die IT unter Einbindung der Zielgruppe (Bürger) zu einer qualifizierten Lead-Erfassung und endet mit der Bewertung der durchgeführten Maßnahmen. Ziel ist eine effiziente, zielgruppenorientierte Ansprache potenzieller Bewerber sowie eine datenbasierte Optimierung der Recruiting-Kanäle.
+Der Prozess **"Personalmarketingmaßnahmen planen und durchführen"** beschreibt den standardisierten Ablauf von der ersten Bedarfsmeldung einer Fachabteilung über die fachliche Beratung durch die dezentrale Personalstelle bis hin zur operativen Konzeption, Produktion und Ausspielung durch die zentrale Personalstelle. Ziel ist eine effiziente, qualitätsgesicherte und zielgruppengerechte Umsetzung von Marketingmaßnahmen (z.B. Social Media Kampagnen, Messeauftritte, Videoproduktionen) zur Steigerung der Arbeitgeberattraktivität und Gewinnung passender Bewerber.
 
 ## Stammdaten
 | Attribut | Wert |
 | :--- | :--- |
 | **Prozessname** | Personalmarketingmaßnahmen planen und durchführen |
-| **Prozesskategorie** | Personalmarketing / Personalgewinnung |
-| **Auslöser** | Personalmarketingbedarf festgestellt |
-| **Ergebnis** | Maßnahmen durchgeführt und bewertet |
-| **Hauptverantwortung** | Personalmarketing (Behörde/Organisation) |
-| **Beteiligte Rollen** | Bürger (Zielgruppe), IT, Personalmarketing |
+| **Prozesskategorie** | Personalmarketing / Personal Recruiting |
+| **Auslöser** | Personalmarketingbedarf gemeldet |
+| **Ergebnis** | Maßnahmen durchgeführt und dokumentiert |
+| **Hauptverantwortung** | Personalstelle zentral (operative Umsetzung), Personalstelle dezentral (Beratung) |
+| **Beteiligte Rollen** | Kunde (Bedarfsträger), Personalstelle dezentral, Personalstelle zentral |
 
 ## Prozessziele
-1. **Effizienz:** Minimierung der Time-to-Market für Kampagnen durch standardisierte Briefing- und Freigabeprozesse.
-2. **Reichweite & Qualität:** Maximierung der Sichtbarkeit bei der relevanten Zielgruppe und Generierung qualifizierter Leads.
-3. **Transparenz:** Nachvollziehbare Erfolgsmessung durch datengestützte Performance-Reportings.
-4. **Serviceorientierung:** Einfache und medienbruchfreie Interaktionsmöglichkeiten für Interessierte (Bürger).
+1. **Arbeitgeberattraktivität:** Steigerung der Sichtbarkeit und Attraktivität als Arbeitgeber bei relevanten Zielgruppen durch professionelle Maßnahmen.
+2. **Effizienz:** Standardisierte Prozesse zur Minimierung von Durchlaufzeiten und optimalen Nutzung von Budgets und Ressourcen.
+3. **Qualität:** Sicherstellung einer konsistenten, CD-konformen und inhaltlich hochwertigen Kommunikation nach außen.
+4. **Serviceorientierung:** Entlastung der bedarfsmeldenden Fachbereiche durch kompetente Beratung und zentrale operative Abwicklung.
+5. **Transparenz:** Klare Nachvollziehbarkeit von Maßnahmenstatus, Budgetverwendung und erzielten Erfolgen.
 
 ## Key Performance Indicators (KPIs)
 
@@ -29,9 +30,10 @@ Diese KPIs messen den Erfolg des gesamten End-to-End-Prozesses.
 
 | KPI-ID | Kennzahl | Beschreibung | Zielwert | Messmethode |
 | :--- | :--- | :--- | :--- | :--- |
-| **P-KPI-01** | **Time-to-Market** | Zeitdauer von der Bedarfsfeststellung bis zur Ausspielung der Kampagne | < 10 Arbeitstage | Timestamp(Kampagne ausspielen) - Timestamp(Bedarf festgestellt) |
-| **P-KPI-02** | **Conversion Rate** | Anteil der Interessenten (Leads) im Verhältnis zur Reichweite/Impressions | > 2% | Anzahl(Leads) / Anzahl(Impressions) |
-| **P-KPI-03** | **Cost-per-Lead** | Durchschnittliche Kosten pro generiertem Lead | < Budgetvorgabe | Gesamtkosten / Anzahl(Leads) |
+| **P-KPI-01** | **Time-to-Market** | Gesamtdauer vom Eingang der Anforderung bis zum Start der Maßnahme (Veröffentlichung/Event) | < 30 Tage (Standardmaßnahme) | Timestamp(Start Maßnahme) - Timestamp(Anforderung Eingang) |
+| **P-KPI-02** | **Kundenzufriedenheit** | Bewertung der Dienstleistung durch den internen Kunden (Fachbereich) nach Abschluss | > 4,5 von 5 Sternen | Automatisierte Umfrage nach Prozessabschluss |
+| **P-KPI-03** | **Budgettreue** | Abweichung der tatsächlichen Kosten vom geplanten Budgetrahmen | < 5% Abweichung | Ist-Kosten vs. Plan-Budget pro Maßnahme |
+| **P-KPI-04** | **Prozessqualität** | Anteil der Kampagnen/Maßnahmen, die ohne iterative Korrekturschleifen freigegeben werden | > 75% | Anzahl(Vorgänge ohne Reklamation) / Gesamtanzahl |
 
 ### 2. Aktivitäts-KPIs (Ebene Prozessschritte)
 
@@ -39,20 +41,21 @@ Diese KPIs sind spezifischen Aktivitäten oder Phasen im BPMN-Modell zugeordnet,
 
 | Zugeordnete Aktivität(en) | KPI-Name | Beschreibung & Relevanz | Zielwert |
 | :--- | :--- | :--- | :--- |
-| **Briefing bereitstellen** (Behörde) → **Kampagne konfigurieren** (IT) | **Briefing-Qualität** | Rückfragenquote aufgrund unvollständiger Briefings | < 10% |
-| **Content erstellen** (IT) → **Inhalte freigeben** (Behörde) | **Produktionszeit** | Dauer für die Erstellung der Assets | < 5 Arbeitstage |
-| **Kampagne ausspielen** (IT) → **Interesse bekunden** (Bürger) | **Reaktionszeit** | Zeit bis zum ersten Lead-Eingang nach Start | < 24 Stunden |
-| **Lead-Erfassung verarbeiten** (IT) → **Leads erhalten** (Behörde) | **Verarbeitungsgeschwindigkeit** | Zeitdauer zwischen Lead-Eingang und Bereitstellung an Fachabteilung | < 4 Stunden |
-| **Performance reporten** (IT) → **Ergebnisse bewerten** (Behörde) | **Report-Verfügbarkeit** | Bereitstellung des Abschlussreports nach Kampagnenende | < 2 Arbeitstage |
+| **Anforderung erhalten** (Dezentral) → **Beratung bereitstellen** (Dezentral) | **Reaktionszeit Beratung** | Zeitdauer bis zur inhaltlichen Rückmeldung und Erstberatung des Kunden. Kritisch für Ersteindruck. | < 2 Werktage |
+| **Auftrag erfassen** (Zentral) → **Maßnahmenkonzept erstellen** (Zentral) | **Konzeptionsdauer** | Benötigte Zeit für die Erstellung eines detaillierten Umsetzungskonzepts. | < 7 Werktage |
+| **Maßnahmenkonzept erstellen** (Zentral) → **Inhalte produzieren** (Zentral) | **Produktionszeit** | Dauer der Erstellung von Assets (Texte, Grafiken, Videos). Engpassressource "Content Creation". | < 10 Werktage |
+| **Freigabe einholen** (Zentral) → **Freigabe erhalten** (Kunde) | **Freigabezyklus** | Dauer, die der Kunde für die Prüfung und Freigabe benötigt. Häufiger Verzögerungsgrund. | < 3 Werktage |
+| **Maßnahmen durchführen** (Zentral) → **Abschlussbericht übermitteln** (Zentral) | **Reporting-Zeit** | Zeitdauer zwischen Maßnahmenende und Bereitstellung der Ergebnisse. Wichtig für Lernerfolge. | < 5 Werktage nach Abschluss |
 
 ## Eingesetzte IT-Systeme
-- **Marketing-Planungstool:** Erfassung von Bedarfen und Briefings
-- **Content Management System (CMS) / Social Media Tools:** Erstellung und Ausspielung von Inhalten
-- **CRM / Bewerbermanagement-System:** Erfassung und Qualifizierung von Leads
-- **Analytics-Tools:** Tracking und Reporting der Kampagnenperformance
+- **KM.Personal / Enterprise Service Management:** Zentrales System für Anforderungsmeldung, Status-Tracking und Budgetfreigabe.
+- **Social Media Management Tool (z.B. Hootsuite/Facelift):** Planung und Veröffentlichung von Social Media Beiträgen.
+- **Digital Asset Management (DAM):** Verwaltung und Speicherung von Medieninhalten (Bilder, Videos, Logos).
+- **Grafik- und Videosoftware:** Produktion der Content-Assets.
 
 ## Referenzdokumente
-- BPMN-Modell: `Personalmarketingmassnahmen_planen_und_durchfuehren.bpmn`
-- Guidelines für Social Media Kommunikation
-- CI/CD-Vorgaben für Personalmarketing
+- BPMN-Modell: `CreateBPMN/Personalmarketingmassnahmen_planen_und_durchfuehren.bpmn`
+- Corporate Design Manual (Handbuch für sächsisches Landesdesign)
+- Social Media Guidelines
+- Dienstvereinbarung zur Nutzung neuer Medien
 

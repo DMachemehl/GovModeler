@@ -1,510 +1,287 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions
-  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
-  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
-  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
-  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
-  targetNamespace="http://example.com/bpmn"
-  exporter="GitHub-Copilot-GovModeler"
-  exporterVersion="2.0"
-  modeler:executionPlatform="Camunda Platform"
-  modeler:executionPlatformVersion="7.20.0">
-
-  <!-- =====================================================
-       COLLABORATION - Strategische Personalbedarfsplanung
-       ===================================================== -->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" targetNamespace="http://example.com/bpmn" exporter="GitHub-Copilot-GovModeler" exporterVersion="2.0">
   <bpmn:collaboration id="Collab_Strategische_Personalbedarfsplanung">
-    
-    <!-- Participant: Kunde -->
-    <bpmn:participant id="Participant_Kunde"
-                      name="Kunde (Organisationseinheit/Führung)"
-                      processRef="Process_Kunde" />
-    
-    <!-- Participant: Personalstelle dezentral -->
-    <bpmn:participant id="Participant_PS_Dezentral"
-                      name="Personalstelle dezentral"
-                      processRef="Process_PS_Dezentral" />
-    
-    <!-- Participant: Personalstelle zentral -->
-    <bpmn:participant id="Participant_PS_Zentral"
-                      name="Personalstelle zentral"
-                      processRef="Process_PS_Zentral" />
-    
-    <!-- Message Flows zwischen Participanten -->
-    <bpmn:messageFlow id="MsgFlow_Planungsanfrage_Kunde_Dezentral"
-                      name="Planungsanfrage"
-                      sourceRef="Task_Planungsanfrage_uebermitteln"
-                      targetRef="Task_Anfrage_aufnehmen" />
-    
-    <bpmn:messageFlow id="MsgFlow_Unterlagen_Dezentral_Zentral"
-                      name="Strukturierte Unterlagen"
-                      sourceRef="Task_Unterlagen_weiterleiten"
-                      targetRef="StartEvent_Unterlagen_erhalten" />
-    
-    <bpmn:messageFlow id="MsgFlow_Ergebnis_Zentral_Dezentral"
-                      name="Planungsergebnis"
-                      sourceRef="Task_Ergebnis_bereitstellen"
-                      targetRef="Task_Ergebnis_erlaeutern" />
-    
-    <bpmn:messageFlow id="MsgFlow_Ergebnis_Dezentral_Kunde"
-                      name="Strategische Personalbedarfsplanung"
-                      sourceRef="Task_Ergebnis_kommunizieren"
-                      targetRef="Event_Planung_erhalten" />
+    <bpmn:participant id="Participant_Kunde" name="Kunde (Organisationseinheit/Führung)" processRef="Process_Kunde" />
+    <bpmn:participant id="Participant_PS_Dezentral" name="Personalstelle dezentral" processRef="Process_PS_Dezentral" />
+    <bpmn:participant id="Participant_PS_Zentral" name="Personalstelle zentral" processRef="Process_PS_Zentral" />
+    <bpmn:messageFlow id="MsgFlow_Planungsanfrage_Kunde_Dezentral" name="Planungsanfrage" sourceRef="Task_Planungsanfrage_uebermitteln" targetRef="Task_Anfrage_aufnehmen" />
+    <bpmn:messageFlow id="MsgFlow_Unterlagen_Dezentral_Zentral" name="Strukturierte Unterlagen" sourceRef="Task_Unterlagen_weiterleiten" targetRef="StartEvent_Unterlagen_erhalten" />
+    <bpmn:messageFlow id="MsgFlow_Ergebnis_Zentral_Dezentral" name="Planungsergebnis" sourceRef="Task_Ergebnis_bereitstellen" targetRef="Task_Ergebnis_erlaeutern" />
+    <bpmn:messageFlow id="MsgFlow_Ergebnis_Dezentral_Kunde" name="Strategische Personalbedarfsplanung" sourceRef="Task_Ergebnis_kommunizieren" targetRef="Event_Planung_erhalten" />
   </bpmn:collaboration>
-
-  <!-- =====================================================
-       KUNDE PROZESS
-       ===================================================== -->
-  <bpmn:process id="Process_Kunde"
-                name="Strategische_Personalbedarfsplanung_Kunde"
-                isExecutable="true">
-    
-    <!-- Start Event -->
+  <bpmn:process id="Process_Kunde" name="Strategische_Personalbedarfsplanung_Kunde" isExecutable="true">
     <bpmn:startEvent id="StartEvent_Kunde" name="Strategischer Planungsbedarf gemeldet">
       <bpmn:outgoing>Flow_Start_Dokumentieren</bpmn:outgoing>
     </bpmn:startEvent>
-    
-    <!-- User Task: Planungsanlass dokumentieren -->
     <bpmn:userTask id="Task_Planungsanlass_dokumentieren" name="Planungsanlass dokumentieren">
       <bpmn:incoming>Flow_Start_Dokumentieren</bpmn:incoming>
       <bpmn:outgoing>Flow_Dokumentieren_Bereitstellen</bpmn:outgoing>
     </bpmn:userTask>
-    
-    <!-- User Task: Personaldaten und Annahmen bereitstellen -->
     <bpmn:userTask id="Task_Daten_bereitstellen" name="Personaldaten und Annahmen bereitstellen">
       <bpmn:incoming>Flow_Dokumentieren_Bereitstellen</bpmn:incoming>
       <bpmn:outgoing>Flow_Bereitstellen_Uebermitteln</bpmn:outgoing>
     </bpmn:userTask>
-    
-    <!-- User Task: Planungsanfrage übermitteln -->
     <bpmn:userTask id="Task_Planungsanfrage_uebermitteln" name="Planungsanfrage übermitteln">
       <bpmn:incoming>Flow_Bereitstellen_Uebermitteln</bpmn:incoming>
       <bpmn:outgoing>Flow_Uebermitteln_Warten</bpmn:outgoing>
     </bpmn:userTask>
-    
-    <!-- Intermediate Catch Event: Planung erhalten -->
     <bpmn:intermediateCatchEvent id="Event_Planung_erhalten" name="Strategische Planung erhalten">
       <bpmn:incoming>Flow_Uebermitteln_Warten</bpmn:incoming>
       <bpmn:outgoing>Flow_Planung_Nutzen</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDef_Planung" messageRef="Message_Planung" />
     </bpmn:intermediateCatchEvent>
-    
-    <!-- User Task: Planungsergebnis für Maßnahmen nutzen -->
     <bpmn:userTask id="Task_Planung_nutzen" name="Planungsergebnis für Maßnahmen nutzen">
       <bpmn:incoming>Flow_Planung_Nutzen</bpmn:incoming>
       <bpmn:outgoing>Flow_Nutzen_Ende</bpmn:outgoing>
     </bpmn:userTask>
-    
-    <!-- End Event -->
     <bpmn:endEvent id="EndEvent_Kunde" name="Planung genutzt">
       <bpmn:incoming>Flow_Nutzen_Ende</bpmn:incoming>
     </bpmn:endEvent>
-    
-    <!-- Sequence Flows - Kunde -->
-    <bpmn:sequenceFlow id="Flow_Start_Dokumentieren"
-                       sourceRef="StartEvent_Kunde"
-                       targetRef="Task_Planungsanlass_dokumentieren" />
-    
-    <bpmn:sequenceFlow id="Flow_Dokumentieren_Bereitstellen"
-                       sourceRef="Task_Planungsanlass_dokumentieren"
-                       targetRef="Task_Daten_bereitstellen" />
-    
-    <bpmn:sequenceFlow id="Flow_Bereitstellen_Uebermitteln"
-                       sourceRef="Task_Daten_bereitstellen"
-                       targetRef="Task_Planungsanfrage_uebermitteln" />
-    
-    <bpmn:sequenceFlow id="Flow_Uebermitteln_Warten"
-                       sourceRef="Task_Planungsanfrage_uebermitteln"
-                       targetRef="Event_Planung_erhalten" />
-    
-    <bpmn:sequenceFlow id="Flow_Planung_Nutzen"
-                       sourceRef="Event_Planung_erhalten"
-                       targetRef="Task_Planung_nutzen" />
-    
-    <bpmn:sequenceFlow id="Flow_Nutzen_Ende"
-                       sourceRef="Task_Planung_nutzen"
-                       targetRef="EndEvent_Kunde" />
+    <bpmn:sequenceFlow id="Flow_Start_Dokumentieren" sourceRef="StartEvent_Kunde" targetRef="Task_Planungsanlass_dokumentieren" />
+    <bpmn:sequenceFlow id="Flow_Dokumentieren_Bereitstellen" sourceRef="Task_Planungsanlass_dokumentieren" targetRef="Task_Daten_bereitstellen" />
+    <bpmn:sequenceFlow id="Flow_Bereitstellen_Uebermitteln" sourceRef="Task_Daten_bereitstellen" targetRef="Task_Planungsanfrage_uebermitteln" />
+    <bpmn:sequenceFlow id="Flow_Uebermitteln_Warten" sourceRef="Task_Planungsanfrage_uebermitteln" targetRef="Event_Planung_erhalten" />
+    <bpmn:sequenceFlow id="Flow_Planung_Nutzen" sourceRef="Event_Planung_erhalten" targetRef="Task_Planung_nutzen" />
+    <bpmn:sequenceFlow id="Flow_Nutzen_Ende" sourceRef="Task_Planung_nutzen" targetRef="EndEvent_Kunde" />
   </bpmn:process>
-
-  <!-- =====================================================
-       PERSONALSTELLE DEZENTRAL PROZESS (serviceorientiert beratend)
-       ===================================================== -->
-  <bpmn:process id="Process_PS_Dezentral"
-                name="Strategische_Personalbedarfsplanung_Dezentral"
-                isExecutable="true">
-    
-    <!-- User Task: Anfrage aufnehmen -->
+  <bpmn:process id="Process_PS_Dezentral" name="Strategische_Personalbedarfsplanung_Dezentral" isExecutable="true">
     <bpmn:userTask id="Task_Anfrage_aufnehmen" name="Anfrage aufnehmen">
       <bpmn:outgoing>Flow_Aufnehmen_Konkretisieren</bpmn:outgoing>
     </bpmn:userTask>
-    
-    <!-- User Task: Kundenseitige Anforderungen konkretisieren -->
     <bpmn:userTask id="Task_Anforderungen_konkretisieren" name="Kundenseitige Anforderungen konkretisieren">
       <bpmn:incoming>Flow_Aufnehmen_Konkretisieren</bpmn:incoming>
       <bpmn:outgoing>Flow_Konkretisieren_Weiterleiten</bpmn:outgoing>
     </bpmn:userTask>
-    
-    <!-- User Task: Unterlagen strukturieren und weiterleiten -->
     <bpmn:userTask id="Task_Unterlagen_weiterleiten" name="Unterlagen strukturieren und weiterleiten">
       <bpmn:incoming>Flow_Konkretisieren_Weiterleiten</bpmn:incoming>
       <bpmn:outgoing>Flow_Weiterleiten_Warten</bpmn:outgoing>
     </bpmn:userTask>
-    
-    <!-- Intermediate Catch Event: Ergebnis erhalten -->
+    <bpmn:sequenceFlow id="Flow_Aufnehmen_Konkretisieren" sourceRef="Task_Anfrage_aufnehmen" targetRef="Task_Anforderungen_konkretisieren" />
+    <bpmn:sequenceFlow id="Flow_Konkretisieren_Weiterleiten" sourceRef="Task_Anforderungen_konkretisieren" targetRef="Task_Unterlagen_weiterleiten" />
+    <bpmn:sequenceFlow id="Flow_Weiterleiten_Warten" sourceRef="Task_Unterlagen_weiterleiten" targetRef="Event_Ergebnis_erhalten" />
     <bpmn:intermediateCatchEvent id="Event_Ergebnis_erhalten" name="Planungsergebnis erhalten">
       <bpmn:incoming>Flow_Weiterleiten_Warten</bpmn:incoming>
       <bpmn:outgoing>Flow_Ergebnis_Erlaeutern</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDef_Ergebnis" messageRef="Message_Ergebnis" />
     </bpmn:intermediateCatchEvent>
-    
-    <!-- User Task: Ergebnis erläutern und Anwendung unterstützen -->
     <bpmn:userTask id="Task_Ergebnis_erlaeutern" name="Ergebnis erläutern und Anwendung unterstützen">
       <bpmn:incoming>Flow_Ergebnis_Erlaeutern</bpmn:incoming>
       <bpmn:outgoing>Flow_Erlaeutern_Kommunizieren</bpmn:outgoing>
     </bpmn:userTask>
-    
-    <!-- User Task: Ergebnis kommunizieren -->
     <bpmn:userTask id="Task_Ergebnis_kommunizieren" name="Ergebnis kommunizieren">
       <bpmn:incoming>Flow_Erlaeutern_Kommunizieren</bpmn:incoming>
       <bpmn:outgoing>Flow_Kommunizieren_Ende</bpmn:outgoing>
     </bpmn:userTask>
-    
-    <!-- End Event -->
     <bpmn:endEvent id="EndEvent_PS_Dezentral" name="Beratung abgeschlossen">
       <bpmn:incoming>Flow_Kommunizieren_Ende</bpmn:incoming>
     </bpmn:endEvent>
-    
-    <!-- Sequence Flows - PS Dezentral -->
-    <bpmn:sequenceFlow id="Flow_Aufnehmen_Konkretisieren"
-                       sourceRef="Task_Anfrage_aufnehmen"
-                       targetRef="Task_Anforderungen_konkretisieren" />
-    
-    <bpmn:sequenceFlow id="Flow_Konkretisieren_Weiterleiten"
-                       sourceRef="Task_Anforderungen_konkretisieren"
-                       targetRef="Task_Unterlagen_weiterleiten" />
-    
-    <bpmn:sequenceFlow id="Flow_Weiterleiten_Warten"
-                       sourceRef="Task_Unterlagen_weiterleiten"
-                       targetRef="Event_Ergebnis_erhalten" />
-    
-    <bpmn:sequenceFlow id="Flow_Ergebnis_Erlaeutern"
-                       sourceRef="Event_Ergebnis_erhalten"
-                       targetRef="Task_Ergebnis_erlaeutern" />
-    
-    <bpmn:sequenceFlow id="Flow_Erlaeutern_Kommunizieren"
-                       sourceRef="Task_Ergebnis_erlaeutern"
-                       targetRef="Task_Ergebnis_kommunizieren" />
-    
-    <bpmn:sequenceFlow id="Flow_Kommunizieren_Ende"
-                       sourceRef="Task_Ergebnis_kommunizieren"
-                       targetRef="EndEvent_PS_Dezentral" />
+    <bpmn:sequenceFlow id="Flow_Ergebnis_Erlaeutern" sourceRef="Event_Ergebnis_erhalten" targetRef="Task_Ergebnis_erlaeutern" />
+    <bpmn:sequenceFlow id="Flow_Erlaeutern_Kommunizieren" sourceRef="Task_Ergebnis_erlaeutern" targetRef="Task_Ergebnis_kommunizieren" />
+    <bpmn:sequenceFlow id="Flow_Kommunizieren_Ende" sourceRef="Task_Ergebnis_kommunizieren" targetRef="EndEvent_PS_Dezentral" />
   </bpmn:process>
-
-  <!-- =====================================================
-       PERSONALSTELLE ZENTRAL PROZESS (ganzheitliche Bearbeitung)
-       ===================================================== -->
-  <bpmn:process id="Process_PS_Zentral"
-                name="Strategische_Personalbedarfsplanung_Zentral"
-                isExecutable="true">
-    
-    <!-- Start Event -->
+  <bpmn:process id="Process_PS_Zentral" name="Strategische_Personalbedarfsplanung_Zentral" isExecutable="true">
     <bpmn:startEvent id="StartEvent_Unterlagen_erhalten" name="Unterlagen erhalten">
       <bpmn:outgoing>Flow_Start_Rahmen</bpmn:outgoing>
     </bpmn:startEvent>
-    
-    <!-- User Task: Planungsrahmen festlegen -->
     <bpmn:userTask id="Task_Planungsrahmen_festlegen" name="Planungsrahmen festlegen">
       <bpmn:incoming>Flow_Start_Rahmen</bpmn:incoming>
       <bpmn:outgoing>Flow_Rahmen_Ermitteln</bpmn:outgoing>
     </bpmn:userTask>
-    
-    <!-- User Task: Personalbedarfe ermitteln und konsolidieren -->
     <bpmn:userTask id="Task_Bedarfe_ermitteln" name="Personalbedarfe ermitteln und konsolidieren">
       <bpmn:incoming>Flow_Rahmen_Ermitteln</bpmn:incoming>
       <bpmn:outgoing>Flow_Ermitteln_Dokumentieren</bpmn:outgoing>
     </bpmn:userTask>
-    
-    <!-- User Task: Strategische Planung dokumentieren -->
     <bpmn:userTask id="Task_Planung_dokumentieren" name="Strategische Planung dokumentieren">
       <bpmn:incoming>Flow_Ermitteln_Dokumentieren</bpmn:incoming>
       <bpmn:outgoing>Flow_Dokumentieren_Bereitstellen</bpmn:outgoing>
+      <bpmn:outgoing>Flow_11nh3ej</bpmn:outgoing>
     </bpmn:userTask>
-    
-    <!-- User Task: Ergebnis bereitstellen -->
     <bpmn:userTask id="Task_Ergebnis_bereitstellen" name="Ergebnis bereitstellen">
       <bpmn:incoming>Flow_Dokumentieren_Bereitstellen</bpmn:incoming>
+      <bpmn:incoming>Flow_11nh3ej</bpmn:incoming>
       <bpmn:outgoing>Flow_Bereitstellen_Ende</bpmn:outgoing>
     </bpmn:userTask>
-    
-    <!-- End Event -->
     <bpmn:endEvent id="EndEvent_PS_Zentral" name="Planung bereitgestellt">
       <bpmn:incoming>Flow_Bereitstellen_Ende</bpmn:incoming>
     </bpmn:endEvent>
-    
-    <!-- Sequence Flows - PS Zentral -->
-    <bpmn:sequenceFlow id="Flow_Start_Rahmen"
-                       sourceRef="StartEvent_Unterlagen_erhalten"
-                       targetRef="Task_Planungsrahmen_festlegen" />
-    
-    <bpmn:sequenceFlow id="Flow_Rahmen_Ermitteln"
-                       sourceRef="Task_Planungsrahmen_festlegen"
-                       targetRef="Task_Bedarfe_ermitteln" />
-    
-    <bpmn:sequenceFlow id="Flow_Ermitteln_Dokumentieren"
-                       sourceRef="Task_Bedarfe_ermitteln"
-                       targetRef="Task_Planung_dokumentieren" />
-    
-    <bpmn:sequenceFlow id="Flow_Dokumentieren_Bereitstellen"
-                       sourceRef="Task_Planung_dokumentieren"
-                       targetRef="Task_Ergebnis_bereitstellen" />
-    
-    <bpmn:sequenceFlow id="Flow_Bereitstellen_Ende"
-                       sourceRef="Task_Ergebnis_bereitstellen"
-                       targetRef="EndEvent_PS_Zentral" />
+    <bpmn:sequenceFlow id="Flow_Start_Rahmen" sourceRef="StartEvent_Unterlagen_erhalten" targetRef="Task_Planungsrahmen_festlegen" />
+    <bpmn:sequenceFlow id="Flow_Rahmen_Ermitteln" sourceRef="Task_Planungsrahmen_festlegen" targetRef="Task_Bedarfe_ermitteln" />
+    <bpmn:sequenceFlow id="Flow_Ermitteln_Dokumentieren" sourceRef="Task_Bedarfe_ermitteln" targetRef="Task_Planung_dokumentieren" />
+    <bpmn:sequenceFlow id="Flow_Bereitstellen_Ende" sourceRef="Task_Ergebnis_bereitstellen" targetRef="EndEvent_PS_Zentral" />
+    <bpmn:sequenceFlow id="Flow_11nh3ej" sourceRef="Task_Planung_dokumentieren" targetRef="Task_Ergebnis_bereitstellen" />
   </bpmn:process>
-
-  <!-- =====================================================
-       MESSAGE DEFINITIONEN
-       ===================================================== -->
   <bpmn:message id="Message_Planungsanfrage" name="Planungsanfrage" />
   <bpmn:message id="Message_Planung" name="Strategische Personalbedarfsplanung" />
   <bpmn:message id="Message_Ergebnis" name="Planungsergebnis" />
-
-  <!-- =====================================================
-       BPMN-DI VISUALISIERUNG
-       ===================================================== -->
   <bpmndi:BPMNDiagram id="BPMNDiagram_Strategische_Personalbedarfsplanung">
     <bpmndi:BPMNPlane id="BPMNPlane_Strategische_Personalbedarfsplanung" bpmnElement="Collab_Strategische_Personalbedarfsplanung">
-      
-      <!-- ===============================
-           POOL: KUNDE (oben)
-           =============================== -->
       <bpmndi:BPMNShape id="Participant_Kunde_di" bpmnElement="Participant_Kunde" isHorizontal="true">
         <dc:Bounds x="160" y="80" width="1200" height="300" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="170" y="180" width="20" height="180" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      
-      <!-- Kunde Process Elements -->
       <bpmndi:BPMNShape id="StartEvent_Kunde_di" bpmnElement="StartEvent_Kunde">
         <dc:Bounds x="222" y="182" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="200" y="225" width="80" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      
       <bpmndi:BPMNShape id="Task_Planungsanlass_dokumentieren_di" bpmnElement="Task_Planungsanlass_dokumentieren">
         <dc:Bounds x="310" y="160" width="100" height="80" />
       </bpmndi:BPMNShape>
-      
       <bpmndi:BPMNShape id="Task_Daten_bereitstellen_di" bpmnElement="Task_Daten_bereitstellen">
         <dc:Bounds x="470" y="160" width="100" height="80" />
       </bpmndi:BPMNShape>
-      
       <bpmndi:BPMNShape id="Task_Planungsanfrage_uebermitteln_di" bpmnElement="Task_Planungsanfrage_uebermitteln">
         <dc:Bounds x="630" y="160" width="100" height="80" />
       </bpmndi:BPMNShape>
-      
       <bpmndi:BPMNShape id="Event_Planung_erhalten_di" bpmnElement="Event_Planung_erhalten">
         <dc:Bounds x="792" y="182" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="770" y="225" width="80" height="40" />
+          <dc:Bounds x="768" y="144.5" width="84" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      
       <bpmndi:BPMNShape id="Task_Planung_nutzen_di" bpmnElement="Task_Planung_nutzen">
         <dc:Bounds x="880" y="160" width="100" height="80" />
       </bpmndi:BPMNShape>
-      
       <bpmndi:BPMNShape id="EndEvent_Kunde_di" bpmnElement="EndEvent_Kunde">
         <dc:Bounds x="1032" y="182" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1010" y="225" width="80" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      
-      <!-- Kunde Sequence Flows -->
       <bpmndi:BPMNEdge id="Flow_Start_Dokumentieren_di" bpmnElement="Flow_Start_Dokumentieren">
         <di:waypoint x="258" y="200" />
         <di:waypoint x="310" y="200" />
       </bpmndi:BPMNEdge>
-      
       <bpmndi:BPMNEdge id="Flow_Dokumentieren_Bereitstellen_di" bpmnElement="Flow_Dokumentieren_Bereitstellen">
         <di:waypoint x="410" y="200" />
         <di:waypoint x="470" y="200" />
       </bpmndi:BPMNEdge>
-      
       <bpmndi:BPMNEdge id="Flow_Bereitstellen_Uebermitteln_di" bpmnElement="Flow_Bereitstellen_Uebermitteln">
         <di:waypoint x="570" y="200" />
         <di:waypoint x="630" y="200" />
       </bpmndi:BPMNEdge>
-      
       <bpmndi:BPMNEdge id="Flow_Uebermitteln_Warten_di" bpmnElement="Flow_Uebermitteln_Warten">
         <di:waypoint x="730" y="200" />
         <di:waypoint x="792" y="200" />
       </bpmndi:BPMNEdge>
-      
       <bpmndi:BPMNEdge id="Flow_Planung_Nutzen_di" bpmnElement="Flow_Planung_Nutzen">
         <di:waypoint x="828" y="200" />
         <di:waypoint x="880" y="200" />
       </bpmndi:BPMNEdge>
-      
       <bpmndi:BPMNEdge id="Flow_Nutzen_Ende_di" bpmnElement="Flow_Nutzen_Ende">
         <di:waypoint x="980" y="200" />
         <di:waypoint x="1032" y="200" />
       </bpmndi:BPMNEdge>
-      
-      <!-- ===============================
-           POOL: PERSONALSTELLE DEZENTRAL (Mitte)
-           =============================== -->
       <bpmndi:BPMNShape id="Participant_PS_Dezentral_di" bpmnElement="Participant_PS_Dezentral" isHorizontal="true">
         <dc:Bounds x="160" y="420" width="1200" height="300" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="170" y="535" width="20" height="150" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      
-      <!-- PS Dezentral Process Elements -->
       <bpmndi:BPMNShape id="Task_Anfrage_aufnehmen_di" bpmnElement="Task_Anfrage_aufnehmen">
         <dc:Bounds x="310" y="500" width="100" height="80" />
       </bpmndi:BPMNShape>
-      
       <bpmndi:BPMNShape id="Task_Anforderungen_konkretisieren_di" bpmnElement="Task_Anforderungen_konkretisieren">
         <dc:Bounds x="470" y="500" width="100" height="80" />
       </bpmndi:BPMNShape>
-      
       <bpmndi:BPMNShape id="Task_Unterlagen_weiterleiten_di" bpmnElement="Task_Unterlagen_weiterleiten">
         <dc:Bounds x="630" y="500" width="100" height="80" />
       </bpmndi:BPMNShape>
-      
       <bpmndi:BPMNShape id="Event_Ergebnis_erhalten_di" bpmnElement="Event_Ergebnis_erhalten">
-        <dc:Bounds x="792" y="522" width="36" height="36" />
+        <dc:Bounds x="822" y="522" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="770" y="565" width="80" height="40" />
+          <dc:Bounds x="796" y="565" width="89" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      
       <bpmndi:BPMNShape id="Task_Ergebnis_erlaeutern_di" bpmnElement="Task_Ergebnis_erlaeutern">
-        <dc:Bounds x="880" y="500" width="100" height="80" />
+        <dc:Bounds x="910" y="500" width="100" height="80" />
       </bpmndi:BPMNShape>
-      
       <bpmndi:BPMNShape id="Task_Ergebnis_kommunizieren_di" bpmnElement="Task_Ergebnis_kommunizieren">
-        <dc:Bounds x="1040" y="500" width="100" height="80" />
+        <dc:Bounds x="1070" y="500" width="100" height="80" />
       </bpmndi:BPMNShape>
-      
       <bpmndi:BPMNShape id="EndEvent_PS_Dezentral_di" bpmnElement="EndEvent_PS_Dezentral">
-        <dc:Bounds x="1192" y="522" width="36" height="36" />
+        <dc:Bounds x="1222" y="522" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1170" y="565" width="80" height="27" />
+          <dc:Bounds x="1203" y="565" width="74" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      
-      <!-- PS Dezentral Sequence Flows -->
       <bpmndi:BPMNEdge id="Flow_Aufnehmen_Konkretisieren_di" bpmnElement="Flow_Aufnehmen_Konkretisieren">
         <di:waypoint x="410" y="540" />
         <di:waypoint x="470" y="540" />
       </bpmndi:BPMNEdge>
-      
       <bpmndi:BPMNEdge id="Flow_Konkretisieren_Weiterleiten_di" bpmnElement="Flow_Konkretisieren_Weiterleiten">
         <di:waypoint x="570" y="540" />
         <di:waypoint x="630" y="540" />
       </bpmndi:BPMNEdge>
-      
       <bpmndi:BPMNEdge id="Flow_Weiterleiten_Warten_di" bpmnElement="Flow_Weiterleiten_Warten">
         <di:waypoint x="730" y="540" />
-        <di:waypoint x="792" y="540" />
+        <di:waypoint x="822" y="540" />
       </bpmndi:BPMNEdge>
-      
       <bpmndi:BPMNEdge id="Flow_Ergebnis_Erlaeutern_di" bpmnElement="Flow_Ergebnis_Erlaeutern">
-        <di:waypoint x="828" y="540" />
-        <di:waypoint x="880" y="540" />
+        <di:waypoint x="858" y="540" />
+        <di:waypoint x="910" y="540" />
       </bpmndi:BPMNEdge>
-      
       <bpmndi:BPMNEdge id="Flow_Erlaeutern_Kommunizieren_di" bpmnElement="Flow_Erlaeutern_Kommunizieren">
-        <di:waypoint x="980" y="540" />
-        <di:waypoint x="1040" y="540" />
+        <di:waypoint x="1010" y="540" />
+        <di:waypoint x="1070" y="540" />
       </bpmndi:BPMNEdge>
-      
       <bpmndi:BPMNEdge id="Flow_Kommunizieren_Ende_di" bpmnElement="Flow_Kommunizieren_Ende">
-        <di:waypoint x="1140" y="540" />
-        <di:waypoint x="1192" y="540" />
+        <di:waypoint x="1170" y="540" />
+        <di:waypoint x="1222" y="540" />
       </bpmndi:BPMNEdge>
-      
-      <!-- ===============================
-           POOL: PERSONALSTELLE ZENTRAL (unten)
-           =============================== -->
       <bpmndi:BPMNShape id="Participant_PS_Zentral_di" bpmnElement="Participant_PS_Zentral" isHorizontal="true">
         <dc:Bounds x="160" y="760" width="1200" height="300" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="170" y="875" width="20" height="150" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      
-      <!-- PS Zentral Process Elements -->
       <bpmndi:BPMNShape id="StartEvent_Unterlagen_erhalten_di" bpmnElement="StartEvent_Unterlagen_erhalten">
         <dc:Bounds x="222" y="862" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="200" y="905" width="80" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      
       <bpmndi:BPMNShape id="Task_Planungsrahmen_festlegen_di" bpmnElement="Task_Planungsrahmen_festlegen">
         <dc:Bounds x="310" y="840" width="100" height="80" />
       </bpmndi:BPMNShape>
-      
       <bpmndi:BPMNShape id="Task_Bedarfe_ermitteln_di" bpmnElement="Task_Bedarfe_ermitteln">
         <dc:Bounds x="470" y="840" width="100" height="80" />
       </bpmndi:BPMNShape>
-      
       <bpmndi:BPMNShape id="Task_Planung_dokumentieren_di" bpmnElement="Task_Planung_dokumentieren">
         <dc:Bounds x="630" y="840" width="100" height="80" />
       </bpmndi:BPMNShape>
-      
       <bpmndi:BPMNShape id="Task_Ergebnis_bereitstellen_di" bpmnElement="Task_Ergebnis_bereitstellen">
         <dc:Bounds x="790" y="840" width="100" height="80" />
       </bpmndi:BPMNShape>
-      
       <bpmndi:BPMNShape id="EndEvent_PS_Zentral_di" bpmnElement="EndEvent_PS_Zentral">
         <dc:Bounds x="942" y="862" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="920" y="905" width="80" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      
-      <!-- PS Zentral Sequence Flows -->
       <bpmndi:BPMNEdge id="Flow_Start_Rahmen_di" bpmnElement="Flow_Start_Rahmen">
         <di:waypoint x="258" y="880" />
         <di:waypoint x="310" y="880" />
       </bpmndi:BPMNEdge>
-      
       <bpmndi:BPMNEdge id="Flow_Rahmen_Ermitteln_di" bpmnElement="Flow_Rahmen_Ermitteln">
         <di:waypoint x="410" y="880" />
         <di:waypoint x="470" y="880" />
       </bpmndi:BPMNEdge>
-      
       <bpmndi:BPMNEdge id="Flow_Ermitteln_Dokumentieren_di" bpmnElement="Flow_Ermitteln_Dokumentieren">
         <di:waypoint x="570" y="880" />
         <di:waypoint x="630" y="880" />
       </bpmndi:BPMNEdge>
-      
-      <bpmndi:BPMNEdge id="Flow_Dokumentieren_Bereitstellen_di" bpmnElement="Flow_Dokumentieren_Bereitstellen">
-        <di:waypoint x="730" y="880" />
-        <di:waypoint x="790" y="880" />
-      </bpmndi:BPMNEdge>
-      
       <bpmndi:BPMNEdge id="Flow_Bereitstellen_Ende_di" bpmnElement="Flow_Bereitstellen_Ende">
         <di:waypoint x="890" y="880" />
         <di:waypoint x="942" y="880" />
       </bpmndi:BPMNEdge>
-      
-      <!-- ===============================
-           MESSAGE FLOWS (zwischen Pools)
-           =============================== -->
-      
-      <!-- Message Flow: Kunde → PS Dezentral (Planungsanfrage) -->
+      <bpmndi:BPMNEdge id="Flow_11nh3ej_di" bpmnElement="Flow_11nh3ej">
+        <di:waypoint x="730" y="880" />
+        <di:waypoint x="790" y="880" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="MsgFlow_Planungsanfrage_Kunde_Dezentral_di" bpmnElement="MsgFlow_Planungsanfrage_Kunde_Dezentral">
         <di:waypoint x="680" y="240" />
         <di:waypoint x="680" y="370" />
@@ -514,8 +291,6 @@
           <dc:Bounds x="490" y="352" width="80" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      
-      <!-- Message Flow: PS Dezentral → PS Zentral (Strukturierte Unterlagen) -->
       <bpmndi:BPMNEdge id="MsgFlow_Unterlagen_Dezentral_Zentral_di" bpmnElement="MsgFlow_Unterlagen_Dezentral_Zentral">
         <di:waypoint x="680" y="580" />
         <di:waypoint x="680" y="670" />
@@ -525,30 +300,22 @@
           <dc:Bounds x="430" y="652" width="80" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      
-      <!-- Message Flow: PS Zentral → PS Dezentral (Planungsergebnis) -->
       <bpmndi:BPMNEdge id="MsgFlow_Ergebnis_Zentral_Dezentral_di" bpmnElement="MsgFlow_Ergebnis_Zentral_Dezentral">
         <di:waypoint x="840" y="840" />
-        <di:waypoint x="840" y="690" />
-        <di:waypoint x="810" y="690" />
-        <di:waypoint x="810" y="558" />
+        <di:waypoint x="840" y="580" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="785" y="672" width="80" height="27" />
+          <dc:Bounds x="784" y="683" width="89" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      
-      <!-- Message Flow: PS Dezentral → Kunde (Strategische Personalbedarfsplanung) -->
       <bpmndi:BPMNEdge id="MsgFlow_Ergebnis_Dezentral_Kunde_di" bpmnElement="MsgFlow_Ergebnis_Dezentral_Kunde">
-        <di:waypoint x="1090" y="500" />
-        <di:waypoint x="1090" y="360" />
+        <di:waypoint x="1120" y="500" />
+        <di:waypoint x="1120" y="360" />
         <di:waypoint x="810" y="360" />
         <di:waypoint x="810" y="218" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="920" y="330" width="80" height="40" />
+          <dc:Bounds x="932" y="330" width="88" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
-
 </bpmn:definitions>
