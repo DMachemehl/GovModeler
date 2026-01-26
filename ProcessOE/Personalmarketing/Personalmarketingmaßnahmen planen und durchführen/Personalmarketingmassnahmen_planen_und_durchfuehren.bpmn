@@ -1,0 +1,657 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn/personalmarketing"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0"
+  modeler:executionPlatform="Camunda Platform"
+  modeler:executionPlatformVersion="7.20.0">
+
+  <!-- =====================================================
+       COLLABORATION - Personalmarketingmassnahmen planen und durchfuehren
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_Personalmarketing">
+    
+    <!-- Participant: Buerger/Zielgruppe -->
+    <bpmn:participant id="Participant_Buerger"
+                      name="Buerger"
+                      processRef="Process_Buerger" />
+    
+    <!-- Participant: IT -->
+    <bpmn:participant id="Participant_IT"
+                      name="IT"
+                      processRef="Process_IT" />
+    
+    <!-- Participant: Behoerde/Personalmarketing -->
+    <bpmn:participant id="Participant_Behoerde"
+                      name="Personalmarketing"
+                      processRef="Process_Behoerde" />
+    
+    <!-- Message Flows zwischen Participanten -->
+    <bpmn:messageFlow id="MsgFlow_Briefing"
+                      name="Briefing"
+                      sourceRef="Task_Briefing_bereitstellen"
+                      targetRef="StartEvent_IT" />
+    
+    <bpmn:messageFlow id="MsgFlow_Content_Freigabe"
+                      name="Content zur Freigabe"
+                      sourceRef="Task_Content_erstellen"
+                      targetRef="Event_Entwuerfe_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Kampagne_Ausspielung"
+                      name="Kampagne"
+                      sourceRef="Task_Kampagne_ausspielen"
+                      targetRef="StartEvent_Buerger" />
+    
+    <bpmn:messageFlow id="MsgFlow_Interesse"
+                      name="Interesse"
+                      sourceRef="Task_Interesse_bekunden"
+                      targetRef="Event_Lead_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Lead_Uebergabe"
+                      name="Qualifizierte Leads"
+                      sourceRef="Task_Lead_Erfassung"
+                      targetRef="Event_Leads_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Performance_Report"
+                      name="Performance-Report"
+                      sourceRef="Task_Performance_reporten"
+                      targetRef="Event_Report_erhalten" />
+    
+    <bpmn:messageFlow id="MsgFlow_Rueckmeldung"
+                      name="Bestaetigung"
+                      sourceRef="Task_Ergebnisse_bewerten"
+                      targetRef="Event_Rueckmeldung_erhalten" />
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       BUERGER PROZESS - Zielgruppe/Interessierte
+       ===================================================== -->
+  <bpmn:process id="Process_Buerger"
+                name="Personalmarketing_Buerger"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Buerger" name="Kampagne wahrgenommen">
+      <bpmn:outgoing>Flow_Start_Konsumieren</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Informationen konsumieren -->
+    <bpmn:userTask id="Task_Informationen_konsumieren" name="Informationen konsumieren">
+      <bpmn:incoming>Flow_Start_Konsumieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_Konsumieren_Interesse</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Interesse bekunden -->
+    <bpmn:userTask id="Task_Interesse_bekunden" name="Interesse bekunden">
+      <bpmn:incoming>Flow_Konsumieren_Interesse</bpmn:incoming>
+      <bpmn:outgoing>Flow_Interesse_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Rueckmeldung erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Rueckmeldung_erhalten" name="Rueckmeldung erhalten">
+      <bpmn:incoming>Flow_Interesse_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Rueckmeldung_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Rueckmeldung" messageRef="Message_Rueckmeldung" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Buerger" name="Prozess abgeschlossen">
+      <bpmn:incoming>Flow_Rueckmeldung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Buerger -->
+    <bpmn:sequenceFlow id="Flow_Start_Konsumieren"
+                       sourceRef="StartEvent_Buerger"
+                       targetRef="Task_Informationen_konsumieren" />
+    
+    <bpmn:sequenceFlow id="Flow_Konsumieren_Interesse"
+                       sourceRef="Task_Informationen_konsumieren"
+                       targetRef="Task_Interesse_bekunden" />
+    
+    <bpmn:sequenceFlow id="Flow_Interesse_Warten"
+                       sourceRef="Task_Interesse_bekunden"
+                       targetRef="Event_Rueckmeldung_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Rueckmeldung_Ende"
+                       sourceRef="Event_Rueckmeldung_erhalten"
+                       targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       BEHOERDEN PROZESS - Personalmarketing
+       ===================================================== -->
+  <bpmn:process id="Process_Behoerde"
+                name="Personalmarketing_Behoerde"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Behoerde" name="Personalmarketingbedarf festgestellt">
+      <bpmn:outgoing>Flow_Start_Zielsetzung</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Zielsetzung definieren -->
+    <bpmn:userTask id="Task_Zielsetzung_definieren" name="Zielsetzung definieren">
+      <bpmn:incoming>Flow_Start_Zielsetzung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zielsetzung_Briefing</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Briefing bereitstellen -->
+    <bpmn:userTask id="Task_Briefing_bereitstellen" name="Briefing bereitstellen">
+      <bpmn:incoming>Flow_Zielsetzung_Briefing</bpmn:incoming>
+      <bpmn:outgoing>Flow_Briefing_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Entwuerfe erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Entwuerfe_erhalten" name="Entwuerfe erhalten">
+      <bpmn:incoming>Flow_Briefing_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Entwuerfe_Freigabe</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Content" messageRef="Message_Content" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- User Task: Inhalte freigeben -->
+    <bpmn:userTask id="Task_Inhalte_freigeben" name="Inhalte freigeben">
+      <bpmn:incoming>Flow_Entwuerfe_Freigabe</bpmn:incoming>
+      <bpmn:outgoing>Flow_Freigabe_Leads</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Leads erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Leads_erhalten" name="Leads erhalten">
+      <bpmn:incoming>Flow_Freigabe_Leads</bpmn:incoming>
+      <bpmn:outgoing>Flow_Leads_Report</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Leads" messageRef="Message_Leads" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- Intermediate Catch Event: Report erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Report_erhalten" name="Report erhalten">
+      <bpmn:incoming>Flow_Leads_Report</bpmn:incoming>
+      <bpmn:outgoing>Flow_Report_Bewerten</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Report" messageRef="Message_Report" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- User Task: Ergebnisse bewerten -->
+    <bpmn:userTask id="Task_Ergebnisse_bewerten" name="Ergebnisse bewerten">
+      <bpmn:incoming>Flow_Report_Bewerten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bewerten_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Behoerde" name="Massnahmen durchgefuehrt">
+      <bpmn:incoming>Flow_Bewerten_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Behoerde -->
+    <bpmn:sequenceFlow id="Flow_Start_Zielsetzung"
+                       sourceRef="StartEvent_Behoerde"
+                       targetRef="Task_Zielsetzung_definieren" />
+    
+    <bpmn:sequenceFlow id="Flow_Zielsetzung_Briefing"
+                       sourceRef="Task_Zielsetzung_definieren"
+                       targetRef="Task_Briefing_bereitstellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Briefing_Warten"
+                       sourceRef="Task_Briefing_bereitstellen"
+                       targetRef="Event_Entwuerfe_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Entwuerfe_Freigabe"
+                       sourceRef="Event_Entwuerfe_erhalten"
+                       targetRef="Task_Inhalte_freigeben" />
+    
+    <bpmn:sequenceFlow id="Flow_Freigabe_Leads"
+                       sourceRef="Task_Inhalte_freigeben"
+                       targetRef="Event_Leads_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Leads_Report"
+                       sourceRef="Event_Leads_erhalten"
+                       targetRef="Event_Report_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Report_Bewerten"
+                       sourceRef="Event_Report_erhalten"
+                       targetRef="Task_Ergebnisse_bewerten" />
+    
+    <bpmn:sequenceFlow id="Flow_Bewerten_Ende"
+                       sourceRef="Task_Ergebnisse_bewerten"
+                       targetRef="EndEvent_Behoerde" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       IT-PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_IT"
+                name="IT_Prozess"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_IT" name="Briefing erhalten">
+      <bpmn:outgoing>Flow_IT_Start_Konfigurieren</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Service Task: Kampagne konfigurieren -->
+    <bpmn:serviceTask id="Task_Kampagne_konfigurieren" name="Kampagne konfigurieren">
+      <bpmn:incoming>Flow_IT_Start_Konfigurieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_Konfigurieren_Content</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Service Task: Content erstellen -->
+    <bpmn:serviceTask id="Task_Content_erstellen" name="Content erstellen und bereitstellen">
+      <bpmn:incoming>Flow_Konfigurieren_Content</bpmn:incoming>
+      <bpmn:outgoing>Flow_Content_Ausspielen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Service Task: Kampagne ausspielen -->
+    <bpmn:serviceTask id="Task_Kampagne_ausspielen" name="Kampagne ausspielen">
+      <bpmn:incoming>Flow_Content_Ausspielen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Ausspielen_Lead</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Intermediate Catch Event: Lead erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Lead_erhalten" name="Lead erhalten">
+      <bpmn:incoming>Flow_Ausspielen_Lead</bpmn:incoming>
+      <bpmn:outgoing>Flow_Lead_Erfassung</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Lead" messageRef="Message_Lead" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- Service Task: Lead-Erfassung verarbeiten -->
+    <bpmn:serviceTask id="Task_Lead_Erfassung" name="Lead-Erfassung verarbeiten">
+      <bpmn:incoming>Flow_Lead_Erfassung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Lead_Performance</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Service Task: Performance reporten -->
+    <bpmn:serviceTask id="Task_Performance_reporten" name="Performance reporten">
+      <bpmn:incoming>Flow_Lead_Performance</bpmn:incoming>
+      <bpmn:outgoing>Flow_Performance_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_IT" name="Kampagne abgeschlossen">
+      <bpmn:incoming>Flow_Performance_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - IT-Prozess -->
+    <bpmn:sequenceFlow id="Flow_IT_Start_Konfigurieren"
+                       sourceRef="StartEvent_IT"
+                       targetRef="Task_Kampagne_konfigurieren" />
+    
+    <bpmn:sequenceFlow id="Flow_Konfigurieren_Content"
+                       sourceRef="Task_Kampagne_konfigurieren"
+                       targetRef="Task_Content_erstellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Content_Ausspielen"
+                       sourceRef="Task_Content_erstellen"
+                       targetRef="Task_Kampagne_ausspielen" />
+    
+    <bpmn:sequenceFlow id="Flow_Ausspielen_Lead"
+                       sourceRef="Task_Kampagne_ausspielen"
+                       targetRef="Event_Lead_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Lead_Erfassung"
+                       sourceRef="Event_Lead_erhalten"
+                       targetRef="Task_Lead_Erfassung" />
+    
+    <bpmn:sequenceFlow id="Flow_Lead_Performance"
+                       sourceRef="Task_Lead_Erfassung"
+                       targetRef="Task_Performance_reporten" />
+    
+    <bpmn:sequenceFlow id="Flow_Performance_Ende"
+                       sourceRef="Task_Performance_reporten"
+                       targetRef="EndEvent_IT" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       MESSAGE DEFINITIONEN
+       ===================================================== -->
+  <bpmn:message id="Message_Briefing" name="Briefing" />
+  <bpmn:message id="Message_Content" name="Content zur Freigabe" />
+  <bpmn:message id="Message_Kampagne" name="Kampagne" />
+  <bpmn:message id="Message_Lead" name="Interesse" />
+  <bpmn:message id="Message_Leads" name="Qualifizierte Leads" />
+  <bpmn:message id="Message_Report" name="Performance-Report" />
+  <bpmn:message id="Message_Rueckmeldung" name="Bestaetigung" />
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Personalmarketing">
+    <bpmndi:BPMNPlane id="BPMNPlane_Personalmarketing" bpmnElement="Collab_Personalmarketing">
+      
+      <!-- ===============================
+           POOL: BUERGER
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="190" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Buerger Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Informationen_konsumieren_di" bpmnElement="Task_Informationen_konsumieren">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Interesse_bekunden_di" bpmnElement="Task_Interesse_bekunden">
+        <dc:Bounds x="470" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Rueckmeldung_erhalten_di" bpmnElement="Event_Rueckmeldung_erhalten">
+        <dc:Bounds x="630" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="608" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="722" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="700" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===============================
+           POOL: IT
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="480" width="20" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- IT Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_IT_di" bpmnElement="StartEvent_IT">
+        <dc:Bounds x="222" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="520" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Kampagne_konfigurieren_di" bpmnElement="Task_Kampagne_konfigurieren">
+        <dc:Bounds x="310" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Content_erstellen_di" bpmnElement="Task_Content_erstellen">
+        <dc:Bounds x="470" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Kampagne_ausspielen_di" bpmnElement="Task_Kampagne_ausspielen">
+        <dc:Bounds x="630" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Lead_erhalten_di" bpmnElement="Event_Lead_erhalten">
+        <dc:Bounds x="790" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="768" y="520" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Lead_Erfassung_di" bpmnElement="Task_Lead_Erfassung">
+        <dc:Bounds x="880" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Performance_reporten_di" bpmnElement="Task_Performance_reporten">
+        <dc:Bounds x="1040" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_IT_di" bpmnElement="EndEvent_IT">
+        <dc:Bounds x="1192" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1170" y="520" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===============================
+           POOL: BEHOERDE
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Behoerde_di" bpmnElement="Participant_Behoerde" isHorizontal="true">
+        <dc:Bounds x="160" y="660" width="1200" height="300" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="780" width="20" height="120" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Behoerde Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Behoerde_di" bpmnElement="StartEvent_Behoerde">
+        <dc:Bounds x="222" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="825" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Zielsetzung_definieren_di" bpmnElement="Task_Zielsetzung_definieren">
+        <dc:Bounds x="310" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Briefing_bereitstellen_di" bpmnElement="Task_Briefing_bereitstellen">
+        <dc:Bounds x="470" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Entwuerfe_erhalten_di" bpmnElement="Event_Entwuerfe_erhalten">
+        <dc:Bounds x="630" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="608" y="825" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Inhalte_freigeben_di" bpmnElement="Task_Inhalte_freigeben">
+        <dc:Bounds x="720" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Leads_erhalten_di" bpmnElement="Event_Leads_erhalten">
+        <dc:Bounds x="872" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="850" y="825" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Report_erhalten_di" bpmnElement="Event_Report_erhalten">
+        <dc:Bounds x="962" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="940" y="825" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Ergebnisse_bewerten_di" bpmnElement="Task_Ergebnisse_bewerten">
+        <dc:Bounds x="1050" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Behoerde_di" bpmnElement="EndEvent_Behoerde">
+        <dc:Bounds x="1202" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1180" y="825" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ===============================
+           SEQUENCE FLOWS - BUERGER
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_Start_Konsumieren_di" bpmnElement="Flow_Start_Konsumieren">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Konsumieren_Interesse_di" bpmnElement="Flow_Konsumieren_Interesse">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="470" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Interesse_Warten_di" bpmnElement="Flow_Interesse_Warten">
+        <di:waypoint x="570" y="200" />
+        <di:waypoint x="630" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Rueckmeldung_Ende_di" bpmnElement="Flow_Rueckmeldung_Ende">
+        <di:waypoint x="666" y="200" />
+        <di:waypoint x="722" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           SEQUENCE FLOWS - IT
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_IT_Start_Konfigurieren_di" bpmnElement="Flow_IT_Start_Konfigurieren">
+        <di:waypoint x="258" y="495" />
+        <di:waypoint x="310" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Konfigurieren_Content_di" bpmnElement="Flow_Konfigurieren_Content">
+        <di:waypoint x="410" y="495" />
+        <di:waypoint x="470" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Content_Ausspielen_di" bpmnElement="Flow_Content_Ausspielen">
+        <di:waypoint x="570" y="495" />
+        <di:waypoint x="630" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Ausspielen_Lead_di" bpmnElement="Flow_Ausspielen_Lead">
+        <di:waypoint x="730" y="495" />
+        <di:waypoint x="790" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Lead_Erfassung_di" bpmnElement="Flow_Lead_Erfassung">
+        <di:waypoint x="826" y="495" />
+        <di:waypoint x="880" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Lead_Performance_di" bpmnElement="Flow_Lead_Performance">
+        <di:waypoint x="980" y="495" />
+        <di:waypoint x="1040" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Performance_Ende_di" bpmnElement="Flow_Performance_Ende">
+        <di:waypoint x="1140" y="495" />
+        <di:waypoint x="1192" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           SEQUENCE FLOWS - BEHOERDE
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_Start_Zielsetzung_di" bpmnElement="Flow_Start_Zielsetzung">
+        <di:waypoint x="258" y="800" />
+        <di:waypoint x="310" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Zielsetzung_Briefing_di" bpmnElement="Flow_Zielsetzung_Briefing">
+        <di:waypoint x="410" y="800" />
+        <di:waypoint x="470" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Briefing_Warten_di" bpmnElement="Flow_Briefing_Warten">
+        <di:waypoint x="570" y="800" />
+        <di:waypoint x="630" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Entwuerfe_Freigabe_di" bpmnElement="Flow_Entwuerfe_Freigabe">
+        <di:waypoint x="666" y="800" />
+        <di:waypoint x="720" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Freigabe_Leads_di" bpmnElement="Flow_Freigabe_Leads">
+        <di:waypoint x="820" y="800" />
+        <di:waypoint x="872" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Leads_Report_di" bpmnElement="Flow_Leads_Report">
+        <di:waypoint x="908" y="800" />
+        <di:waypoint x="962" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Report_Bewerten_di" bpmnElement="Flow_Report_Bewerten">
+        <di:waypoint x="998" y="800" />
+        <di:waypoint x="1050" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Bewerten_Ende_di" bpmnElement="Flow_Bewerten_Ende">
+        <di:waypoint x="1150" y="800" />
+        <di:waypoint x="1202" y="800" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           MESSAGE FLOWS
+           =============================== -->
+      <bpmndi:BPMNEdge id="MsgFlow_Briefing_di" bpmnElement="MsgFlow_Briefing">
+        <di:waypoint x="520" y="760" />
+        <di:waypoint x="520" y="640" />
+        <di:waypoint x="240" y="640" />
+        <di:waypoint x="240" y="513" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="360" y="622" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Content_Freigabe_di" bpmnElement="MsgFlow_Content_Freigabe">
+        <di:waypoint x="520" y="535" />
+        <di:waypoint x="520" y="640" />
+        <di:waypoint x="648" y="640" />
+        <di:waypoint x="648" y="782" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="540" y="622" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Kampagne_Ausspielung_di" bpmnElement="MsgFlow_Kampagne_Ausspielung">
+        <di:waypoint x="680" y="455" />
+        <di:waypoint x="680" y="350" />
+        <di:waypoint x="240" y="350" />
+        <di:waypoint x="240" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="420" y="332" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Interesse_di" bpmnElement="MsgFlow_Interesse">
+        <di:waypoint x="520" y="240" />
+        <di:waypoint x="520" y="350" />
+        <di:waypoint x="808" y="350" />
+        <di:waypoint x="808" y="477" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="630" y="332" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Lead_Uebergabe_di" bpmnElement="MsgFlow_Lead_Uebergabe">
+        <di:waypoint x="930" y="535" />
+        <di:waypoint x="930" y="640" />
+        <di:waypoint x="890" y="640" />
+        <di:waypoint x="890" y="782" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="860" y="622" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Performance_Report_di" bpmnElement="MsgFlow_Performance_Report">
+        <di:waypoint x="1090" y="535" />
+        <di:waypoint x="1090" y="640" />
+        <di:waypoint x="980" y="640" />
+        <di:waypoint x="980" y="782" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="990" y="622" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Rueckmeldung_di" bpmnElement="MsgFlow_Rueckmeldung">
+        <di:waypoint x="1100" y="760" />
+        <di:waypoint x="1100" y="350" />
+        <di:waypoint x="648" y="350" />
+        <di:waypoint x="648" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="840" y="332" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>
