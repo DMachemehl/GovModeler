@@ -1,0 +1,355 @@
+{
+  "components": [
+    {
+      "text": "## Antrag auf Leistungen zur Bildung und Teilhabe",
+      "type": "text",
+      "id": "Field_Titel",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "text": "Bitte füllen Sie alle erforderlichen Felder aus.",
+      "type": "text",
+      "id": "Field_Hinweis",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "label": "Persönliche Angaben",
+      "type": "group",
+      "id": "Field_Group_Persoenlich",
+      "layout": {
+        "row": "Row_1"
+      },
+      "path": "persoenlicheAngaben"
+    },
+    {
+      "label": "Vorname",
+      "type": "textfield",
+      "id": "Field_Vorname",
+      "key": "vorname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Nachname",
+      "type": "textfield",
+      "id": "Field_Nachname",
+      "key": "nachname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsdatum",
+      "type": "textfield",
+      "id": "Field_Geburtsdatum",
+      "key": "geburtsdatum",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Anschrift",
+      "type": "group",
+      "id": "Field_Group_Anschrift",
+      "layout": {
+        "row": "Row_4"
+      },
+      "path": "anschrift"
+    },
+    {
+      "label": "Straße und Hausnummer",
+      "type": "textfield",
+      "id": "Field_Strasse",
+      "key": "strasse",
+      "validate": {
+        "required": true,
+        "minLength": 3,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_5",
+        "columns": 8
+      }
+    },
+    {
+      "label": "PLZ",
+      "type": "textfield",
+      "id": "Field_PLZ",
+      "key": "plz",
+      "validate": {
+        "required": true,
+        "pattern": "^[0-9]{5}$"
+      },
+      "layout": {
+        "row": "Row_6",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Ort",
+      "type": "textfield",
+      "id": "Field_Ort",
+      "key": "ort",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_6",
+        "columns": 8
+      }
+    },
+    {
+      "label": "Kontaktdaten",
+      "type": "group",
+      "id": "Field_Group_Kontakt",
+      "layout": {
+        "row": "Row_7"
+      },
+      "path": "kontaktdaten"
+    },
+    {
+      "label": "E-Mail",
+      "type": "textfield",
+      "id": "Field_Email",
+      "key": "email",
+      "validate": {
+        "required": true,
+        "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+      },
+      "layout": {
+        "row": "Row_8",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Telefonnummer",
+      "type": "textfield",
+      "id": "Field_Telefon",
+      "key": "telefon",
+      "description": "Optional",
+      "validate": {
+        "required": false
+      },
+      "layout": {
+        "row": "Row_8",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Angaben zum Kind/Jugendlichen",
+      "type": "group",
+      "id": "Field_Group_Kind",
+      "layout": {
+        "row": "Row_9"
+      },
+      "path": "kind"
+    },
+    {
+      "label": "Vorname des Kindes",
+      "type": "textfield",
+      "id": "Field_Kind_Vorname",
+      "key": "kindVorname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_10",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Nachname des Kindes",
+      "type": "textfield",
+      "id": "Field_Kind_Nachname",
+      "key": "kindNachname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_10",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsdatum des Kindes",
+      "type": "textfield",
+      "id": "Field_Kind_Geburtsdatum",
+      "key": "kindGeburtsdatum",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_11",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Beantragte Leistungen",
+      "type": "group",
+      "id": "Field_Group_Leistungen",
+      "layout": {
+        "row": "Row_12"
+      },
+      "path": "leistungen"
+    },
+    {
+      "label": "Art der Leistung",
+      "type": "checklist",
+      "id": "Field_Leistungsart",
+      "key": "leistungsart",
+      "values": [
+        {
+          "label": "Schulausflüge und mehrtägige Klassenfahrten",
+          "value": "schulausflug"
+        },
+        {
+          "label": "Schulbedarf (Ranzen, Sportzeug, Schreib-, Rechen- und Zeichenmaterial)",
+          "value": "schulbedarf"
+        },
+        {
+          "label": "Schülerbeförderungskosten",
+          "value": "schuelerbefoerderung"
+        },
+        {
+          "label": "Lernförderung/Nachhilfe",
+          "value": "lernfoerderung"
+        },
+        {
+          "label": "Mittagsverpflegung in Schule, Kita oder Hort",
+          "value": "mittagsverpflegung"
+        },
+        {
+          "label": "Soziale und kulturelle Teilhabe (Sportverein, Musikschule, Freizeiten)",
+          "value": "teilhabe"
+        }
+      ],
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_13"
+      }
+    },
+    {
+      "label": "Zusätzliche Angaben",
+      "type": "textarea",
+      "id": "Field_Zusatzangaben",
+      "key": "zusatzangaben",
+      "description": "Hier können Sie weitere Informationen zu Ihrem Antrag angeben",
+      "validate": {
+        "required": false,
+        "maxLength": 500
+      },
+      "layout": {
+        "row": "Row_14"
+      }
+    },
+    {
+      "label": "Nachweise",
+      "type": "group",
+      "id": "Field_Group_Nachweise",
+      "layout": {
+        "row": "Row_15"
+      },
+      "path": "nachweise"
+    },
+    {
+      "text": "**Bitte laden Sie folgende Nachweise hoch:**\n- Einkommensnachweise (z.B. Gehaltsbescheinigungen, Bescheide über Leistungsbezug)\n- Nachweise über die beantragten Leistungen (z.B. Rechnungen, Bescheinigungen)",
+      "type": "text",
+      "id": "Field_Nachweise_Info",
+      "layout": {
+        "row": "Row_16"
+      }
+    },
+    {
+      "label": "Ich habe die erforderlichen Nachweise beigefügt",
+      "type": "checkbox",
+      "id": "Field_Nachweise_Bestaetigung",
+      "key": "nachweiseBeigefuegt",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_17"
+      }
+    },
+    {
+      "label": "Datenschutz und Einwilligung",
+      "type": "group",
+      "id": "Field_Group_Datenschutz",
+      "layout": {
+        "row": "Row_18"
+      },
+      "path": "datenschutz"
+    },
+    {
+      "text": "Mit der Antragstellung willige ich in die Verarbeitung meiner personenbezogenen Daten gemäß der Datenschutzgrundverordnung (DSGVO) ein.",
+      "type": "text",
+      "id": "Field_Datenschutz_Text",
+      "layout": {
+        "row": "Row_19"
+      }
+    },
+    {
+      "label": "Ich habe die Datenschutzhinweise gelesen und akzeptiert",
+      "type": "checkbox",
+      "id": "Field_Datenschutz_Akzeptiert",
+      "key": "datenschutzAkzeptiert",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_20"
+      }
+    },
+    {
+      "label": "Antrag absenden",
+      "type": "button",
+      "id": "Field_Submit",
+      "action": "submit",
+      "layout": {
+        "row": "Row_21"
+      }
+    }
+  ],
+  "type": "default",
+  "id": "Form_BuT_Leistungen",
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0",
+  "exporter": {
+    "name": "GitHub-Copilot-GovModeler",
+    "version": "2.0"
+  },
+  "schemaVersion": 9
+}
