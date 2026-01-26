@@ -29,7 +29,7 @@
 | Leistungen zur Berufsausbildung gewähren                               |        |
 | Sprach- und Integrationskurse bereitstellen                            |        |
 | Begrüßungsgeld für Studierende bereitstellen                           |        |
-| Leistungen zur Bildung und Teilhabe gewähren                           |        |
+| Leistungen zur Bildung und Teilhabe gewähren                           |   x    |
 | Ausbildungsförderung (BAföG) gewähren                                  |        |
 | Rückzahlung der Ausbildungsförderung nach BaföG bearbeiten             |        |
 | Sorgeerklärung beurkunden                                              |   X    |

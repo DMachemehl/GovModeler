@@ -61,8 +61,52 @@ Jedes Formular enthaelt folgende Komponenten:
 - Dateinamen: `Prozessname_Antrag.form` (z.B. `Stammdatenaenderung_Antrag.form`)
 - IDs: `Field_`, `Field_Group_` Praefix
 - Keys: camelCase (z.B. `vorname`, `nachname`, `datenschutzAkzeptiert`)
-- Paths: camelCase (z.B. `persoenlicheAngaben`, `neueAdresse`)
 
+## WICHTIG: Groups und Path-Binding
+
+**KRITISCHE REGEL - Groups ohne "path"-Attribut verwenden:**
+- Groups duerfen NIEMALS ein "path"-Attribut haben
+- Felder innerhalb einer Group verwenden direkt ihre "key"-Attribute
+- Das "path"-Attribut fuehrt zu Fehlern: "binding path is already claimed"
+
+**KORREKTES Beispiel fuer Groups:**
+```json
+{
+  "label": "Persoenliche Angaben",
+  "type": "group",
+  "id": "Field_Group_Persoenlich",
+  "layout": {
+    "row": "Row_1"
+  }
+}
+```
+
+**FALSCHES Beispiel (NIEMALS verwenden):**
+```json
+{
+  "label": "Persoenliche Angaben",
+  "type": "group",
+  "id": "Field_Group_Persoenlich",
+  "layout": {
+    "row": "Row_1"
+  },
+  "path": "persoenlicheAngaben"  // FEHLER! Entfernen!
+}
+```
+
+**Felder nach Groups:**
+Felder nach einer Group verwenden nur "key", niemals verschachtelt:
+```json
+{
+  "label": "Vorname",
+  "type": "textfield",
+  "id": "Field_Vorname",
+  "key": "vorname",
+  "layout": {
+    "row": "Row_2"
+  }
+}
+```
 
 ## Verknuepfung mit BPMN
 Nach der Erstellung des Formulars muss die User Task im BPMN-Modell verknuepft werden:
@@ -74,9 +118,35 @@ Nach der Erstellung des Formulars muss die User Task im BPMN-Modell verknuepft w
 1. **Analyse**: BPMN-Prozess analysieren und User Tasks identifizieren
 2. **Referenz pruefen**: Existierende Forms im `forms/` Ordner als Vorlage verwenden
 3. **Form erstellen**: JSON-Struktur mit allen Komponenten erstellen
-4. **Datei speichern**: Im Ordner `forms/` mit `.form` Endung
-5. **BPMN verknuepfen**: formKey in der User Task setzen
-6. **Editor oeffnen**: Datei mit Camunda Forms Editor oeffnen
+4. **WICHTIG**: Groups OHNE "path"-Attribut erstellen (verhindert "binding path already claimed" Fehler)
+5. **Datei speichern**: Im Ordner `forms/` mit `.form` Endung
+6. **BPMN verknuepfen**: formKey in der User Task setzen
+7. **Editor oeffnen**: Datei mit Camunda Forms Editor oeffnen
+
+## Haeufige Fehler vermeiden
+
+### Fehler: "binding path is already claimed"
+**Ursache**: Groups mit "path"-Attribut erstellt
+**Loesung**: Alle "path"-Attribute aus Groups entfernen
+
+**Beispiel - VORHER (fehlerhaft):**
+```json
+{
+  "label": "Antragsdaten",
+  "type": "group",
+  "id": "Field_Group_Antrag",
+  "path": "antragsdaten"  // Verursacht Fehler!
+}
+```
+
+**Beispiel - NACHHER (korrekt):**
+```json
+{
+  "label": "Antragsdaten",
+  "type": "group",
+  "id": "Field_Group_Antrag"
+}
+```
 
 ## Grenzen
 - Erstellt keine komplexen Business Rules oder Skripte
