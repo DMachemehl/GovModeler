@@ -1,0 +1,533 @@
+{
+  "components": [
+    {
+      "text": "## Antrag auf Ausstellung eines Staatsangehoerigkeitsausweises",
+      "type": "text",
+      "id": "Field_Titel",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "text": "Mit dem Staatsangehoerigkeitsausweis wird die deutsche Staatsangehoerigkeit amtlich nachgewiesen. Bitte fuellen Sie alle erforderlichen Felder aus und laden Sie die notwendigen Nachweise hoch.",
+      "type": "text",
+      "id": "Field_Hinweis",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "label": "Persoenliche Angaben",
+      "type": "group",
+      "id": "Field_Group_Persoenlich",
+      "layout": {
+        "row": "Row_1"
+      }
+    },
+    {
+      "label": "Vorname(n)",
+      "type": "textfield",
+      "id": "Field_Vorname",
+      "key": "vorname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Nachname",
+      "type": "textfield",
+      "id": "Field_Nachname",
+      "key": "nachname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsname (falls abweichend)",
+      "type": "textfield",
+      "id": "Field_Geburtsname",
+      "key": "geburtsname",
+      "validate": {
+        "required": false,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Fruehere Namen (falls zutreffend)",
+      "type": "textfield",
+      "id": "Field_FruehereNamen",
+      "key": "fruehereNamen",
+      "description": "z.B. durch Heirat oder Namensaenderung",
+      "validate": {
+        "required": false,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsdatum",
+      "type": "textfield",
+      "id": "Field_Geburtsdatum",
+      "key": "geburtsdatum",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_4",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Geburtsort",
+      "type": "textfield",
+      "id": "Field_Geburtsort",
+      "key": "geburtsort",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_4",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Geburtsland",
+      "type": "textfield",
+      "id": "Field_Geburtsland",
+      "key": "geburtsland",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_4",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Geschlecht",
+      "type": "select",
+      "id": "Field_Geschlecht",
+      "key": "geschlecht",
+      "values": [
+        {
+          "label": "maennlich",
+          "value": "m"
+        },
+        {
+          "label": "weiblich",
+          "value": "w"
+        },
+        {
+          "label": "divers",
+          "value": "d"
+        },
+        {
+          "label": "ohne Angabe",
+          "value": "x"
+        }
+      ],
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_5",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Staatsangehoerigkeit(en)",
+      "type": "textfield",
+      "id": "Field_Staatsangehoerigkeit",
+      "key": "staatsangehoerigkeit",
+      "description": "z.B. Deutsch, bei mehreren bitte alle angeben",
+      "validate": {
+        "required": true,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_5",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Aktuelle Anschrift",
+      "type": "group",
+      "id": "Field_Group_Anschrift",
+      "layout": {
+        "row": "Row_6"
+      }
+    },
+    {
+      "label": "Strasse und Hausnummer",
+      "type": "textfield",
+      "id": "Field_Strasse",
+      "key": "strasse",
+      "validate": {
+        "required": true,
+        "minLength": 3,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_7",
+        "columns": 8
+      }
+    },
+    {
+      "label": "Adresszusatz",
+      "type": "textfield",
+      "id": "Field_Adresszusatz",
+      "key": "adresszusatz",
+      "description": "z.B. c/o, Hinterhaus, Etage",
+      "validate": {
+        "required": false,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_7",
+        "columns": 4
+      }
+    },
+    {
+      "label": "PLZ",
+      "type": "textfield",
+      "id": "Field_PLZ",
+      "key": "plz",
+      "validate": {
+        "required": true,
+        "pattern": "^[0-9]{5}$"
+      },
+      "layout": {
+        "row": "Row_8",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Ort",
+      "type": "textfield",
+      "id": "Field_Ort",
+      "key": "ort",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_8",
+        "columns": 8
+      }
+    },
+    {
+      "label": "Kontaktdaten",
+      "type": "group",
+      "id": "Field_Group_Kontakt",
+      "layout": {
+        "row": "Row_9"
+      }
+    },
+    {
+      "label": "E-Mail",
+      "type": "textfield",
+      "id": "Field_Email",
+      "key": "email",
+      "validate": {
+        "required": true,
+        "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+      },
+      "layout": {
+        "row": "Row_10",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Telefonnummer",
+      "type": "textfield",
+      "id": "Field_Telefon",
+      "key": "telefon",
+      "description": "Format: +49 123 456789 oder 0123 456789",
+      "validate": {
+        "required": true,
+        "pattern": "^[+0-9\\s\\-\\/()]{7,20}$"
+      },
+      "layout": {
+        "row": "Row_10",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Angaben zum Erwerb der deutschen Staatsangehoerigkeit",
+      "type": "group",
+      "id": "Field_Group_Staatsangehoerigkeit",
+      "layout": {
+        "row": "Row_11"
+      }
+    },
+    {
+      "label": "Art des Staatsangehoerigkeitserwerbs",
+      "type": "select",
+      "id": "Field_Erwerbsart",
+      "key": "erwerbsart",
+      "values": [
+        {
+          "label": "durch Geburt (Abstammung)",
+          "value": "geburt"
+        },
+        {
+          "label": "durch Einbuergerung",
+          "value": "einbuergerung"
+        },
+        {
+          "label": "durch Adoption",
+          "value": "adoption"
+        },
+        {
+          "label": "durch Erklaerung",
+          "value": "erklaerung"
+        },
+        {
+          "label": "durch Legitimation",
+          "value": "legitimation"
+        },
+        {
+          "label": "Sonstiges",
+          "value": "sonstiges"
+        }
+      ],
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_12"
+      }
+    },
+    {
+      "label": "Datum des Erwerbs",
+      "type": "textfield",
+      "id": "Field_Erwerbsdatum",
+      "key": "erwerbsdatum",
+      "description": "Format: TT.MM.JJJJ (falls bekannt)",
+      "validate": {
+        "required": false,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_13",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Zustaendige Behoerde/Ort des Erwerbs",
+      "type": "textfield",
+      "id": "Field_Erwerbsbehoerde",
+      "key": "erwerbsbehoerde",
+      "description": "z.B. Standesamt, Einbuergerungsbehoerde",
+      "validate": {
+        "required": false,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_13",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Angaben zu den Eltern",
+      "type": "group",
+      "id": "Field_Group_Eltern",
+      "layout": {
+        "row": "Row_14"
+      }
+    },
+    {
+      "label": "Vorname und Nachname der Mutter",
+      "type": "textfield",
+      "id": "Field_Mutter",
+      "key": "mutter",
+      "validate": {
+        "required": true,
+        "minLength": 3,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_15",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsname der Mutter",
+      "type": "textfield",
+      "id": "Field_MutterGeburtsname",
+      "key": "mutterGeburtsname",
+      "validate": {
+        "required": false,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_15",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Vorname und Nachname des Vaters",
+      "type": "textfield",
+      "id": "Field_Vater",
+      "key": "vater",
+      "validate": {
+        "required": true,
+        "minLength": 3,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_16",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsname des Vaters",
+      "type": "textfield",
+      "id": "Field_VaterGeburtsname",
+      "key": "vaterGeburtsname",
+      "validate": {
+        "required": false,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_16",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Verwendungszweck",
+      "type": "group",
+      "id": "Field_Group_Verwendung",
+      "layout": {
+        "row": "Row_17"
+      }
+    },
+    {
+      "label": "Wofuer benoetigen Sie den Staatsangehoerigkeitsausweis?",
+      "type": "textarea",
+      "id": "Field_Verwendungszweck",
+      "key": "verwendungszweck",
+      "description": "z.B. Einstellung im oeffentlichen Dienst, Beamtenernennung, Visa-Antrag",
+      "validate": {
+        "required": true,
+        "minLength": 10,
+        "maxLength": 500
+      },
+      "layout": {
+        "row": "Row_18"
+      }
+    },
+    {
+      "label": "Nachweise und Dokumente",
+      "type": "group",
+      "id": "Field_Group_Nachweise",
+      "layout": {
+        "row": "Row_19"
+      }
+    },
+    {
+      "text": "**Erforderliche Nachweise (werden im naechsten Schritt hochgeladen):**\n\n- Geburtsurkunde oder beglaubigte Abschrift aus dem Geburtenregister\n- gueltiges Ausweisdokument (Personalausweis oder Reisepass)\n- ggf. Einbuergerungsurkunde\n- ggf. Abstammungsurkunde der Eltern\n- ggf. Heiratsurkunde (bei Namensaenderung)\n- Biometrisches Passfoto (35 x 45 mm)\n\nBitte halten Sie diese Dokumente fuer den Upload im naechsten Schritt bereit.",
+      "type": "text",
+      "id": "Field_Nachweise_Info",
+      "layout": {
+        "row": "Row_20"
+      }
+    },
+    {
+      "label": "Bestaetigung der Angaben",
+      "type": "group",
+      "id": "Field_Group_Bestaetigung",
+      "layout": {
+        "row": "Row_21"
+      }
+    },
+    {
+      "label": "Hiermit beantrage ich die Ausstellung eines Staatsangehoerigkeitsausweises",
+      "type": "checkbox",
+      "id": "Field_Antrag_Bestaetigt",
+      "key": "antragBestaetigt",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_22"
+      }
+    },
+    {
+      "label": "Ich versichere die Richtigkeit und Vollstaendigkeit meiner Angaben",
+      "type": "checkbox",
+      "id": "Field_Richtigkeit_Bestaetigt",
+      "key": "richtigkeitBestaetigt",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_23"
+      }
+    },
+    {
+      "text": "**Datenschutzhinweis:** Ihre personenbezogenen Daten werden ausschliesslich zur Bearbeitung Ihres Antrags auf einen Staatsangehoerigkeitsausweis verarbeitet. Die Rechtsgrundlage ist § 30 StAG i.V.m. Art. 6 Abs. 1 lit. c DSGVO.",
+      "type": "text",
+      "id": "Field_Datenschutz",
+      "layout": {
+        "row": "Row_24"
+      }
+    },
+    {
+      "label": "Ich habe die Datenschutzhinweise zur Kenntnis genommen",
+      "type": "checkbox",
+      "id": "Field_Datenschutz_Akzeptiert",
+      "key": "datenschutzAkzeptiert",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_25"
+      }
+    },
+    {
+      "label": "Antrag absenden",
+      "type": "button",
+      "id": "Field_Submit",
+      "action": "submit",
+      "layout": {
+        "row": "Row_26"
+      }
+    }
+  ],
+  "type": "default",
+  "id": "Form_Staatsangehoerigkeitsausweis",
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0",
+  "exporter": {
+    "name": "GitHub-Copilot-GovModeler",
+    "version": "2.0"
+  },
+  "schemaVersion": 9
+}

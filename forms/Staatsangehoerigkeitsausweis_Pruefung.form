@@ -1,0 +1,578 @@
+{
+  "components": [
+    {
+      "text": "## Fachliche Pruefung: Staatsangehoerigkeitsausweis",
+      "type": "text",
+      "id": "Field_Titel",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "text": "**Interner Freigabeworkflow** - Bitte pruefen Sie die Antragsdaten und die eingereichten Nachweise auf Vollstaendigkeit und Plausibilitaet.",
+      "type": "text",
+      "id": "Field_Hinweis",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "label": "Antragsdaten (Readonly)",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Antragsdaten",
+      "layout": {
+        "row": "Row_1"
+      }
+    },
+    {
+      "label": "Vorname(n)",
+      "type": "textfield",
+      "id": "Field_Vorname_RO",
+      "key": "vorname",
+      "readonly": true,
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Nachname",
+      "type": "textfield",
+      "id": "Field_Nachname_RO",
+      "key": "nachname",
+      "readonly": true,
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsdatum",
+      "type": "textfield",
+      "id": "Field_Geburtsdatum_RO",
+      "key": "geburtsdatum",
+      "readonly": true,
+      "layout": {
+        "row": "Row_3",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Geburtsort",
+      "type": "textfield",
+      "id": "Field_Geburtsort_RO",
+      "key": "geburtsort",
+      "readonly": true,
+      "layout": {
+        "row": "Row_3",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Geburtsland",
+      "type": "textfield",
+      "id": "Field_Geburtsland_RO",
+      "key": "geburtsland",
+      "readonly": true,
+      "layout": {
+        "row": "Row_3",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Staatsangehoerigkeit(en)",
+      "type": "textfield",
+      "id": "Field_Staatsangehoerigkeit_RO",
+      "key": "staatsangehoerigkeit",
+      "readonly": true,
+      "layout": {
+        "row": "Row_4",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Art des Erwerbs",
+      "type": "textfield",
+      "id": "Field_Erwerbsart_RO",
+      "key": "erwerbsart",
+      "readonly": true,
+      "layout": {
+        "row": "Row_4",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Verwendungszweck",
+      "type": "textarea",
+      "id": "Field_Verwendungszweck_RO",
+      "key": "verwendungszweck",
+      "readonly": true,
+      "layout": {
+        "row": "Row_5"
+      }
+    },
+    {
+      "label": "Registerabgleich",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Register",
+      "layout": {
+        "row": "Row_6"
+      }
+    },
+    {
+      "label": "Melderegister gecheckt",
+      "type": "checkbox",
+      "id": "Field_Melderegister_Geprueft",
+      "key": "melderegisterGeprueft",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_7",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtenregister gecheckt",
+      "type": "checkbox",
+      "id": "Field_Geburtenregister_Geprueft",
+      "key": "geburtenregisterGeprueft",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_7",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Staatsangehoerigkeitsregister gecheckt",
+      "type": "checkbox",
+      "id": "Field_Staatsangehoerigkeitsregister_Geprueft",
+      "key": "staatsangehoerigkeitsregisterGeprueft",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_8"
+      }
+    },
+    {
+      "label": "Ergebnis Registerabgleich",
+      "values": [
+        {
+          "label": "Alle Angaben bestaetigt",
+          "value": "bestaetigt"
+        },
+        {
+          "label": "Geringfuegige Abweichungen",
+          "value": "abweichungen"
+        },
+        {
+          "label": "Erhebliche Diskrepanzen",
+          "value": "diskrepanzen"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Registerabgleich_Ergebnis",
+      "key": "registerabgleichErgebnis",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_9"
+      }
+    },
+    {
+      "label": "Dokumentenpruefung",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Dokumente",
+      "layout": {
+        "row": "Row_10"
+      }
+    },
+    {
+      "label": "Eingereichte Dokumente pruefen",
+      "values": [
+        {
+          "label": "Geburtsurkunde / Geburtenregisterauszug",
+          "value": "geburtsurkunde"
+        },
+        {
+          "label": "Gueltiges Ausweisdokument",
+          "value": "ausweisdokument"
+        },
+        {
+          "label": "Einbuergerungsurkunde (falls zutreffend)",
+          "value": "einbuergerungsurkunde"
+        },
+        {
+          "label": "Abstammungsurkunde Eltern (falls zutreffend)",
+          "value": "abstammungsurkunde"
+        },
+        {
+          "label": "Heiratsurkunde (falls zutreffend)",
+          "value": "heiratsurkunde"
+        },
+        {
+          "label": "Biometrisches Passfoto",
+          "value": "passfoto"
+        }
+      ],
+      "type": "checklist",
+      "id": "Field_Dokumente_Vorhanden",
+      "key": "dokumenteVorhanden",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_11"
+      }
+    },
+    {
+      "label": "Qualitaet der Nachweise",
+      "values": [
+        {
+          "label": "Alle Nachweise vollstaendig und lesbar",
+          "value": "vollstaendig"
+        },
+        {
+          "label": "Geringfuegige Maengel (Qualitaet, Lesbarkeit)",
+          "value": "maengel"
+        },
+        {
+          "label": "Nachweise fehlen oder unzureichend",
+          "value": "unzureichend"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Nachweise_Qualitaet",
+      "key": "nachweiseQualitaet",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_12"
+      }
+    },
+    {
+      "label": "Identitaetspruefung",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Identitaet",
+      "layout": {
+        "row": "Row_13"
+      }
+    },
+    {
+      "label": "Identitaet geprueft",
+      "values": [
+        {
+          "label": "Identitaet eindeutig festgestellt",
+          "value": "eindeutig"
+        },
+        {
+          "label": "Identitaet plausibel",
+          "value": "plausibel"
+        },
+        {
+          "label": "Identitaet unklar / Rueckfragen erforderlich",
+          "value": "unklar"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Identitaet_Status",
+      "key": "identitaetStatus",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_14"
+      }
+    },
+    {
+      "label": "Staatsangehoerigkeitspruefung",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Staatsangehoerigkeit",
+      "layout": {
+        "row": "Row_15"
+      }
+    },
+    {
+      "label": "Deutsche Staatsangehoerigkeit nachgewiesen",
+      "values": [
+        {
+          "label": "Eindeutig nachgewiesen",
+          "value": "nachgewiesen"
+        },
+        {
+          "label": "Wahrscheinlich, weitere Pruefung erforderlich",
+          "value": "pruefung"
+        },
+        {
+          "label": "Nicht eindeutig nachgewiesen",
+          "value": "nicht_nachgewiesen"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Staatsangehoerigkeit_Nachweis",
+      "key": "staatsangehoerigkeitNachweis",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_16"
+      }
+    },
+    {
+      "label": "Rechtliche Voraussetzungen",
+      "values": [
+        {
+          "label": "Alle Voraussetzungen nach § 30 StAG erfuellt",
+          "value": "erfuellt"
+        },
+        {
+          "label": "Voraussetzungen teilweise erfuellt",
+          "value": "teilweise"
+        },
+        {
+          "label": "Voraussetzungen nicht erfuellt",
+          "value": "nicht_erfuellt"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Rechtliche_Voraussetzungen",
+      "key": "rechtlicheVoraussetzungen",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_17"
+      }
+    },
+    {
+      "label": "Pruefnotizen und Anmerkungen",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Notizen",
+      "layout": {
+        "row": "Row_18"
+      }
+    },
+    {
+      "label": "Interne Notizen zur Pruefung",
+      "type": "textarea",
+      "id": "Field_Pruefnotizen",
+      "key": "pruefnotizen",
+      "description": "Relevante Feststellungen, Besonderheiten, offene Fragen",
+      "validate": {
+        "required": false,
+        "maxLength": 1000
+      },
+      "layout": {
+        "row": "Row_19"
+      }
+    },
+    {
+      "label": "Hinweise fuer die Entscheidung",
+      "type": "textarea",
+      "id": "Field_Entscheidungshinweise",
+      "key": "entscheidungshinweise",
+      "description": "Empfehlungen, rechtliche Bewertung, Risiken",
+      "validate": {
+        "required": false,
+        "maxLength": 1000
+      },
+      "layout": {
+        "row": "Row_20"
+      }
+    },
+    {
+      "label": "Pruefergebnis",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Ergebnis",
+      "layout": {
+        "row": "Row_21"
+      }
+    },
+    {
+      "label": "Fachliche Bewertung",
+      "values": [
+        {
+          "label": "Antrag vollstaendig und prueffaehig - Freigabe empfohlen",
+          "value": "freigabe_empfohlen"
+        },
+        {
+          "label": "Antrag prueffaehig mit Vorbehalten - bedingte Freigabe",
+          "value": "bedingte_freigabe"
+        },
+        {
+          "label": "Nachbesserung erforderlich - Rueckfragen an Antragsteller",
+          "value": "nachbesserung"
+        },
+        {
+          "label": "Antrag nicht prueffaehig - Ablehnung empfohlen",
+          "value": "ablehnung_empfohlen"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Fachliche_Bewertung",
+      "key": "fachlicheBewertung",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_22"
+      }
+    },
+    {
+      "label": "Begruendung der Bewertung",
+      "type": "textarea",
+      "id": "Field_Begruendung",
+      "key": "begruendung",
+      "description": "Fachliche Begruendung der Bewertung (wird ggf. in Bescheid uebernommen)",
+      "validate": {
+        "required": true,
+        "minLength": 20,
+        "maxLength": 2000
+      },
+      "layout": {
+        "row": "Row_23"
+      }
+    },
+    {
+      "label": "Prozesssteuerung",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Prozess",
+      "layout": {
+        "row": "Row_24"
+      }
+    },
+    {
+      "label": "Naechster Bearbeitungsschritt",
+      "values": [
+        {
+          "label": "Weiterleitung zur Entscheidung / Freigabe",
+          "value": "freigabe"
+        },
+        {
+          "label": "Rueckfrage an Antragsteller",
+          "value": "rueckfrage"
+        },
+        {
+          "label": "Rueckstellung / weitere interne Klaerung",
+          "value": "rueckstellung"
+        },
+        {
+          "label": "Ablehnung vorbereiten",
+          "value": "ablehnung"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Naechster_Schritt",
+      "key": "naechsterSchritt",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_25"
+      }
+    },
+    {
+      "label": "Prioritaet",
+      "values": [
+        {
+          "label": "Normal",
+          "value": "normal"
+        },
+        {
+          "label": "Hoch (z.B. Fristablauf)",
+          "value": "hoch"
+        },
+        {
+          "label": "Dringend",
+          "value": "dringend"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Prioritaet",
+      "key": "prioritaet",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_26",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Bearbeitungsdauer (Minuten)",
+      "type": "textfield",
+      "id": "Field_Bearbeitungsdauer",
+      "key": "bearbeitungsdauer",
+      "description": "Erfassung fuer Statistik",
+      "validate": {
+        "required": false,
+        "pattern": "^[0-9]{1,4}$"
+      },
+      "layout": {
+        "row": "Row_26",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Bestaetigung",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Bestaetigung",
+      "layout": {
+        "row": "Row_27"
+      }
+    },
+    {
+      "label": "Ich bestatige die Vollstaendigkeit und Richtigkeit meiner Pruefung",
+      "type": "checkbox",
+      "id": "Field_Pruefung_Bestaetigt",
+      "key": "pruefungBestaetigt",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_28"
+      }
+    },
+    {
+      "label": "Pruefung abschliessen",
+      "action": "submit",
+      "type": "button",
+      "id": "Field_Submit",
+      "layout": {
+        "row": "Row_29"
+      }
+    }
+  ],
+  "type": "default",
+  "id": "Form_Staatsangehoerigkeitsausweis_Pruefung",
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0",
+  "exporter": {
+    "name": "GitHub-Copilot-GovModeler",
+    "version": "2.0"
+  },
+  "schemaVersion": 17
+}

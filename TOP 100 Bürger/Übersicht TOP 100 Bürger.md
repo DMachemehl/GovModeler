@@ -12,7 +12,7 @@
 | Einbürgerungstest durchführen                                          |   X    |
 | Einbürgerung von Ausländern genehmigen                                 |        |
 | Miteinbürgerung genehmigen                                             |        |
-| Staatsangehörigkeitsausweis ausstellen                                 |        |
+| Staatsangehörigkeitsausweis ausstellen                                 |   X    |
 | Niederlassungserlaubnis erteilen                                       |        |
 | Aufenthaltserlaubnis bei Asylantrag erteilen                           |    x   |
 | Erlaubnis zur Aufnahme einer Erwerbstätigkeit erteilen                 |        |
