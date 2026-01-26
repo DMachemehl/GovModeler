@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0">
+
+  <!-- =====================================================
+       COLLABORATION - Schnellball bauen
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_Schnellball_bauen">
+    
+    <!-- Participant: Kunde -->
+    <bpmn:participant id="Participant_Kunde"
+                      name="Kunde"
+                      processRef="Process_Kunde" />
+    
+    <!-- Participant: Organisation -->
+    <bpmn:participant id="Participant_Organisation"
+                      name="Organisation"
+                      processRef="Process_Organisation" />
+    
+    <!-- Message Flows zwischen Kunde und Organisation -->
+    <bpmn:messageFlow id="MsgFlow_Auftrag"
+                      name="Auftrag"
+                      sourceRef="Task_Auftrag_uebermitteln"
+                      targetRef="StartEvent_Auftrag_eingegangen" />
+    
+    <bpmn:messageFlow id="MsgFlow_Schnellball_Uebergabe"
+                      name="Schnellball + Messprotokoll"
+                      sourceRef="Task_Bereitstellung_veranlassen"
+                      targetRef="Event_Schnellball_erhalten" />
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       KUNDE PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Kunde"
+                name="Schnellball_bauen_Kunde"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Kunde" name="Auftrag zum Schnellballbau eingegangen">
+      <bpmn:outgoing>Flow_Start_Bedarf</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Bedarf melden -->
+    <bpmn:userTask id="Task_Bedarf_melden" name="Bedarf melden">
+      <bpmn:incoming>Flow_Start_Bedarf</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bedarf_Auftrag</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Auftrag übermitteln -->
+    <bpmn:userTask id="Task_Auftrag_uebermitteln" name="Auftrag uebermitteln">
+      <bpmn:incoming>Flow_Bedarf_Auftrag</bpmn:incoming>
+      <bpmn:outgoing>Flow_Auftrag_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Intermediate Catch Event: Schnellball erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Schnellball_erhalten" name="Schnellball erhalten">
+      <bpmn:incoming>Flow_Auftrag_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Schnellball_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Schnellball" messageRef="Message_Schnellball" />
+    </bpmn:intermediateCatchEvent>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Kunde" name="Schnellball freigegeben und uebergeben">
+      <bpmn:incoming>Flow_Schnellball_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Kunde -->
+    <bpmn:sequenceFlow id="Flow_Start_Bedarf"
+                       sourceRef="StartEvent_Kunde"
+                       targetRef="Task_Bedarf_melden" />
+    
+    <bpmn:sequenceFlow id="Flow_Bedarf_Auftrag"
+                       sourceRef="Task_Bedarf_melden"
+                       targetRef="Task_Auftrag_uebermitteln" />
+    
+    <bpmn:sequenceFlow id="Flow_Auftrag_Warten"
+                       sourceRef="Task_Auftrag_uebermitteln"
+                       targetRef="Event_Schnellball_erhalten" />
+    
+    <bpmn:sequenceFlow id="Flow_Schnellball_Ende"
+                       sourceRef="Event_Schnellball_erhalten"
+                       targetRef="EndEvent_Kunde" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       ORGANISATIONS PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Organisation"
+                name="Schnellball_bauen_Organisation"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Auftrag_eingegangen" name="Auftrag eingegangen">
+      <bpmn:outgoing>Flow_Start_Annehmen</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Auftrag annehmen -->
+    <bpmn:userTask id="Task_Auftrag_annehmen" name="Auftrag annehmen">
+      <bpmn:incoming>Flow_Start_Annehmen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Annehmen_Material</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Material bereitstellen -->
+    <bpmn:userTask id="Task_Material_bereitstellen" name="Material bereitstellen">
+      <bpmn:incoming>Flow_Annehmen_Material</bpmn:incoming>
+      <bpmn:outgoing>Flow_Material_Werkzeug</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Werkzeug und Presse vorbereiten -->
+    <bpmn:userTask id="Task_Werkzeug_vorbereiten" name="Werkzeug und Presse vorbereiten">
+      <bpmn:incoming>Flow_Material_Werkzeug</bpmn:incoming>
+      <bpmn:outgoing>Flow_Werkzeug_Parameter</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Service Task: Pressparameter einstellen (inkl. Presskraft) -->
+    <bpmn:serviceTask id="Task_Pressparameter_einstellen" name="Pressparameter einstellen (Presskraft: 250 kN +/- 5%)">
+      <bpmn:incoming>Flow_Werkzeug_Parameter</bpmn:incoming>
+      <bpmn:outgoing>Flow_Parameter_Pressen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- User Task: Schnellball pressen -->
+    <bpmn:userTask id="Task_Schnellball_pressen" name="Schnellball pressen">
+      <bpmn:incoming>Flow_Parameter_Pressen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Pressen_Entformen</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Entformen und konditionieren -->
+    <bpmn:userTask id="Task_Entformen_konditionieren" name="Entformen und konditionieren">
+      <bpmn:incoming>Flow_Pressen_Entformen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Entformen_Pruefen</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Mass und Funktion prüfen -->
+    <bpmn:userTask id="Task_Pruefen" name="Mass und Funktion pruefen">
+      <bpmn:incoming>Flow_Entformen_Pruefen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Pruefen_Protokoll</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Service Task: Messprotokoll erstellen -->
+    <bpmn:serviceTask id="Task_Messprotokoll_erstellen" name="Messprotokoll erstellen">
+      <bpmn:incoming>Flow_Pruefen_Protokoll</bpmn:incoming>
+      <bpmn:outgoing>Flow_Protokoll_Freigabe</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- User Task: Freigabe erteilen -->
+    <bpmn:userTask id="Task_Freigabe_erteilen" name="Freigabe erteilen">
+      <bpmn:incoming>Flow_Protokoll_Freigabe</bpmn:incoming>
+      <bpmn:outgoing>Flow_Freigabe_Bereitstellung</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Bereitstellung/Versand veranlassen -->
+    <bpmn:userTask id="Task_Bereitstellung_veranlassen" name="Bereitstellung/Versand veranlassen">
+      <bpmn:incoming>Flow_Freigabe_Bereitstellung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bereitstellung_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Organisation" name="Schnellball freigegeben und uebergeben">
+      <bpmn:incoming>Flow_Bereitstellung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Organisation -->
+    <bpmn:sequenceFlow id="Flow_Start_Annehmen"
+                       sourceRef="StartEvent_Auftrag_eingegangen"
+                       targetRef="Task_Auftrag_annehmen" />
+    
+    <bpmn:sequenceFlow id="Flow_Annehmen_Material"
+                       sourceRef="Task_Auftrag_annehmen"
+                       targetRef="Task_Material_bereitstellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Material_Werkzeug"
+                       sourceRef="Task_Material_bereitstellen"
+                       targetRef="Task_Werkzeug_vorbereiten" />
+    
+    <bpmn:sequenceFlow id="Flow_Werkzeug_Parameter"
+                       sourceRef="Task_Werkzeug_vorbereiten"
+                       targetRef="Task_Pressparameter_einstellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Parameter_Pressen"
+                       sourceRef="Task_Pressparameter_einstellen"
+                       targetRef="Task_Schnellball_pressen" />
+    
+    <bpmn:sequenceFlow id="Flow_Pressen_Entformen"
+                       sourceRef="Task_Schnellball_pressen"
+                       targetRef="Task_Entformen_konditionieren" />
+    
+    <bpmn:sequenceFlow id="Flow_Entformen_Pruefen"
+                       sourceRef="Task_Entformen_konditionieren"
+                       targetRef="Task_Pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Pruefen_Protokoll"
+                       sourceRef="Task_Pruefen"
+                       targetRef="Task_Messprotokoll_erstellen" />
+    
+    <bpmn:sequenceFlow id="Flow_Protokoll_Freigabe"
+                       sourceRef="Task_Messprotokoll_erstellen"
+                       targetRef="Task_Freigabe_erteilen" />
+    
+    <bpmn:sequenceFlow id="Flow_Freigabe_Bereitstellung"
+                       sourceRef="Task_Freigabe_erteilen"
+                       targetRef="Task_Bereitstellung_veranlassen" />
+    
+    <bpmn:sequenceFlow id="Flow_Bereitstellung_Ende"
+                       sourceRef="Task_Bereitstellung_veranlassen"
+                       targetRef="EndEvent_Organisation" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       MESSAGE DEFINITIONEN
+       ===================================================== -->
+  <bpmn:message id="Message_Auftrag" name="Auftrag" />
+  <bpmn:message id="Message_Schnellball" name="Schnellball + Messprotokoll" />
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Schnellball_bauen">
+    <bpmndi:BPMNPlane id="BPMNPlane_Schnellball_bauen" bpmnElement="Collab_Schnellball_bauen">
+      
+      <!-- ===============================
+           POOL: KUNDE
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Kunde_di" bpmnElement="Participant_Kunde" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="185" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Kunde Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Kunde_di" bpmnElement="StartEvent_Kunde">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="225" width="88" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Bedarf_melden_di" bpmnElement="Task_Bedarf_melden">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Auftrag_uebermitteln_di" bpmnElement="Task_Auftrag_uebermitteln">
+        <dc:Bounds x="470" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Event_Schnellball_erhalten_di" bpmnElement="Event_Schnellball_erhalten">
+        <dc:Bounds x="632" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="608" y="225" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Kunde_di" bpmnElement="EndEvent_Kunde">
+        <dc:Bounds x="722" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="696" y="225" width="88" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence Flows - Kunde -->
+      <bpmndi:BPMNEdge id="Flow_Start_Bedarf_di" bpmnElement="Flow_Start_Bedarf">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Bedarf_Auftrag_di" bpmnElement="Flow_Bedarf_Auftrag">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="470" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Auftrag_Warten_di" bpmnElement="Flow_Auftrag_Warten">
+        <di:waypoint x="570" y="200" />
+        <di:waypoint x="632" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Schnellball_Ende_di" bpmnElement="Flow_Schnellball_Ende">
+        <di:waypoint x="668" y="200" />
+        <di:waypoint x="722" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           POOL: ORGANISATION
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Organisation_di" bpmnElement="Participant_Organisation" isHorizontal="true">
+        <dc:Bounds x="160" y="420" width="2100" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="520" width="20" height="80" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Organisation Process Elements -->
+      <bpmndi:BPMNShape id="StartEvent_Auftrag_eingegangen_di" bpmnElement="StartEvent_Auftrag_eingegangen">
+        <dc:Bounds x="222" y="522" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="205" y="565" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Auftrag_annehmen_di" bpmnElement="Task_Auftrag_annehmen">
+        <dc:Bounds x="310" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Material_bereitstellen_di" bpmnElement="Task_Material_bereitstellen">
+        <dc:Bounds x="470" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Werkzeug_vorbereiten_di" bpmnElement="Task_Werkzeug_vorbereiten">
+        <dc:Bounds x="630" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Pressparameter_einstellen_di" bpmnElement="Task_Pressparameter_einstellen">
+        <dc:Bounds x="790" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Schnellball_pressen_di" bpmnElement="Task_Schnellball_pressen">
+        <dc:Bounds x="950" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Entformen_konditionieren_di" bpmnElement="Task_Entformen_konditionieren">
+        <dc:Bounds x="1110" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Pruefen_di" bpmnElement="Task_Pruefen">
+        <dc:Bounds x="1270" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Messprotokoll_erstellen_di" bpmnElement="Task_Messprotokoll_erstellen">
+        <dc:Bounds x="1430" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Freigabe_erteilen_di" bpmnElement="Task_Freigabe_erteilen">
+        <dc:Bounds x="1590" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_Bereitstellung_veranlassen_di" bpmnElement="Task_Bereitstellung_veranlassen">
+        <dc:Bounds x="1750" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Organisation_di" bpmnElement="EndEvent_Organisation">
+        <dc:Bounds x="1912" y="522" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1886" y="565" width="88" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence Flows - Organisation -->
+      <bpmndi:BPMNEdge id="Flow_Start_Annehmen_di" bpmnElement="Flow_Start_Annehmen">
+        <di:waypoint x="258" y="540" />
+        <di:waypoint x="310" y="540" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Annehmen_Material_di" bpmnElement="Flow_Annehmen_Material">
+        <di:waypoint x="410" y="540" />
+        <di:waypoint x="470" y="540" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Material_Werkzeug_di" bpmnElement="Flow_Material_Werkzeug">
+        <di:waypoint x="570" y="540" />
+        <di:waypoint x="630" y="540" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Werkzeug_Parameter_di" bpmnElement="Flow_Werkzeug_Parameter">
+        <di:waypoint x="730" y="540" />
+        <di:waypoint x="790" y="540" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Parameter_Pressen_di" bpmnElement="Flow_Parameter_Pressen">
+        <di:waypoint x="890" y="540" />
+        <di:waypoint x="950" y="540" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Pressen_Entformen_di" bpmnElement="Flow_Pressen_Entformen">
+        <di:waypoint x="1050" y="540" />
+        <di:waypoint x="1110" y="540" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Entformen_Pruefen_di" bpmnElement="Flow_Entformen_Pruefen">
+        <di:waypoint x="1210" y="540" />
+        <di:waypoint x="1270" y="540" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Pruefen_Protokoll_di" bpmnElement="Flow_Pruefen_Protokoll">
+        <di:waypoint x="1370" y="540" />
+        <di:waypoint x="1430" y="540" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Protokoll_Freigabe_di" bpmnElement="Flow_Protokoll_Freigabe">
+        <di:waypoint x="1530" y="540" />
+        <di:waypoint x="1590" y="540" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Freigabe_Bereitstellung_di" bpmnElement="Flow_Freigabe_Bereitstellung">
+        <di:waypoint x="1690" y="540" />
+        <di:waypoint x="1750" y="540" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Bereitstellung_Ende_di" bpmnElement="Flow_Bereitstellung_Ende">
+        <di:waypoint x="1850" y="540" />
+        <di:waypoint x="1912" y="540" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===============================
+           MESSAGE FLOWS
+           =============================== -->
+      <bpmndi:BPMNEdge id="MsgFlow_Auftrag_di" bpmnElement="MsgFlow_Auftrag">
+        <di:waypoint x="520" y="240" />
+        <di:waypoint x="520" y="380" />
+        <di:waypoint x="240" y="380" />
+        <di:waypoint x="240" y="522" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="360" y="362" width="40" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MsgFlow_Schnellball_Uebergabe_di" bpmnElement="MsgFlow_Schnellball_Uebergabe">
+        <di:waypoint x="1800" y="500" />
+        <di:waypoint x="1800" y="380" />
+        <di:waypoint x="650" y="380" />
+        <di:waypoint x="650" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1170" y="350" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>
