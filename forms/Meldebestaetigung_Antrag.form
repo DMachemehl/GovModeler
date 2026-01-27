@@ -1,0 +1,281 @@
+{
+  "components": [
+    {
+      "text": "## Antrag auf Meldebestätigung\n\nBitte füllen Sie das folgende Formular aus, um eine Meldebestätigung zu beantragen.",
+      "label": "Text view",
+      "type": "text",
+      "layout": {
+        "row": "Row_0"
+      },
+      "id": "Field_Text_Titel"
+    },
+    {
+      "label": "Persönliche Angaben",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Persoenlich",
+      "layout": {
+        "row": "Row_1"
+      }
+    },
+    {
+      "label": "Vorname",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_2",
+        "columns": 8
+      },
+      "id": "Field_Vorname",
+      "key": "vorname",
+      "validate": {
+        "required": true,
+        "minLength": 2
+      }
+    },
+    {
+      "label": "Nachname",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_2",
+        "columns": 8
+      },
+      "id": "Field_Nachname",
+      "key": "nachname",
+      "validate": {
+        "required": true,
+        "minLength": 2
+      }
+    },
+    {
+      "label": "Geburtsdatum",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_3",
+        "columns": 8
+      },
+      "id": "Field_Geburtsdatum",
+      "key": "geburtsdatum",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[0-2])\\.(19|20)\\d{2}$"
+      }
+    },
+    {
+      "label": "Meldeanschrift",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Adresse",
+      "layout": {
+        "row": "Row_4"
+      }
+    },
+    {
+      "label": "Straße",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_5",
+        "columns": 10
+      },
+      "id": "Field_Strasse",
+      "key": "strasse",
+      "validate": {
+        "required": true,
+        "minLength": 3
+      }
+    },
+    {
+      "label": "Hausnummer",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_5",
+        "columns": 6
+      },
+      "id": "Field_Hausnummer",
+      "key": "hausnummer",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Postleitzahl",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_6",
+        "columns": 6
+      },
+      "id": "Field_PLZ",
+      "key": "plz",
+      "validate": {
+        "required": true,
+        "pattern": "^[0-9]{5}$"
+      },
+      "description": "5-stellige PLZ"
+    },
+    {
+      "label": "Ort",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_6",
+        "columns": 10
+      },
+      "id": "Field_Ort",
+      "key": "ort",
+      "validate": {
+        "required": true,
+        "minLength": 2
+      }
+    },
+    {
+      "label": "Kontaktdaten",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Kontakt",
+      "layout": {
+        "row": "Row_7"
+      }
+    },
+    {
+      "label": "E-Mail-Adresse",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_8",
+        "columns": 8
+      },
+      "id": "Field_Email",
+      "key": "email",
+      "validate": {
+        "required": true,
+        "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+      },
+      "description": "Für die Zusendung der Meldebestätigung"
+    },
+    {
+      "label": "Telefonnummer",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_8",
+        "columns": 8
+      },
+      "id": "Field_Telefon",
+      "key": "telefon",
+      "validate": {
+        "required": false
+      },
+      "description": "Optional, für Rückfragen"
+    },
+    {
+      "label": "Verwendungszweck",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Zweck",
+      "layout": {
+        "row": "Row_9"
+      }
+    },
+    {
+      "label": "Zweck der Meldebestätigung",
+      "values": [
+        {
+          "label": "Behördenangelegenheit",
+          "value": "behoerde"
+        },
+        {
+          "label": "Arbeitgeber",
+          "value": "arbeitgeber"
+        },
+        {
+          "label": "Versicherung",
+          "value": "versicherung"
+        },
+        {
+          "label": "Bank/Finanzdienstleister",
+          "value": "bank"
+        },
+        {
+          "label": "Bildungseinrichtung",
+          "value": "bildung"
+        },
+        {
+          "label": "Sonstiges",
+          "value": "sonstiges"
+        }
+      ],
+      "type": "select",
+      "layout": {
+        "row": "Row_10"
+      },
+      "id": "Field_Zweck",
+      "key": "zweck",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Zusätzliche Angaben",
+      "type": "textarea",
+      "layout": {
+        "row": "Row_11"
+      },
+      "id": "Field_Zusatz",
+      "key": "zusatzangaben",
+      "validate": {
+        "required": false
+      },
+      "description": "Optional: Weitere Informationen oder besondere Wünsche"
+    },
+    {
+      "label": "Datenschutz und Einwilligung",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Datenschutz",
+      "layout": {
+        "row": "Row_12"
+      }
+    },
+    {
+      "text": "### Hinweis zum Datenschutz\n\nIhre personenbezogenen Daten werden ausschließlich zur Bearbeitung Ihres Antrags auf Meldebestätigung verwendet und gemäß der Datenschutz-Grundverordnung (DSGVO) verarbeitet.",
+      "label": "Text view",
+      "type": "text",
+      "layout": {
+        "row": "Row_13"
+      },
+      "id": "Field_Text_Datenschutz"
+    },
+    {
+      "label": "Ich habe die Datenschutzhinweise zur Kenntnis genommen und willige in die Verarbeitung meiner Daten ein.",
+      "type": "checkbox",
+      "layout": {
+        "row": "Row_14"
+      },
+      "id": "Field_Datenschutz_Akzeptiert",
+      "key": "datenschutzAkzeptiert",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Antrag absenden",
+      "action": "submit",
+      "type": "button",
+      "layout": {
+        "row": "Row_15"
+      },
+      "id": "Field_Submit"
+    }
+  ],
+  "type": "default",
+  "id": "Form_Meldebestaetigung_Antrag",
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0",
+  "exporter": {
+    "name": "GitHub-Copilot-GovModeler",
+    "version": "2.0"
+  },
+  "schemaVersion": 17
+}
