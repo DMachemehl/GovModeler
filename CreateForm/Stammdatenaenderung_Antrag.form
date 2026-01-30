@@ -1,0 +1,457 @@
+{
+  "components": [
+    {
+      "text": "## Antrag auf Stammdatenaenderung",
+      "type": "text",
+      "id": "Field_Titel",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "text": "Bitte geben Sie an, welche Stammdaten Sie aendern moechten und fuegen Sie die erforderlichen Nachweise bei.",
+      "type": "text",
+      "id": "Field_Hinweis",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "label": "Persoenliche Angaben",
+      "type": "group",
+      "id": "Field_Group_Persoenlich",
+      "layout": {
+        "row": "Row_1"
+      },
+      "path": "persoenlicheAngaben"
+    },
+    {
+      "label": "Vorname",
+      "type": "textfield",
+      "id": "Field_Vorname",
+      "key": "vorname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Nachname",
+      "type": "textfield",
+      "id": "Field_Nachname",
+      "key": "nachname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsdatum",
+      "type": "textfield",
+      "id": "Field_Geburtsdatum",
+      "key": "geburtsdatum",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Kundennummer / Aktenzeichen",
+      "type": "textfield",
+      "id": "Field_Kundennummer",
+      "key": "kundennummer",
+      "description": "Falls vorhanden",
+      "validate": {
+        "required": false,
+        "maxLength": 20
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Art der Stammdatenaenderung",
+      "type": "group",
+      "id": "Field_Group_Aenderungsart",
+      "layout": {
+        "row": "Row_4"
+      },
+      "path": "aenderungsart"
+    },
+    {
+      "label": "Welche Daten moechten Sie aendern?",
+      "type": "checklist",
+      "id": "Field_Aenderungstyp",
+      "key": "aenderungstyp",
+      "values": [
+        {
+          "label": "Adresse / Wohnsitz",
+          "value": "adresse"
+        },
+        {
+          "label": "Kontaktdaten (Telefon, E-Mail)",
+          "value": "kontakt"
+        },
+        {
+          "label": "Bankverbindung",
+          "value": "bankverbindung"
+        },
+        {
+          "label": "Familienstand",
+          "value": "familienstand"
+        },
+        {
+          "label": "Namensaenderung",
+          "value": "name"
+        },
+        {
+          "label": "Sonstige Aenderung",
+          "value": "sonstige"
+        }
+      ],
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_5"
+      }
+    },
+    {
+      "label": "Neue Adressdaten",
+      "type": "group",
+      "id": "Field_Group_Adresse",
+      "layout": {
+        "row": "Row_6"
+      },
+      "path": "neueAdresse"
+    },
+    {
+      "label": "Strasse und Hausnummer",
+      "type": "textfield",
+      "id": "Field_Strasse",
+      "key": "strasse",
+      "validate": {
+        "required": false,
+        "minLength": 3,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_7",
+        "columns": 8
+      }
+    },
+    {
+      "label": "PLZ",
+      "type": "textfield",
+      "id": "Field_PLZ",
+      "key": "plz",
+      "validate": {
+        "required": false,
+        "pattern": "^[0-9]{5}$"
+      },
+      "layout": {
+        "row": "Row_8",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Ort",
+      "type": "textfield",
+      "id": "Field_Ort",
+      "key": "ort",
+      "validate": {
+        "required": false,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_8",
+        "columns": 8
+      }
+    },
+    {
+      "label": "Neue Kontaktdaten",
+      "type": "group",
+      "id": "Field_Group_Kontakt",
+      "layout": {
+        "row": "Row_9"
+      },
+      "path": "neueKontaktdaten"
+    },
+    {
+      "label": "E-Mail",
+      "type": "textfield",
+      "id": "Field_Email",
+      "key": "email",
+      "validate": {
+        "required": false,
+        "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+      },
+      "layout": {
+        "row": "Row_10",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Telefonnummer",
+      "type": "textfield",
+      "id": "Field_Telefon",
+      "key": "telefon",
+      "validate": {
+        "required": false,
+        "maxLength": 30
+      },
+      "layout": {
+        "row": "Row_10",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Mobilnummer",
+      "type": "textfield",
+      "id": "Field_Mobil",
+      "key": "mobil",
+      "validate": {
+        "required": false,
+        "maxLength": 30
+      },
+      "layout": {
+        "row": "Row_11",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Neue Bankverbindung",
+      "type": "group",
+      "id": "Field_Group_Bank",
+      "layout": {
+        "row": "Row_12"
+      },
+      "path": "neueBankverbindung"
+    },
+    {
+      "label": "IBAN",
+      "type": "textfield",
+      "id": "Field_IBAN",
+      "key": "iban",
+      "description": "Format: DExx xxxx xxxx xxxx xxxx xx",
+      "validate": {
+        "required": false,
+        "pattern": "^DE[0-9]{2}[0-9]{4}[0-9]{4}[0-9]{4}[0-9]{4}[0-9]{2}$|^DE[0-9]{2} [0-9]{4} [0-9]{4} [0-9]{4} [0-9]{4} [0-9]{2}$"
+      },
+      "layout": {
+        "row": "Row_13",
+        "columns": 8
+      }
+    },
+    {
+      "label": "BIC",
+      "type": "textfield",
+      "id": "Field_BIC",
+      "key": "bic",
+      "description": "Optional",
+      "validate": {
+        "required": false,
+        "maxLength": 11
+      },
+      "layout": {
+        "row": "Row_13",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Kontoinhaber",
+      "type": "textfield",
+      "id": "Field_Kontoinhaber",
+      "key": "kontoinhaber",
+      "validate": {
+        "required": false,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_14"
+      }
+    },
+    {
+      "label": "Weitere Angaben",
+      "type": "group",
+      "id": "Field_Group_Weitere",
+      "layout": {
+        "row": "Row_15"
+      },
+      "path": "weitereAngaben"
+    },
+    {
+      "label": "Neuer Familienstand",
+      "type": "select",
+      "id": "Field_Familienstand",
+      "key": "familienstand",
+      "values": [
+        {
+          "label": "Bitte auswaehlen",
+          "value": ""
+        },
+        {
+          "label": "Ledig",
+          "value": "ledig"
+        },
+        {
+          "label": "Verheiratet",
+          "value": "verheiratet"
+        },
+        {
+          "label": "Geschieden",
+          "value": "geschieden"
+        },
+        {
+          "label": "Verwitwet",
+          "value": "verwitwet"
+        },
+        {
+          "label": "Eingetragene Lebenspartnerschaft",
+          "value": "lebenspartnerschaft"
+        }
+      ],
+      "validate": {
+        "required": false
+      },
+      "layout": {
+        "row": "Row_16",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Datum der Aenderung",
+      "type": "textfield",
+      "id": "Field_Aenderungsdatum",
+      "key": "aenderungsdatum",
+      "description": "Format: TT.MM.JJJJ - Wann tritt die Aenderung in Kraft?",
+      "validate": {
+        "required": false,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_16",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Zusaetzliche Angaben",
+      "type": "textarea",
+      "id": "Field_Zusatzangaben",
+      "key": "zusatzangaben",
+      "description": "Hier koennen Sie weitere Informationen zu Ihrer Stammdatenaenderung angeben",
+      "validate": {
+        "required": false,
+        "maxLength": 500
+      },
+      "layout": {
+        "row": "Row_17"
+      }
+    },
+    {
+      "label": "Nachweise",
+      "type": "group",
+      "id": "Field_Group_Nachweise",
+      "layout": {
+        "row": "Row_18"
+      },
+      "path": "nachweise"
+    },
+    {
+      "text": "**Bitte laden Sie folgende Nachweise hoch:**\n- Bei Adressaenderung: Meldebescheinigung oder Wohnsitzbescheinigung\n- Bei Namensaenderung: Heiratsurkunde, Scheidungsurteil oder Aenderungsbescheid\n- Bei Bankverbindung: Kontoauszug oder Bankbescheinigung\n- Bei Familienstand: Heiratsurkunde, Sterbeurkunde oder entsprechende Bescheinigung",
+      "type": "text",
+      "id": "Field_Nachweise_Info",
+      "layout": {
+        "row": "Row_19"
+      }
+    },
+    {
+      "label": "Ich habe die erforderlichen Nachweise digital beigefuegt",
+      "type": "checkbox",
+      "id": "Field_Nachweise_Bestaetigung",
+      "key": "nachweiseBeigefuegt",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_20"
+      }
+    },
+    {
+      "label": "Datenschutz und Einwilligung",
+      "type": "group",
+      "id": "Field_Group_Datenschutz",
+      "layout": {
+        "row": "Row_21"
+      },
+      "path": "datenschutz"
+    },
+    {
+      "text": "Mit der Antragstellung willige ich in die Verarbeitung meiner personenbezogenen Daten gemaess der Datenschutzgrundverordnung (DSGVO) ein. Die Daten werden ausschliesslich zur Bearbeitung der Stammdatenaenderung verwendet.",
+      "type": "text",
+      "id": "Field_Datenschutz_Text",
+      "layout": {
+        "row": "Row_22"
+      }
+    },
+    {
+      "label": "Ich habe die Datenschutzhinweise gelesen und akzeptiert",
+      "type": "checkbox",
+      "id": "Field_Datenschutz_Akzeptiert",
+      "key": "datenschutzAkzeptiert",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_23"
+      }
+    },
+    {
+      "label": "Ich bestatige die Richtigkeit meiner Angaben",
+      "type": "checkbox",
+      "id": "Field_Richtigkeit_Bestaetigt",
+      "key": "richtigkeitBestaetigt",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_24"
+      }
+    },
+    {
+      "label": "Antrag absenden",
+      "type": "button",
+      "id": "Field_Submit",
+      "action": "submit",
+      "layout": {
+        "row": "Row_25"
+      }
+    }
+  ],
+  "type": "default",
+  "id": "Form_Stammdatenaenderung",
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0",
+  "exporter": {
+    "name": "GitHub-Copilot-GovModeler",
+    "version": "2.0"
+  },
+  "schemaVersion": 9
+}

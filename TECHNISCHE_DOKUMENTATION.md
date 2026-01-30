@@ -45,6 +45,11 @@ Diese Dokumentation beschreibt die technischen Grundlagen und Voraussetzungen zu
 
 **Zweck:** The GitHub Repositories extension lets you quickly browse, search, edit, and commit to any remote GitHub repository directly from within Visual Studio Code.
 
+### 6. Camunda Forms Editor (erforderlich)
+**Extension ID:** `davidmart.camunda-forms-editor`
+
+**Zweck:** Der Editor wird benötigt, um Formualare zu erstellen
+
 ### 6. VS Code Speech (optional)
 **Extension ID:** `ms-vscode.vscode-speech`
 
@@ -59,8 +64,12 @@ Diese Dokumentation beschreibt die technischen Grundlagen und Voraussetzungen zu
 ## BPMN-Generierung mit Copilot Chat
 1. Öffnen Sie Copilot Chat (`Ctrl+Alt+I` / `Cmd+Alt+I`)
 2. KI-Modell auswählen
-3. Agenten auswählen (KOI, KO, I)
+3. Agenten auswählen (KOI, KO, I, Forms)
 4. Prozess benennen oder einsprechen
+
+## Form-Generierung mit Copilot Chat
+1. Agent "Forms" auswählen
+2. Aktivität im BPMN-Modell benennen für das ein Formular erstellt werden soll
 
 ## Troubleshooting
 
@@ -79,6 +88,6 @@ Bei Fragen oder Problemen:
 ---
 
 **Stand:** Januar 2026  
-**Version:** 1.1
+**Version:** 1.2
 
 
