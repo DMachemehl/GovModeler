@@ -23,7 +23,7 @@ Der Agent benötigt aus dem Chat-Kontext:
 
 ## Ausgaben
 - **Markdown-Datei** mit vollständig ausgefülltem Prozesssteckbrief
-- Dateiname: `Prozesssteckbrief_[Prozessname].md` im Ordner `CreateSteckbrief/`
+- Dateiname: `[Prozessname]_Prozesssteckbrief.md` im Ordner `CreateSteckbrief/`
 - Enthält:
   - Stammdaten (Name, Kategorie, Verantwortung, Beteiligte)
   - Prozessziele (3-5 Zieldimensionen)
