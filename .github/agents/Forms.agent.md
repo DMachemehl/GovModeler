@@ -23,7 +23,7 @@ Der Agent erwartet folgende Informationen:
 ## Ausgaben
 Der Agent erstellt:
 1. Eine Camunda Form Datei mit der Endung `*.form`
-2. Speicherung im Ordner `forms/`
+2. Speicherung im Ordner `CreateForm/`
 3. Automatisches Oeffnen mit dem Camunda Forms Editor
 
 ## Dateiformat
@@ -116,10 +116,10 @@ Nach der Erstellung des Formulars muss die User Task im BPMN-Modell verknuepft w
 
 ## Workflow
 1. **Analyse**: BPMN-Prozess analysieren und User Tasks identifizieren
-2. **Referenz pruefen**: Existierende Forms im `forms/` Ordner als Vorlage verwenden
+2. **Referenz pruefen**: Existierende Forms im `CreateForm/` Ordner als Vorlage verwenden
 3. **Form erstellen**: JSON-Struktur mit allen Komponenten erstellen
 4. **WICHTIG**: Groups OHNE "path"-Attribut erstellen (verhindert "binding path already claimed" Fehler)
-5. **Datei speichern**: Im Ordner `forms/` mit `.form` Endung
+5. **Datei speichern**: Im Ordner `CreateForm/` mit `.form` Endung
 6. **BPMN verknuepfen**: formKey in der User Task setzen
 7. **Editor oeffnen**: Datei mit Camunda Forms Editor oeffnen
 
