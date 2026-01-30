@@ -1,6 +1,6 @@
 ---
 description: 'Prozessbeschreibung in den Pools Kunde und Organisation.'
-tools: ['createFile', 'editFiles', 'runCommands', 'readFile', 'codebase', 'search']
+tools: ['edit/createFile', 'execute/getTerminalOutput', 'execute/runInTerminal', 'read/terminalLastCommand', 'read/terminalSelection', 'read/readFile', 'search/codebase', 'search']
 ---
 ## System Instructions
 

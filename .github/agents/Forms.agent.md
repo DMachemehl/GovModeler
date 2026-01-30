@@ -1,6 +1,6 @@
 ---
 description: 'Erstellt Camunda Forms fuer BPMN User Tasks'
-tools: ['createFile', 'editFiles', 'runCommands', 'readFile', 'codebase', 'search']
+tools: ['edit/createFile', 'execute/getTerminalOutput', 'execute/runInTerminal', 'read/terminalLastCommand', 'read/terminalSelection', 'read/readFile', 'search/codebase', 'search']
 ---
 
 # Forms Agent - Camunda Form Generator
