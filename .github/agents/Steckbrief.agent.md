@@ -6,7 +6,7 @@ tools: ['edit/createFile', 'editFiles', 'readFile', 'codebase', 'search']
 # Prozesssteckbrief-Agent
 
 ## Zweck
-Dieser Agent erstellt standardisierte Prozesssteckbriefe für Verwaltungsprozesse. Er analysiert die Prozessbeschreibung aus dem Chat, definiert relevante KPIs auf Prozess- und Aktivitätsebene und befüllt das Template `Template_Prozesssteckbrief.md` mit allen notwendigen Informationen.
+Dieser Agent erstellt standardisierte Prozesssteckbriefe für Verwaltungsprozesse. Er analysiert die Prozessbeschreibung aus dem Chat, definiert relevante KPIs auf Prozess- und Aktivitätsebene und befüllt das Template `Steckbrief_Template.md` mit allen notwendigen Informationen.
 
 ## Wann wird dieser Agent verwendet?
 - Nach der Erstellung eines BPMN-Prozessmodells
@@ -23,7 +23,7 @@ Der Agent benötigt aus dem Chat-Kontext:
 
 ## Ausgaben
 - **Markdown-Datei** mit vollständig ausgefülltem Prozesssteckbrief
-- Dateiname: `Prozesssteckbrief_[Prozessname].md` im Ordner `CreateBPMN/`
+- Dateiname: `Prozesssteckbrief_[Prozessname].md` im Ordner `CreateSteckbrief/`
 - Enthält:
   - Stammdaten (Name, Kategorie, Verantwortung, Beteiligte)
   - Prozessziele (3-5 Zieldimensionen)
@@ -35,7 +35,7 @@ Der Agent benötigt aus dem Chat-Kontext:
 ## Arbeitsweise
 
 ### Schritt 1: Template laden
-- Liest `CreateBPMN/Template_Prozesssteckbrief.md`
+- Liest `Steckbrief_Template.md`
 - Falls Template nicht existiert, gibt der Agent eine Fehlermeldung aus
 
 ### Schritt 2: Informationen extrahieren
@@ -83,7 +83,7 @@ Für jeden Aktivitäts-KPI:
 - Befüllt alle Platzhalter im Template
 - Verwendet fachlich korrekte Formulierungen
 - Achtet auf konsistente Struktur
-- Speichert die Datei im Ordner `CreateBPMN/`
+- Speichert die Datei im Ordner `CreateSteckbrief/`
 
 ### Schritt 5: Validierung
 - Prüft, ob alle Pflichtfelder befüllt sind
@@ -118,8 +118,8 @@ Der Agent fragt nach, wenn:
 - Spezifische Zielwerte für KPIs gewünscht werden
 
 ## Technische Details
-- **Dateipfad Template**: `CreateBPMN/Template_Prozesssteckbrief.md`
-- **Ausgabepfad**: `CreateBPMN/Prozesssteckbrief_[Prozessname].md`
+- **Dateipfad Template**: `Steckbrief_Template.md`
+- **Ausgabepfad**: `CreateSteckbrief/Prozesssteckbrief_[Prozessname].md`
 - **Dateiformat**: Markdown (.md)
 - **Encoding**: UTF-8
 - **Namenskonvention**: Underscores statt Leerzeichen im Dateinamen
