@@ -16,7 +16,7 @@
 | Niederlassungserlaubnis erteilen                                       |        |
 | Aufenthaltserlaubnis bei Asylantrag erteilen                           |    x   |
 | Erlaubnis zur Aufnahme einer Erwerbstätigkeit erteilen                 |        |
-| Geburt beurkunden                                                      |    X   |
+| Geburt beurkunden                                                      |       |
 | Totgeburt beurkunden                                                   |    x   |
 | Eheschließung vornehmen und beurkunden                                 |        |
 | Wählerverzeichnis aufstellen und führen                                |        |

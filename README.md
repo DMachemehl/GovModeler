@@ -13,14 +13,16 @@ Die öffentliche Verwaltung steht vor der Herausforderung, komplexe und heteroge
 
 * 🧠 **Prompting-Strategien** zur Erzeugung qualitativ hochwertiger Prozessbeschreibungen
 * 🔄 **Transformationsregeln** von Fließtext zu BPMN-Modellen
-* 🔧 **Erstellung, Simulierung und Bearbeitung von BPMN-Modellen**
 * :eyeglasses: **Erstellung von e2e-Prozessmodellen** durch Einbeziehung der Perspektiven **Kunde, Organisation und IT (KOI)**
+* :clipboard: **Erstellung und Integration von Formularen in BPMN-Modelle**
+* :mag: **Erstellung von standardisierten Prozesssteckbriefen** mit KPIs für Gesamtprozess und Aktivitäen im BPMN-Modell
 
 ## Technologische Basis
 
 * **GitHub Copilot** zur KI-unterstützten Erstellung von BPMN-XML
 * **BPMN 2.0** als Modellierungsstandard
-* **Camunda Web Modeler** zur Darstellung und Bearbeitung der BPMN-Prozessmodelle genutzt
+* **Camunda Modeler** zur Darstellung und Bearbeitung der BPMN-Prozessmodelle genutzt
+* **Camunda Form** zur Darstellung und Bearbeitung von Formularen
 
 ## Warum das wichtig ist
 
