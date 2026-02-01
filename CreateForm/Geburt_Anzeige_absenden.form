@@ -1,0 +1,575 @@
+{
+  "components": [
+    {
+      "text": "## Geburtsanzeige",
+      "type": "text",
+      "id": "Field_Titel",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "text": "Bitte fuellen Sie alle Pflichtfelder aus, um die Geburt beim Standesamt anzuzeigen. Die Anzeige muss innerhalb einer Woche nach der Geburt erfolgen.",
+      "type": "text",
+      "id": "Field_Hinweis",
+      "layout": {
+        "row": "Row_0a"
+      }
+    },
+    {
+      "label": "Angaben zum Neugeborenen",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Kind",
+      "layout": {
+        "row": "Row_1"
+      }
+    },
+    {
+      "label": "Vorname(n) des Kindes",
+      "type": "textfield",
+      "id": "Field_Kind_Vorname",
+      "key": "kindVorname",
+      "description": "Mehrere Vornamen durch Leerzeichen trennen",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Nachname des Kindes",
+      "type": "textfield",
+      "id": "Field_Kind_Nachname",
+      "key": "kindNachname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsdatum",
+      "type": "textfield",
+      "id": "Field_Kind_Geburtsdatum",
+      "key": "kindGeburtsdatum",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Uhrzeit der Geburt",
+      "type": "textfield",
+      "id": "Field_Kind_Geburtszeit",
+      "key": "kindGeburtszeit",
+      "description": "Format: HH:MM",
+      "validate": {
+        "required": true,
+        "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsort",
+      "type": "textfield",
+      "id": "Field_Kind_Geburtsort",
+      "key": "kindGeburtsort",
+      "description": "z.B. Krankenhaus oder Hausgeburt",
+      "validate": {
+        "required": true,
+        "minLength": 3,
+        "maxLength": 150
+      },
+      "layout": {
+        "row": "Row_4"
+      }
+    },
+    {
+      "label": "PLZ des Geburtsortes",
+      "type": "textfield",
+      "id": "Field_Kind_Geburtsort_PLZ",
+      "key": "kindGeburtsortPLZ",
+      "validate": {
+        "required": true,
+        "pattern": "^[0-9]{5}$"
+      },
+      "layout": {
+        "row": "Row_5",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Stadt/Gemeinde",
+      "type": "textfield",
+      "id": "Field_Kind_Geburtsort_Stadt",
+      "key": "kindGeburtsortStadt",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_5",
+        "columns": 8
+      }
+    },
+    {
+      "label": "Geschlecht",
+      "values": [
+        {
+          "label": "Bitte auswaehlen",
+          "value": ""
+        },
+        {
+          "label": "Maennlich",
+          "value": "maennlich"
+        },
+        {
+          "label": "Weiblich",
+          "value": "weiblich"
+        },
+        {
+          "label": "Divers",
+          "value": "divers"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Kind_Geschlecht",
+      "key": "kindGeschlecht",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_6",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Angaben zur Mutter",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Mutter",
+      "layout": {
+        "row": "Row_7"
+      }
+    },
+    {
+      "label": "Vorname der Mutter",
+      "type": "textfield",
+      "id": "Field_Mutter_Vorname",
+      "key": "mutterVorname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_8",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Nachname der Mutter",
+      "type": "textfield",
+      "id": "Field_Mutter_Nachname",
+      "key": "mutterNachname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_8",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsname der Mutter (falls abweichend)",
+      "type": "textfield",
+      "id": "Field_Mutter_Geburtsname",
+      "key": "mutterGeburtsname",
+      "validate": {
+        "required": false,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_9"
+      }
+    },
+    {
+      "label": "Geburtsdatum der Mutter",
+      "type": "textfield",
+      "id": "Field_Mutter_Geburtsdatum",
+      "key": "mutterGeburtsdatum",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_10",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsort der Mutter",
+      "type": "textfield",
+      "id": "Field_Mutter_Geburtsort",
+      "key": "mutterGeburtsort",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_10",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Adresse der Mutter - Strasse und Hausnummer",
+      "type": "textfield",
+      "id": "Field_Mutter_Strasse",
+      "key": "mutterStrasse",
+      "validate": {
+        "required": true,
+        "minLength": 3,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_11"
+      }
+    },
+    {
+      "label": "PLZ",
+      "type": "textfield",
+      "id": "Field_Mutter_PLZ",
+      "key": "mutterPLZ",
+      "validate": {
+        "required": true,
+        "pattern": "^[0-9]{5}$"
+      },
+      "layout": {
+        "row": "Row_12",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Ort",
+      "type": "textfield",
+      "id": "Field_Mutter_Ort",
+      "key": "mutterOrt",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_12",
+        "columns": 8
+      }
+    },
+    {
+      "label": "Staatsangehoerigkeit der Mutter",
+      "type": "textfield",
+      "id": "Field_Mutter_Staatsangehoerigkeit",
+      "key": "mutterStaatsangehoerigkeit",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_13",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Familienstand der Mutter",
+      "values": [
+        {
+          "label": "Bitte auswaehlen",
+          "value": ""
+        },
+        {
+          "label": "Ledig",
+          "value": "ledig"
+        },
+        {
+          "label": "Verheiratet",
+          "value": "verheiratet"
+        },
+        {
+          "label": "Eingetragene Lebenspartnerschaft",
+          "value": "lebenspartnerschaft"
+        },
+        {
+          "label": "Geschieden",
+          "value": "geschieden"
+        },
+        {
+          "label": "Verwitwet",
+          "value": "verwitwet"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Mutter_Familienstand",
+      "key": "mutterFamilienstand",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_13",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Angaben zum Vater / zweiten Elternteil",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Vater",
+      "layout": {
+        "row": "Row_14"
+      }
+    },
+    {
+      "label": "Vorname des Vaters / zweiten Elternteils",
+      "type": "textfield",
+      "id": "Field_Vater_Vorname",
+      "key": "vaterVorname",
+      "validate": {
+        "required": false,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_15",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Nachname des Vaters / zweiten Elternteils",
+      "type": "textfield",
+      "id": "Field_Vater_Nachname",
+      "key": "vaterNachname",
+      "validate": {
+        "required": false,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_15",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsdatum des Vaters / zweiten Elternteils",
+      "type": "textfield",
+      "id": "Field_Vater_Geburtsdatum",
+      "key": "vaterGeburtsdatum",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": false,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_16",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsort des Vaters / zweiten Elternteils",
+      "type": "textfield",
+      "id": "Field_Vater_Geburtsort",
+      "key": "vaterGeburtsort",
+      "validate": {
+        "required": false,
+        "minLength": 2,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_16",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Staatsangehoerigkeit des Vaters / zweiten Elternteils",
+      "type": "textfield",
+      "id": "Field_Vater_Staatsangehoerigkeit",
+      "key": "vaterStaatsangehoerigkeit",
+      "validate": {
+        "required": false,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_17"
+      }
+    },
+    {
+      "label": "Angaben zur anzeigenden Person",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Anzeigender",
+      "layout": {
+        "row": "Row_18"
+      }
+    },
+    {
+      "label": "Verhaeltnis zum Kind",
+      "values": [
+        {
+          "label": "Bitte auswaehlen",
+          "value": ""
+        },
+        {
+          "label": "Mutter",
+          "value": "mutter"
+        },
+        {
+          "label": "Vater",
+          "value": "vater"
+        },
+        {
+          "label": "Krankenhaus / Geburtseinrichtung",
+          "value": "krankenhaus"
+        },
+        {
+          "label": "Hebamme",
+          "value": "hebamme"
+        },
+        {
+          "label": "Sonstige Person",
+          "value": "sonstige"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Anzeigender_Verhaeltnis",
+      "key": "anzeigenderVerhaeltnis",
+      "description": "Wer zeigt die Geburt an?",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_19"
+      }
+    },
+    {
+      "label": "Name der anzeigenden Person / Einrichtung",
+      "type": "textfield",
+      "id": "Field_Anzeigender_Name",
+      "key": "anzeigenderName",
+      "description": "Falls abweichend von den Eltern",
+      "validate": {
+        "required": false,
+        "maxLength": 150
+      },
+      "layout": {
+        "row": "Row_20"
+      }
+    },
+    {
+      "label": "Telefonnummer fuer Rueckfragen",
+      "type": "textfield",
+      "id": "Field_Anzeigender_Telefon",
+      "key": "anzeigenderTelefon",
+      "description": "Format: +49 123 456789",
+      "validate": {
+        "required": true,
+        "pattern": "^[+]?[0-9\\s\\-/]{6,20}$"
+      },
+      "layout": {
+        "row": "Row_21",
+        "columns": 6
+      }
+    },
+    {
+      "label": "E-Mail-Adresse",
+      "type": "textfield",
+      "id": "Field_Anzeigender_Email",
+      "key": "anzeigenderEmail",
+      "validate": {
+        "required": true,
+        "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+      },
+      "layout": {
+        "row": "Row_21",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Datenschutz und Einwilligung",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Datenschutz",
+      "layout": {
+        "row": "Row_22"
+      }
+    },
+    {
+      "label": "Ich bestaetige, dass alle Angaben wahrheitsgemaess und vollstaendig sind.",
+      "type": "checkbox",
+      "id": "Field_Bestaetigung_Wahrheit",
+      "key": "bestaetigungWahrheit",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_23"
+      }
+    },
+    {
+      "label": "Ich habe die Datenschutzhinweise gelesen und bin mit der Verarbeitung meiner Daten einverstanden.",
+      "type": "checkbox",
+      "id": "Field_Datenschutz_Akzeptiert",
+      "key": "datenschutzAkzeptiert",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_24"
+      }
+    },
+    {
+      "label": "Anzeige absenden",
+      "action": "submit",
+      "type": "button",
+      "id": "Field_Submit",
+      "key": "submit",
+      "layout": {
+        "row": "Row_25"
+      }
+    }
+  ],
+  "type": "default",
+  "id": "Form_Geburt_Anzeige_absenden",
+  "schemaVersion": 17,
+  "exporter": {
+    "name": "GitHub-Copilot-GovModeler",
+    "version": "2.0"
+  },
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0"
+}

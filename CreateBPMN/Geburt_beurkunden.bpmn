@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_Geburt_beurkunden" targetNamespace="http://example.com/bpmn" exporter="GitHub-Copilot-GovModeler" exporterVersion="2.0" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collab_Geburt_beurkunden">
+    <bpmn:participant id="Participant_Buerger" name="Buerger" processRef="Process_Buerger" />
+    <bpmn:participant id="Participant_IT" name="IT" processRef="Process_IT" />
+    <bpmn:participant id="Participant_Behoerde" name="Standesamt" processRef="Process_Behoerde" />
+    <bpmn:messageFlow id="MsgFlow_Anzeige_an_IT" name="Geburtsanzeige" sourceRef="Task_Anzeige_absenden" targetRef="StartEvent_IT" />
+    <bpmn:messageFlow id="MsgFlow_Nachweise_an_IT" name="Nachweise" sourceRef="Task_Nachweise_hochladen" targetRef="Task_Daten_entgegennehmen" />
+    <bpmn:messageFlow id="MsgFlow_Bestaetigung_an_Buerger" name="Bestaetigung" sourceRef="Task_Vorgang_weiterleiten" targetRef="Event_Rueckmeldung_empfangen" />
+    <bpmn:messageFlow id="MsgFlow_Vorgang_an_Behoerde" name="Vorgang" sourceRef="Task_Vorgang_weiterleiten" targetRef="StartEvent_Behoerde" />
+    <bpmn:messageFlow id="MsgFlow_Registereintrag_an_IT" name="Registereintrag" sourceRef="Task_Rueckmeldung_senden" targetRef="Task_Registereintrag_uebernehmen" />
+    <bpmn:messageFlow id="MsgFlow_Urkunde_an_Buerger" name="Geburtsurkunde" sourceRef="Task_Urkunde_bereitstellen" targetRef="Event_Urkunde_empfangen" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Buerger" name="Geburt_beurkunden_Buerger" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Buerger" name="Geburt angezeigt">
+      <bpmn:outgoing>Flow_B_Start_Anzeige</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_Anzeige_absenden" name="Anzeige absenden">
+      <bpmn:incoming>Flow_B_Start_Anzeige</bpmn:incoming>
+      <bpmn:outgoing>Flow_B_Anzeige_Nachweise</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Nachweise_hochladen" name="Nachweise hochladen">
+      <bpmn:incoming>Flow_B_Anzeige_Nachweise</bpmn:incoming>
+      <bpmn:outgoing>Flow_B_Nachweise_Rueckmeldung</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:intermediateCatchEvent id="Event_Rueckmeldung_empfangen" name="Rueckmeldung empfangen">
+      <bpmn:incoming>Flow_B_Nachweise_Rueckmeldung</bpmn:incoming>
+      <bpmn:outgoing>Flow_B_Rueckmeldung_Urkunde</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Rueckmeldung" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="Event_Urkunde_empfangen" name="Geburtsurkunde empfangen">
+      <bpmn:incoming>Flow_B_Rueckmeldung_Urkunde</bpmn:incoming>
+      <bpmn:outgoing>Flow_B_Urkunde_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Urkunde" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_B_Start_Anzeige" sourceRef="StartEvent_Buerger" targetRef="Task_Anzeige_absenden" />
+    <bpmn:sequenceFlow id="Flow_B_Anzeige_Nachweise" sourceRef="Task_Anzeige_absenden" targetRef="Task_Nachweise_hochladen" />
+    <bpmn:sequenceFlow id="Flow_B_Nachweise_Rueckmeldung" sourceRef="Task_Nachweise_hochladen" targetRef="Event_Rueckmeldung_empfangen" />
+    <bpmn:sequenceFlow id="Flow_B_Rueckmeldung_Urkunde" sourceRef="Event_Rueckmeldung_empfangen" targetRef="Event_Urkunde_empfangen" />
+    <bpmn:sequenceFlow id="Flow_B_Urkunde_Ende" sourceRef="Event_Urkunde_empfangen" targetRef="EndEvent_Buerger" />
+    <bpmn:endEvent id="EndEvent_Buerger" name="Prozess abgeschlossen">
+      <bpmn:incoming>Flow_B_Urkunde_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmn:process id="Process_IT" name="Geburt_beurkunden_IT" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_IT" name="Anzeige eingegangen">
+      <bpmn:outgoing>Flow_IT_Start_Entgegennehmen</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Anzeige" />
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_Daten_entgegennehmen" name="Daten entgegennehmen">
+      <bpmn:incoming>Flow_IT_Start_Entgegennehmen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Entgegennehmen_Pruefen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Vollstaendigkeit_pruefen" name="Vollstaendigkeit pruefen">
+      <bpmn:incoming>Flow_IT_Entgegennehmen_Pruefen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Pruefen_Weiterleiten</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Vorgang_weiterleiten" name="Vorgang weiterleiten">
+      <bpmn:incoming>Flow_IT_Pruefen_Weiterleiten</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Weiterleiten_Uebernehmen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Registereintrag_uebernehmen" name="Registereintrag uebernehmen">
+      <bpmn:incoming>Flow_IT_Weiterleiten_Uebernehmen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Uebernehmen_Bereitstellen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Urkunde_bereitstellen" name="Urkunde bereitstellen">
+      <bpmn:incoming>Flow_IT_Uebernehmen_Bereitstellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Bereitstellen_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent_IT" name="Urkunde zugestellt">
+      <bpmn:incoming>Flow_IT_Bereitstellen_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_IT_Start_Entgegennehmen" sourceRef="StartEvent_IT" targetRef="Task_Daten_entgegennehmen" />
+    <bpmn:sequenceFlow id="Flow_IT_Entgegennehmen_Pruefen" sourceRef="Task_Daten_entgegennehmen" targetRef="Task_Vollstaendigkeit_pruefen" />
+    <bpmn:sequenceFlow id="Flow_IT_Pruefen_Weiterleiten" sourceRef="Task_Vollstaendigkeit_pruefen" targetRef="Task_Vorgang_weiterleiten" />
+    <bpmn:sequenceFlow id="Flow_IT_Weiterleiten_Uebernehmen" sourceRef="Task_Vorgang_weiterleiten" targetRef="Task_Registereintrag_uebernehmen" />
+    <bpmn:sequenceFlow id="Flow_IT_Uebernehmen_Bereitstellen" sourceRef="Task_Registereintrag_uebernehmen" targetRef="Task_Urkunde_bereitstellen" />
+    <bpmn:sequenceFlow id="Flow_IT_Bereitstellen_Ende" sourceRef="Task_Urkunde_bereitstellen" targetRef="EndEvent_IT" />
+  </bpmn:process>
+  <bpmn:process id="Process_Behoerde" name="Geburt_beurkunden_Behoerde" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Behoerde" name="Vorgang empfangen">
+      <bpmn:outgoing>Flow_Beh_Start_Beurkunden</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Vorgang" />
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_Beurkundung_vornehmen" name="Beurkundung vornehmen">
+      <bpmn:incoming>Flow_Beh_Start_Beurkunden</bpmn:incoming>
+      <bpmn:outgoing>Flow_Beh_Beurkunden_Rueckmeldung</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Rueckmeldung_senden" name="Rueckmeldung senden">
+      <bpmn:incoming>Flow_Beh_Beurkunden_Rueckmeldung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Beh_Rueckmeldung_Freigeben</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Urkunde_freigeben" name="Urkunde freigeben">
+      <bpmn:incoming>Flow_Beh_Rueckmeldung_Freigeben</bpmn:incoming>
+      <bpmn:outgoing>Flow_Beh_Freigeben_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_Behoerde" name="Geburt beurkundet">
+      <bpmn:incoming>Flow_Beh_Freigeben_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Beh_Start_Beurkunden" sourceRef="StartEvent_Behoerde" targetRef="Task_Beurkundung_vornehmen" />
+    <bpmn:sequenceFlow id="Flow_Beh_Beurkunden_Rueckmeldung" sourceRef="Task_Beurkundung_vornehmen" targetRef="Task_Rueckmeldung_senden" />
+    <bpmn:sequenceFlow id="Flow_Beh_Rueckmeldung_Freigeben" sourceRef="Task_Rueckmeldung_senden" targetRef="Task_Urkunde_freigeben" />
+    <bpmn:sequenceFlow id="Flow_Beh_Freigeben_Ende" sourceRef="Task_Urkunde_freigeben" targetRef="EndEvent_Behoerde" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Geburt_beurkunden">
+    <bpmndi:BPMNPlane id="BPMNPlane_Geburt_beurkunden" bpmnElement="Collab_Geburt_beurkunden">
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Anzeige_absenden_di" bpmnElement="Task_Anzeige_absenden">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Nachweise_hochladen_di" bpmnElement="Task_Nachweise_hochladen">
+        <dc:Bounds x="470" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Rueckmeldung_empfangen_di" bpmnElement="Event_Rueckmeldung_empfangen">
+        <dc:Bounds x="632" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="607" y="225" width="86" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Urkunde_empfangen_di" bpmnElement="Event_Urkunde_empfangen">
+        <dc:Bounds x="732" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="710" y="144.5" width="79" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="862" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="843" y="225" width="74" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_B_Start_Anzeige_di" bpmnElement="Flow_B_Start_Anzeige">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_B_Anzeige_Nachweise_di" bpmnElement="Flow_B_Anzeige_Nachweise">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="470" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_B_Nachweise_Rueckmeldung_di" bpmnElement="Flow_B_Nachweise_Rueckmeldung">
+        <di:waypoint x="570" y="200" />
+        <di:waypoint x="632" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_B_Rueckmeldung_Urkunde_di" bpmnElement="Flow_B_Rueckmeldung_Urkunde">
+        <di:waypoint x="668" y="200" />
+        <di:waypoint x="732" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_B_Urkunde_Ende_di" bpmnElement="Flow_B_Urkunde_Ende">
+        <di:waypoint x="768" y="200" />
+        <di:waypoint x="862" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="1200" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_IT_di" bpmnElement="StartEvent_IT">
+        <dc:Bounds x="222" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="520" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Daten_entgegennehmen_di" bpmnElement="Task_Daten_entgegennehmen">
+        <dc:Bounds x="310" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Vollstaendigkeit_pruefen_di" bpmnElement="Task_Vollstaendigkeit_pruefen">
+        <dc:Bounds x="470" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Vorgang_weiterleiten_di" bpmnElement="Task_Vorgang_weiterleiten">
+        <dc:Bounds x="630" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Registereintrag_uebernehmen_di" bpmnElement="Task_Registereintrag_uebernehmen">
+        <dc:Bounds x="790" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Urkunde_bereitstellen_di" bpmnElement="Task_Urkunde_bereitstellen">
+        <dc:Bounds x="950" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_IT_di" bpmnElement="EndEvent_IT">
+        <dc:Bounds x="1112" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1090" y="520" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_IT_Start_Entgegennehmen_di" bpmnElement="Flow_IT_Start_Entgegennehmen">
+        <di:waypoint x="258" y="495" />
+        <di:waypoint x="310" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Entgegennehmen_Pruefen_di" bpmnElement="Flow_IT_Entgegennehmen_Pruefen">
+        <di:waypoint x="410" y="495" />
+        <di:waypoint x="470" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Pruefen_Weiterleiten_di" bpmnElement="Flow_IT_Pruefen_Weiterleiten">
+        <di:waypoint x="570" y="495" />
+        <di:waypoint x="630" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Weiterleiten_Uebernehmen_di" bpmnElement="Flow_IT_Weiterleiten_Uebernehmen">
+        <di:waypoint x="730" y="495" />
+        <di:waypoint x="790" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Uebernehmen_Bereitstellen_di" bpmnElement="Flow_IT_Uebernehmen_Bereitstellen">
+        <di:waypoint x="890" y="495" />
+        <di:waypoint x="950" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Bereitstellen_Ende_di" bpmnElement="Flow_IT_Bereitstellen_Ende">
+        <di:waypoint x="1050" y="495" />
+        <di:waypoint x="1112" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Participant_Behoerde_di" bpmnElement="Participant_Behoerde" isHorizontal="true">
+        <dc:Bounds x="160" y="660" width="1200" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Behoerde_di" bpmnElement="StartEvent_Behoerde">
+        <dc:Bounds x="222" y="767" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="810" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Beurkundung_vornehmen_di" bpmnElement="Task_Beurkundung_vornehmen">
+        <dc:Bounds x="310" y="745" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Rueckmeldung_senden_di" bpmnElement="Task_Rueckmeldung_senden">
+        <dc:Bounds x="470" y="745" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Urkunde_freigeben_di" bpmnElement="Task_Urkunde_freigeben">
+        <dc:Bounds x="630" y="745" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Behoerde_di" bpmnElement="EndEvent_Behoerde">
+        <dc:Bounds x="792" y="767" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="767" y="810" width="86" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Beh_Start_Beurkunden_di" bpmnElement="Flow_Beh_Start_Beurkunden">
+        <di:waypoint x="258" y="785" />
+        <di:waypoint x="310" y="785" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Beh_Beurkunden_Rueckmeldung_di" bpmnElement="Flow_Beh_Beurkunden_Rueckmeldung">
+        <di:waypoint x="410" y="785" />
+        <di:waypoint x="470" y="785" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Beh_Rueckmeldung_Freigeben_di" bpmnElement="Flow_Beh_Rueckmeldung_Freigeben">
+        <di:waypoint x="570" y="785" />
+        <di:waypoint x="630" y="785" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Beh_Freigeben_Ende_di" bpmnElement="Flow_Beh_Freigeben_Ende">
+        <di:waypoint x="730" y="785" />
+        <di:waypoint x="792" y="785" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Anzeige_an_IT_di" bpmnElement="MsgFlow_Anzeige_an_IT">
+        <di:waypoint x="360" y="240" />
+        <di:waypoint x="360" y="350" />
+        <di:waypoint x="240" y="350" />
+        <di:waypoint x="240" y="477" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="270" y="332" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Nachweise_an_IT_di" bpmnElement="MsgFlow_Nachweise_an_IT">
+        <di:waypoint x="520" y="240" />
+        <di:waypoint x="520" y="350" />
+        <di:waypoint x="360" y="350" />
+        <di:waypoint x="360" y="455" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="420" y="332" width="55" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Bestaetigung_an_Buerger_di" bpmnElement="MsgFlow_Bestaetigung_an_Buerger">
+        <di:waypoint x="680" y="455" />
+        <di:waypoint x="680" y="350" />
+        <di:waypoint x="650" y="350" />
+        <di:waypoint x="650" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="638" y="332" width="60" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Vorgang_an_Behoerde_di" bpmnElement="MsgFlow_Vorgang_an_Behoerde">
+        <di:waypoint x="680" y="535" />
+        <di:waypoint x="680" y="640" />
+        <di:waypoint x="240" y="640" />
+        <di:waypoint x="240" y="767" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="440" y="622" width="40" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Registereintrag_an_IT_di" bpmnElement="MsgFlow_Registereintrag_an_IT">
+        <di:waypoint x="520" y="745" />
+        <di:waypoint x="520" y="640" />
+        <di:waypoint x="840" y="640" />
+        <di:waypoint x="840" y="535" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="650" y="622" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Urkunde_an_Buerger_di" bpmnElement="MsgFlow_Urkunde_an_Buerger">
+        <di:waypoint x="1000" y="455" />
+        <di:waypoint x="1000" y="350" />
+        <di:waypoint x="750" y="350" />
+        <di:waypoint x="750" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="845" y="332" width="75" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
