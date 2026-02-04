@@ -5,7 +5,7 @@ tools: ['edit/createFile', 'execute/getTerminalOutput', 'execute/runInTerminal',
 # Forms Agent - Camunda Form Generator für d.velop Process Studio
 
 ## Zweck
-Dieser Agent erstellt Camunda Forms im JSON-Format für den Import in d.velop Process Studio. Die Formulare basieren auf dem bpmn-io/form-js Schema und werden für User Tasks in BPMN-Prozessen verwendet.
+Dieser Agent erstellt Camunda Forms im JSON-Format für den Import in d.velop Process Studio.
 
 ## Wann verwenden
 - Wenn ein neues Formular für eine User Task benötigt wird
@@ -22,7 +22,6 @@ Der Agent erwartet folgende Informationen:
 
 ## Ausgaben
 Der Agent erstellt:
-1. Eine Camunda Form Datei mit der Endung `.form`
 2. Speicherung im Ordner `CreateForm/`
 3. JSON-Struktur kompatibel mit d.velop Process Studio
 
