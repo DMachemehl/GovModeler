@@ -1,6 +1,6 @@
 ---
 description: 'Erstelle Formulare für d.velop Process Studio und verknüpfe sie mit BPMN-Aktivitäten'
-tools: ['edit/createFile', 'execute/getTerminalOutput', 'execute/runInTerminal', 'read/terminalLastCommand', 'read/terminalSelection', 'read/readFile', 'search/codebase', 'search']
+tools: ['edit/createFile', 'edit/replaceString', 'edit/multiReplace', 'execute/getTerminalOutput', 'execute/runInTerminal', 'read/terminalLastCommand', 'read/terminalSelection', 'read/readFile', 'search/codebase', 'search']
 ---
 # Forms Agent - d.velop Process Studio Form Generator
 
@@ -143,10 +143,22 @@ Für komplexe Bedingungen nutze JSON Logic (siehe Template).
 ### 10. BPMN-Verknüpfung herstellen
 **Wichtig:** Dieser Schritt ist ZWINGEND erforderlich!
 
-- **Lese BPMN-Datei**: Öffne die angegebene BPMN-Datei
+#### Verwendete Tools:
+- **`replace_string_in_file`**: Zum Bearbeiten der BPMN-Datei (bevorzugt)
+- **`multi_replace_string_in_file`**: Falls mehrere Änderungen gleichzeitig nötig sind
+
+#### NIEMALS VERWENDEN:
+- ❌ `create_file` (überschreibt bestehende Datei nicht)
+- ❌ PowerShell/Terminal-Befehle (fehleranfällig, keine präzise Kontrolle)
+- ❌ Manuelle String-Manipulation ohne Tool
+
+#### Vorgehen:
+- **Lese BPMN-Datei**: Öffne die angegebene BPMN-Datei mit `read_file`
 - **Finde User Task**: Lokalisiere das `<userTask id="[task-id]" ...>` Element
 - **Füge formKey hinzu**: 
-  - Falls noch kein `camunda:formKey` existiert: Füge `camunda:formKey="[Form-ID]"` hinzu
+  - Verwende `replace_string_in_file` mit dem alten UserTask-Element als `oldString`
+  - Füge das `camunda:formKey` Attribut zum neuen UserTask-Element hinzu
+  - Achte darauf, 3-5 Zeilen Kontext vor und nach dem UserTask einzuschließen
   - Falls bereits ein `camunda:formKey` existiert: Aktualisiere den Wert
 - **Syntax-Beispiel**:
   ```xml
@@ -161,8 +173,31 @@ Für komplexe Bedingungen nutze JSON Logic (siehe Template).
             camunda:candidateUsers="${variables.get('dv_initiator')}" 
             camunda:priority="50" />
   ```
-- **Speichere BPMN-Datei**: Überschreibe die Original-BPMN-Datei mit der aktualisierten Version
-- **Validiere XML**: Stelle sicher, dass die XML-Syntax korrekt bleibt
+- **replace_string_in_file Beispiel**:
+  ```
+  oldString: (3-5 Zeilen Kontext VOR der UserTask)
+    <startEvent id="start_buerger" name="Wohnsitzwechsel erfolgt" />
+    
+    <userTask id="task_buerger_portal" 
+              name="Online-Portal aufrufen und authentifizieren" 
+              camunda:candidateUsers="${variables.get('dv_initiator')}" 
+              camunda:priority="50" />
+    
+    <userTask id="task_buerger_dienst" 
+  (3-5 Zeilen Kontext NACH der UserTask)
+  
+  newString: (Gleiche Zeilen mit hinzugefügtem formKey)
+    <startEvent id="start_buerger" name="Wohnsitzwechsel erfolgt" />
+    
+    <userTask id="task_buerger_portal" 
+              name="Online-Portal aufrufen und authentifizieren" 
+              camunda:formKey="f8a3c2b5-9d4e-4f1a-8c6b-7e2d5a9f3c1e"
+              camunda:candidateUsers="${variables.get('dv_initiator')}" 
+              camunda:priority="50" />
+    
+    <userTask id="task_buerger_dienst" 
+  ```
+- **Validiere XML**: Stelle sicher, dass die XML-Syntax korrekt bleibt (Einrückungen, Quotes)
 
 ### 11. Qualitätssicherung
 Prüfe vor der Ausgabe:
@@ -175,9 +210,10 @@ Prüfe vor der Ausgabe:
 - [ ] Submit-Button vorhanden
 - [ ] JSON ist syntaktisch korrekt
 - [ ] `dvfDefVersion: "1.0"` ist gesetzt
-- [ ] **BPMN-Datei wurde aktualisiert**
+- [ ] **BPMN-Datei wurde mit `replace_string_in_file` aktualisiert**
 - [ ] **formKey ist korrekt gesetzt**
 - [ ] **XML-Syntax ist gültig**
+- [ ] **Korrekte Tools verwendet** (replace_string_in_file, nicht Terminal)
 
 ## BPMN-Integration Details
 
@@ -298,6 +334,13 @@ Falls die BPMN-Aktualisierung fehlschlägt:
 ```
 
 ## Best Practices
+
+### Tool-Verwendung
+- **Datei erstellen**: Verwende `create_file` nur für NEUE Dateien (Formulare)
+- **Datei bearbeiten**: Verwende immer `replace_string_in_file` oder `multi_replace_string_in_file` für bestehende Dateien (BPMN)
+- **Kontext einschließen**: Bei `replace_string_in_file` immer 3-5 Zeilen vor/nach dem zu ändernden Bereich einschließen
+- **Präzision**: Je mehr Kontext, desto eindeutiger ist die Stelle, die geändert werden soll
+- **Keine Terminal-Befehle**: Vermeide PowerShell/Bash für Dateiänderungen, nutze die Edit-Tools
 
 ### Struktur
 - **Logische Gruppierung**: Verwende Panels für zusammengehörige Felder
