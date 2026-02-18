@@ -1,0 +1,517 @@
+{
+  "components": [
+    {
+      "text": "## Antrag auf Betreuungsgeld",
+      "type": "text",
+      "id": "Field_Titel",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "text": "Bitte fuellen Sie den Antrag vollstaendig aus und fuegen Sie alle erforderlichen Nachweise bei. Das Betreuungsgeld wird fuer Kinder gewaehrt, die nicht oder nur reduziert oeffentlich betreut werden.",
+      "type": "text",
+      "id": "Field_Hinweis",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "label": "Persoenliche Angaben des Antragstellers",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Antragsteller",
+      "layout": {
+        "row": "Row_1"
+      }
+    },
+    {
+      "label": "Vorname",
+      "type": "textfield",
+      "id": "Field_Vorname_Antragsteller",
+      "key": "vornameAntragsteller",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Nachname",
+      "type": "textfield",
+      "id": "Field_Nachname_Antragsteller",
+      "key": "nachnameAntragsteller",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsdatum",
+      "type": "textfield",
+      "id": "Field_Geburtsdatum_Antragsteller",
+      "key": "geburtsdatumAntragsteller",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Familienstand",
+      "values": [
+        {
+          "label": "Ledig",
+          "value": "ledig"
+        },
+        {
+          "label": "Verheiratet",
+          "value": "verheiratet"
+        },
+        {
+          "label": "Verwitwet",
+          "value": "verwitwet"
+        },
+        {
+          "label": "Geschieden",
+          "value": "geschieden"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Familienstand",
+      "key": "familienstand",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Strasse und Hausnummer",
+      "type": "textfield",
+      "id": "Field_Strasse",
+      "key": "strasse",
+      "validate": {
+        "required": true,
+        "minLength": 3,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_4",
+        "columns": 8
+      }
+    },
+    {
+      "label": "PLZ",
+      "type": "textfield",
+      "id": "Field_PLZ",
+      "key": "plz",
+      "validate": {
+        "required": true,
+        "pattern": "^[0-9]{5}$"
+      },
+      "layout": {
+        "row": "Row_5",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Ort",
+      "type": "textfield",
+      "id": "Field_Ort",
+      "key": "ort",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_5",
+        "columns": 8
+      }
+    },
+    {
+      "label": "Telefonnummer",
+      "type": "textfield",
+      "id": "Field_Telefon",
+      "key": "telefon",
+      "description": "Format: +49 123 4567890",
+      "validate": {
+        "required": false,
+        "pattern": "^[+]?[0-9\\s\\-\\/()]{7,20}$"
+      },
+      "layout": {
+        "row": "Row_6",
+        "columns": 6
+      }
+    },
+    {
+      "label": "E-Mail-Adresse",
+      "type": "textfield",
+      "id": "Field_Email",
+      "key": "email",
+      "validate": {
+        "required": false,
+        "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+      },
+      "layout": {
+        "row": "Row_6",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Angaben zum Kind",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Kind",
+      "layout": {
+        "row": "Row_7"
+      }
+    },
+    {
+      "label": "Vorname des Kindes",
+      "type": "textfield",
+      "id": "Field_Vorname_Kind",
+      "key": "vornameKind",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_8",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Nachname des Kindes",
+      "type": "textfield",
+      "id": "Field_Nachname_Kind",
+      "key": "nachnameKind",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_8",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsdatum des Kindes",
+      "type": "textfield",
+      "id": "Field_Geburtsdatum_Kind",
+      "key": "geburtsdatumKind",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_9",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsort des Kindes",
+      "type": "textfield",
+      "id": "Field_Geburtsort_Kind",
+      "key": "geburtsortKind",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_9",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Betreuungssituation",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Betreuung",
+      "layout": {
+        "row": "Row_10"
+      }
+    },
+    {
+      "label": "Wird das Kind in einer oeffentlichen Einrichtung betreut?",
+      "values": [
+        {
+          "label": "Nein, keine oeffentliche Betreuung",
+          "value": "nein"
+        },
+        {
+          "label": "Ja, teilweise (weniger als 15 Std./Woche)",
+          "value": "teilweise"
+        },
+        {
+          "label": "Ja, vollstaendig (mehr als 15 Std./Woche)",
+          "value": "vollstaendig"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Betreuung_Oeffentlich",
+      "key": "betreuungOeffentlich",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_11"
+      }
+    },
+    {
+      "label": "Betreuung erfolgt durch",
+      "values": [
+        {
+          "label": "Mutter",
+          "value": "mutter"
+        },
+        {
+          "label": "Vater",
+          "value": "vater"
+        },
+        {
+          "label": "Tagesmutter / Tagesvater",
+          "value": "tagesmutter"
+        },
+        {
+          "label": "Grosseltern",
+          "value": "grosseltern"
+        },
+        {
+          "label": "Sonstige Privatperson",
+          "value": "sonstige"
+        }
+      ],
+      "type": "checklist",
+      "id": "Field_Betreuung_Durch",
+      "key": "betreuungDurch",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_12"
+      }
+    },
+    {
+      "label": "Einkommensverhaeltnisse",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Einkommen",
+      "layout": {
+        "row": "Row_13"
+      }
+    },
+    {
+      "label": "Monatliches Bruttoeinkommen (Antragsteller)",
+      "type": "textfield",
+      "id": "Field_Einkommen_Brutto",
+      "key": "einkommenBrutto",
+      "description": "In Euro (z.B. 2450.00)",
+      "validate": {
+        "required": true,
+        "pattern": "^[0-9]{1,6}(\\.[0-9]{2})?$"
+      },
+      "layout": {
+        "row": "Row_14",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Monatliches Bruttoeinkommen (Partner)",
+      "type": "textfield",
+      "id": "Field_Einkommen_Partner",
+      "key": "einkommenPartner",
+      "description": "Falls vorhanden, in Euro",
+      "validate": {
+        "required": false,
+        "pattern": "^[0-9]{1,6}(\\.[0-9]{2})?$"
+      },
+      "layout": {
+        "row": "Row_14",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Bezieht der Antragsteller weitere Sozialleistungen?",
+      "values": [
+        {
+          "label": "Elterngeld",
+          "value": "elterngeld"
+        },
+        {
+          "label": "Kindergeld",
+          "value": "kindergeld"
+        },
+        {
+          "label": "Wohngeld",
+          "value": "wohngeld"
+        },
+        {
+          "label": "Buergergeld (ehem. ALG II)",
+          "value": "buergergeld"
+        },
+        {
+          "label": "Keine weiteren Leistungen",
+          "value": "keine"
+        }
+      ],
+      "type": "checklist",
+      "id": "Field_Weitere_Leistungen",
+      "key": "weitereLeistungen",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_15"
+      }
+    },
+    {
+      "label": "Bankverbindung",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Bank",
+      "layout": {
+        "row": "Row_16"
+      }
+    },
+    {
+      "label": "IBAN",
+      "type": "textfield",
+      "id": "Field_IBAN",
+      "key": "iban",
+      "description": "Format: DE89 3704 0044 0532 0130 00",
+      "validate": {
+        "required": true,
+        "pattern": "^DE[0-9]{2}[0-9]{4}[0-9]{4}[0-9]{4}[0-9]{4}[0-9]{2}$|^DE[0-9]{2}\\s[0-9]{4}\\s[0-9]{4}\\s[0-9]{4}\\s[0-9]{4}\\s[0-9]{2}$"
+      },
+      "layout": {
+        "row": "Row_17",
+        "columns": 8
+      }
+    },
+    {
+      "label": "BIC",
+      "type": "textfield",
+      "id": "Field_BIC",
+      "key": "bic",
+      "description": "Optional bei SEPA-Laendern",
+      "validate": {
+        "required": false,
+        "pattern": "^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$"
+      },
+      "layout": {
+        "row": "Row_17",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Kontoinhaber",
+      "type": "textfield",
+      "id": "Field_Kontoinhaber",
+      "key": "kontoinhaber",
+      "validate": {
+        "required": true,
+        "minLength": 3,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_18"
+      }
+    },
+    {
+      "label": "Nachweise und Erklaerungen",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Nachweise",
+      "layout": {
+        "row": "Row_19"
+      }
+    },
+    {
+      "text": "Bitte fuegen Sie folgende Nachweise bei:\n\n- Geburtsurkunde des Kindes\n- Einkommensnachweise (Gehaltsabrechnungen der letzten 3 Monate)\n- Nachweis ueber Betreuungssituation (z.B. Bestaetigung Tagesmutter)\n- Meldebescheinigung\n- Bescheide ueber weitere Sozialleistungen (falls zutreffend)",
+      "type": "text",
+      "id": "Field_Nachweise_Hinweis",
+      "layout": {
+        "row": "Row_20"
+      }
+    },
+    {
+      "label": "Datenschutz und Einwilligung",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Datenschutz",
+      "layout": {
+        "row": "Row_21"
+      }
+    },
+    {
+      "label": "Ich bestatige, dass alle Angaben wahrheitsgemaess und vollstaendig sind.",
+      "type": "checkbox",
+      "id": "Field_Bestaetigung_Wahrheit",
+      "key": "bestaetigungWahrheit",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_22"
+      }
+    },
+    {
+      "label": "Ich habe die Datenschutzhinweise zur Kenntnis genommen und willige in die Verarbeitung meiner Daten gemaess DSGVO ein.",
+      "type": "checkbox",
+      "id": "Field_Datenschutz_Akzeptiert",
+      "key": "datenschutzAkzeptiert",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_23"
+      }
+    },
+    {
+      "label": "Antrag einreichen",
+      "action": "submit",
+      "type": "button",
+      "id": "Field_Submit",
+      "layout": {
+        "row": "Row_24"
+      }
+    }
+  ],
+  "schemaVersion": 17,
+  "exporter": {
+    "name": "GitHub-Copilot-GovModeler",
+    "version": "2.0"
+  },
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0",
+  "type": "default",
+  "id": "Form_Betreuungsgeld_Antrag"
+}

@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" targetNamespace="http://example.com/bpmn" exporter="GitHub-Copilot-GovModeler" exporterVersion="2.0">
+  <bpmn:collaboration id="Collab_Betreuungsgeld_beantragen">
+    <bpmn:participant id="Participant_Kunde" name="Kunde" processRef="Process_Kunde" />
+    <bpmn:participant id="Participant_Organisation" name="Organisation" processRef="Process_Organisation" />
+    <bpmn:messageFlow id="MsgFlow_Antrag" name="Betreuungsgeld-Antrag" sourceRef="Task_Antrag_einreichen" targetRef="StartEvent_Antrag_eingegangen" />
+    <bpmn:messageFlow id="MsgFlow_Bescheid" name="Bewilligungsbescheid" sourceRef="Task_Bescheid_versenden" targetRef="Event_Bescheid_empfangen" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Kunde" name="Betreuungsgeld_beantragen_Kunde" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Kunde" name="Bedarf festgestellt">
+      <bpmn:outgoing>Flow_Start_Ausfuellen</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_Antrag_ausfuellen" name="Antrag ausfuellen">
+      <bpmn:incoming>Flow_Start_Ausfuellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Ausfuellen_Einreichen</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Antrag_einreichen" name="Antrag einreichen">
+      <bpmn:incoming>Flow_Ausfuellen_Einreichen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Einreichen_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:intermediateCatchEvent id="Event_Bescheid_empfangen" name="Bescheid empfangen">
+      <bpmn:incoming>Flow_Einreichen_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bescheid_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Bescheid" messageRef="Message_Bescheid" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="EndEvent_Kunde" name="Betreuungsgeld bewilligt">
+      <bpmn:incoming>Flow_Bescheid_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_Ausfuellen" sourceRef="StartEvent_Kunde" targetRef="Task_Antrag_ausfuellen" />
+    <bpmn:sequenceFlow id="Flow_Ausfuellen_Einreichen" sourceRef="Task_Antrag_ausfuellen" targetRef="Task_Antrag_einreichen" />
+    <bpmn:sequenceFlow id="Flow_Einreichen_Warten" sourceRef="Task_Antrag_einreichen" targetRef="Event_Bescheid_empfangen" />
+    <bpmn:sequenceFlow id="Flow_Bescheid_Ende" sourceRef="Event_Bescheid_empfangen" targetRef="EndEvent_Kunde" />
+  </bpmn:process>
+  <bpmn:process id="Process_Organisation" name="Betreuungsgeld_bearbeiten_Organisation" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Antrag_eingegangen" name="Antrag eingegangen">
+      <bpmn:outgoing>Flow_Start_Erfassen</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_Eingang_erfassen" name="Eingang erfassen">
+      <bpmn:incoming>Flow_Start_Erfassen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Erfassen_Zustaendigkeit</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_Zustaendigkeit_pruefen" name="Zustaendigkeit pruefen">
+      <bpmn:incoming>Flow_Erfassen_Zustaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zustaendigkeit_Vollstaendigkeit</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Vollstaendigkeit_pruefen" name="Vollstaendigkeit pruefen">
+      <bpmn:incoming>Flow_Zustaendigkeit_Vollstaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Vollstaendigkeit_Anspruch</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_Anspruch_pruefen" name="Anspruchsvoraussetzungen pruefen">
+      <bpmn:incoming>Flow_Vollstaendigkeit_Anspruch</bpmn:incoming>
+      <bpmn:outgoing>Flow_Anspruch_Berechnen</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_Hoehe_berechnen" name="Hoehe berechnen">
+      <bpmn:incoming>Flow_Anspruch_Berechnen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Berechnen_Erstellen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_Bescheid_erstellen" name="Bescheid erstellen">
+      <bpmn:incoming>Flow_Berechnen_Erstellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Erstellen_Versenden</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Bescheid_versenden" name="Bescheid versenden">
+      <bpmn:incoming>Flow_Erstellen_Versenden</bpmn:incoming>
+      <bpmn:outgoing>Flow_Versenden_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_Organisation" name="Prozess abgeschlossen">
+      <bpmn:incoming>Flow_Versenden_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_Erfassen" sourceRef="StartEvent_Antrag_eingegangen" targetRef="Task_Eingang_erfassen" />
+    <bpmn:sequenceFlow id="Flow_Erfassen_Zustaendigkeit" sourceRef="Task_Eingang_erfassen" targetRef="Task_Zustaendigkeit_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Zustaendigkeit_Vollstaendigkeit" sourceRef="Task_Zustaendigkeit_pruefen" targetRef="Task_Vollstaendigkeit_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Vollstaendigkeit_Anspruch" sourceRef="Task_Vollstaendigkeit_pruefen" targetRef="Task_Anspruch_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Anspruch_Berechnen" sourceRef="Task_Anspruch_pruefen" targetRef="Task_Hoehe_berechnen" />
+    <bpmn:sequenceFlow id="Flow_Berechnen_Erstellen" sourceRef="Task_Hoehe_berechnen" targetRef="Task_Bescheid_erstellen" />
+    <bpmn:sequenceFlow id="Flow_Erstellen_Versenden" sourceRef="Task_Bescheid_erstellen" targetRef="Task_Bescheid_versenden" />
+    <bpmn:sequenceFlow id="Flow_Versenden_Ende" sourceRef="Task_Bescheid_versenden" targetRef="EndEvent_Organisation" />
+  </bpmn:process>
+  <bpmn:message id="Message_Antrag" name="Betreuungsgeld-Antrag" />
+  <bpmn:message id="Message_Bescheid" name="Bewilligungsbescheid" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Betreuungsgeld">
+    <bpmndi:BPMNPlane id="BPMNPlane_Betreuungsgeld" bpmnElement="Collab_Betreuungsgeld_beantragen">
+      <bpmndi:BPMNShape id="Participant_Kunde_di" bpmnElement="Participant_Kunde" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1500" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="190" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Kunde_di" bpmnElement="StartEvent_Kunde">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="206" y="225" width="68" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antrag_ausfuellen_di" bpmnElement="Task_Antrag_ausfuellen">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antrag_einreichen_di" bpmnElement="Task_Antrag_einreichen">
+        <dc:Bounds x="470" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Bescheid_empfangen_di" bpmnElement="Event_Bescheid_empfangen">
+        <dc:Bounds x="632" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="622" y="144.5" width="56" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Kunde_di" bpmnElement="EndEvent_Kunde">
+        <dc:Bounds x="1552" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1530" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_Ausfuellen_di" bpmnElement="Flow_Start_Ausfuellen">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Ausfuellen_Einreichen_di" bpmnElement="Flow_Ausfuellen_Einreichen">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="470" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Einreichen_Warten_di" bpmnElement="Flow_Einreichen_Warten">
+        <di:waypoint x="570" y="200" />
+        <di:waypoint x="632" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Bescheid_Ende_di" bpmnElement="Flow_Bescheid_Ende">
+        <di:waypoint x="668" y="200" />
+        <di:waypoint x="1552" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Participant_Organisation_di" bpmnElement="Participant_Organisation" isHorizontal="true">
+        <dc:Bounds x="160" y="420" width="1500" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="515" width="20" height="80" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Antrag_eingegangen_di" bpmnElement="StartEvent_Antrag_eingegangen">
+        <dc:Bounds x="222" y="522" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="206" y="565" width="68" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Eingang_erfassen_di" bpmnElement="Task_Eingang_erfassen">
+        <dc:Bounds x="310" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Zustaendigkeit_pruefen_di" bpmnElement="Task_Zustaendigkeit_pruefen">
+        <dc:Bounds x="470" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Vollstaendigkeit_pruefen_di" bpmnElement="Task_Vollstaendigkeit_pruefen">
+        <dc:Bounds x="630" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Anspruch_pruefen_di" bpmnElement="Task_Anspruch_pruefen">
+        <dc:Bounds x="790" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Hoehe_berechnen_di" bpmnElement="Task_Hoehe_berechnen">
+        <dc:Bounds x="950" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Bescheid_erstellen_di" bpmnElement="Task_Bescheid_erstellen">
+        <dc:Bounds x="1110" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Bescheid_versenden_di" bpmnElement="Task_Bescheid_versenden">
+        <dc:Bounds x="1270" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Organisation_di" bpmnElement="EndEvent_Organisation">
+        <dc:Bounds x="1552" y="522" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1530" y="565" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_Erfassen_di" bpmnElement="Flow_Start_Erfassen">
+        <di:waypoint x="258" y="540" />
+        <di:waypoint x="310" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Erfassen_Zustaendigkeit_di" bpmnElement="Flow_Erfassen_Zustaendigkeit">
+        <di:waypoint x="410" y="540" />
+        <di:waypoint x="470" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Zustaendigkeit_Vollstaendigkeit_di" bpmnElement="Flow_Zustaendigkeit_Vollstaendigkeit">
+        <di:waypoint x="570" y="540" />
+        <di:waypoint x="630" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Vollstaendigkeit_Anspruch_di" bpmnElement="Flow_Vollstaendigkeit_Anspruch">
+        <di:waypoint x="730" y="540" />
+        <di:waypoint x="790" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Anspruch_Berechnen_di" bpmnElement="Flow_Anspruch_Berechnen">
+        <di:waypoint x="890" y="540" />
+        <di:waypoint x="950" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Berechnen_Erstellen_di" bpmnElement="Flow_Berechnen_Erstellen">
+        <di:waypoint x="1050" y="540" />
+        <di:waypoint x="1110" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Erstellen_Versenden_di" bpmnElement="Flow_Erstellen_Versenden">
+        <di:waypoint x="1210" y="540" />
+        <di:waypoint x="1270" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Versenden_Ende_di" bpmnElement="Flow_Versenden_Ende">
+        <di:waypoint x="1370" y="540" />
+        <di:waypoint x="1552" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Antrag_di" bpmnElement="MsgFlow_Antrag">
+        <di:waypoint x="520" y="240" />
+        <di:waypoint x="520" y="380" />
+        <di:waypoint x="240" y="380" />
+        <di:waypoint x="240" y="522" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="320" y="362" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Bescheid_di" bpmnElement="MsgFlow_Bescheid">
+        <di:waypoint x="1320" y="500" />
+        <di:waypoint x="1320" y="360" />
+        <di:waypoint x="650" y="360" />
+        <di:waypoint x="650" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="920" y="342" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
