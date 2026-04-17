@@ -985,55 +985,57 @@ Dieses Dokument ist keine Pflichtaufgabe
 und darf nicht im Prozesssteckbrief oder im Prozessmodell integriert werden.
 
 # Arbeitsumfeld
-Arbeitsumfeld: Kreisverwaltung (Niedersachsen, Deutschland)
+Arbeitsumfeld: Stadtverwaltung der Landeshauptstadt Stuttgart (Baden-Württemberg, Deutschland)
 
 Zweck dieses Kontexts
-Dieser Text beschreibt das institutionelle, rechtliche und organisatorische Arbeitsumfeld, in dem Prozesse einer Kreisverwaltung in Niedersachsen stattfinden.
+Dieser Text beschreibt das institutionelle, rechtliche und organisatorische Arbeitsumfeld, in dem Prozesse der Stadtverwaltung der Landeshauptstadt Stuttgart stattfinden.
 Er dient als Hintergrundinformation, um Prozesse im Rahmen eines Prozessinterviews zur Prozessaufnahme fachlich korrekt einordnen zu können.
 
 Der Text beschreibt typische Rahmenbedingungen, keine Idealzustände, Zielbilder oder Handlungsvorgaben.
 
-Einordnung der Kreisverwaltung
-Die Kreisverwaltung ist die Verwaltungsorganisation eines Landkreises und Teil der öffentlichen Verwaltung in Deutschland.
+Einordnung der Stadtverwaltung
+Die Stadtverwaltung Stuttgart ist die Verwaltungsorganisation der Landeshauptstadt Stuttgart und Teil der öffentlichen Verwaltung in Deutschland.
 Sie ist eine kommunale Körperschaft des öffentlichen Rechts und handelt innerhalb der staatlichen Verwaltungsstruktur auf kommunaler Ebene.
 
-Sie wird durch den Landrat oder die Landrätin als Hauptverwaltungsbeamten geleitet, setzt die Beschlüsse des Kreistages um und vollzieht gesetzliche Aufgaben auf Grundlage der jeweils geltenden Rechtsvorschriften.
+Als Landeshauptstadt und Stadtkreis nimmt Stuttgart sowohl gemeindliche als auch zahlreiche kreisbezogene Verwaltungsaufgaben wahr.
+Die Stadtverwaltung wird durch den Oberbürgermeister oder die Oberbürgermeisterin als Hauptverwaltungsbeamten geleitet, setzt die Beschlüsse des Gemeinderats um und vollzieht gesetzliche Aufgaben auf Grundlage der jeweils geltenden Rechtsvorschriften.
 
 Charakter der Aufgabenwahrnehmung
-Die Kreisverwaltung ist keine Fachbehörde mit einem fest abgegrenzten Aufgabenportfolio.
-Sie ist eine multifunktionale Verwaltungsorganisation, deren Aufgaben sich primär aus gesetzlichen Zuständigkeiten ergeben.
+Die Stadtverwaltung ist keine Fachbehörde mit einem klar abgegrenzten Einzelaufgabenportfolio.
+Sie ist eine multifunktionale Verwaltungsorganisation, deren Aufgaben sich primär aus gesetzlichen Zuständigkeiten, kommunalen Aufgabenstellungen und politischen Beschlüssen ergeben.
 
 Das Aufgaben- und Prozessspektrum ist nicht abschließend festgelegt und unterliegt Veränderungen durch:
 gesetzliche Vorgaben,
 organisatorische Anpassungen,
 politische Entscheidungen.
 
-Die Kreisverwaltung handelt sowohl:
-in eigenen kommunalen Angelegenheiten des Landkreises als auch als untere staatliche Verwaltungsbehörde im Auftrag des Landes oder des Bundes.
+Die Stadtverwaltung handelt sowohl:
+in eigenen kommunalen Angelegenheiten der Landeshauptstadt Stuttgart als auch
+im Rahmen übertragener oder weisungsgebundener Aufgaben auf Grundlage von Bundes- oder Landesrecht.
 
 Rechtsgrundlagen
-Die Aufgaben der Kreisverwaltung ergeben sich insbesondere aus:
-dem Niedersächsischen Kommunalverfassungsgesetz (NKomVG),
+Die Aufgaben der Stadtverwaltung ergeben sich insbesondere aus:
+der Gemeindeordnung für Baden-Württemberg (GemO),
 Fachgesetzen auf Bundes- und Landesebene,
 Satzungen, Verordnungen und sonstigen Rechtsnormen,
-Beschlüssen der politischen Gremien des Landkreises.
+Beschlüssen der politischen Gremien der Landeshauptstadt Stuttgart.
 Diese Aufzählung ist nicht abschließend.
 
-Eigener und übertragener Wirkungskreis
-Die Aufgaben der Kreisverwaltung werden zwei Wirkungskreisen zugeordnet:
+Eigene und übertragene Aufgabenwahrnehmung
+Die Aufgaben der Stadtverwaltung lassen sich typischerweise unterscheiden in:
 
-Eigener Wirkungskreis
+Eigene kommunale Aufgaben
 Aufgaben der kommunalen Selbstverwaltung,
 eigenverantwortliches Handeln,
 Entscheidungs- und Gestaltungsspielräume innerhalb des rechtlichen Rahmens.
 
-Übertragener Wirkungskreis
+Übertragene oder weisungsgebundene Aufgaben
 Vollzug staatlicher Aufgaben,
-Handeln als untere staatliche Behörde,
-häufig gebunden an fachliche Weisungen und verbindliche Verfahrensvorgaben.
-Charakter kommunaler Aufgaben und Prozesse
+Handeln auf Grundlage verbindlicher fachlicher und rechtlicher Vorgaben,
+häufig gebunden an formale Verfahrensanforderungen und Weisungsstrukturen.
 
-Aufgaben und Prozesse in der Kreisverwaltung sind typischerweise:
+Charakter kommunaler Aufgaben und Prozesse
+Aufgaben und Prozesse in der Stadtverwaltung Stuttgart sind typischerweise:
 rechtlich determiniert,
 verfahrensgebunden,
 mit formalen Entscheidungs-, Prüf- und Genehmigungsschritten verbunden,
@@ -1042,19 +1044,20 @@ geprägt durch Zuständigkeits-, Fristen- und Dokumentationspflichten.
 Sie beinhalten häufig die Beteiligung:
 mehrerer Organisationseinheiten,
 anderer Behörden,
+städtischer Eigenbetriebe oder Beteiligungen,
 externer Stellen.
 
 Aufgaben entstehen im Zusammenspiel von Recht, Organisation, Fachlichkeit und Politik.
-Organisatorische Struktur
 
-Die Kreisverwaltung ist in der Regel gegliedert in:
-Dezernate,
-Fachbereiche oder Ämter,
+Organisatorische Struktur
+Die Stadtverwaltung ist in der Regel gegliedert in:
+Bürgermeisterämter bzw. Dezernate,
+Referate, Ämter und Dienststellen,
 Querschnittsbereiche (z. B. Personal, Finanzen, Organisation, IT),
 ggf. Stabsstellen mit koordinierender oder beratender Funktion.
 
 Verwaltungsprozesse verlaufen häufig:
-fachbereichsübergreifend,
+referats- oder amtsübergreifend,
 als Teil größerer verwaltungsinterner oder verwaltungsexterner Gesamtverfahren.
 
 Verwaltungstypische Denk- und Sprachmuster
@@ -1081,8 +1084,7 @@ ist Hintergrundinformation, kein Arbeits- oder Handlungsauftrag,
 trifft keine Aussage darüber, wie Prozesse gestaltet oder verbessert werden sollten.
 
 Zusammenfassende Arbeitsannahmen
-Prozesse in der Kreisverwaltung sind rechtlich geprägt und formal strukturiert.
+Prozesse in der Stadtverwaltung der Landeshauptstadt Stuttgart sind rechtlich geprägt und formal strukturiert.
 Zuständigkeiten, Verfahren und Dokumentationspflichten sind zentrale Bezugspunkte.
 Prozessbeschreibungen erfolgen häufig aus einer organisatorischen Perspektive.
 Interdisziplinarität und Schnittstellen sind typische Merkmale kommunaler Prozesse.
-
