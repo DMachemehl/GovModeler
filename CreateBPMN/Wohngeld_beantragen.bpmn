@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" targetNamespace="http://example.com/bpmn" exporter="GitHub-Copilot-GovModeler" exporterVersion="2.0" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.24.0">
+  <bpmn:collaboration id="Collab_Wohngeld_beantragen">
+    <bpmn:participant id="Participant_Poststelle" name="Poststelle" processRef="Process_Poststelle" />
+    <bpmn:participant id="Participant_Sachbearbeiter" name="Sachbearbeiter Wohngeld" processRef="Process_Sachbearbeiter" />
+    <bpmn:messageFlow id="MsgFlow_Antrag_Weiterleitung" name="Antrag per Hauspost" sourceRef="Task_Antrag_weiterleiten" targetRef="Task_Vorgang_anlegen" />
+    <bpmn:messageFlow id="MsgFlow_Unterlagen_Eingang" name="Nachgeforderte Unterlagen" sourceRef="Task_Antrag_weiterleiten" targetRef="Event_Unterlagen_eingegangen" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Poststelle" name="Wohngeld_Poststelle" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Antrag" name="Antrag eingegangen">
+      <bpmn:outgoing>Flow_Start_Zustaendigkeit</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_Zustaendigkeit_pruefen" name="Zustaendigkeit pruefen">
+      <bpmn:incoming>Flow_Start_Zustaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zustaendigkeit_Weiterleiten</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sendTask id="Task_Antrag_weiterleiten" name="Antrag per Hauspost weiterleiten">
+      <bpmn:incoming>Flow_Zustaendigkeit_Weiterleiten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Weiterleiten_Ende</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="EndEvent_Poststelle" name="Weitergeleitet">
+      <bpmn:incoming>Flow_Weiterleiten_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_Zustaendigkeit" sourceRef="StartEvent_Antrag" targetRef="Task_Zustaendigkeit_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Zustaendigkeit_Weiterleiten" sourceRef="Task_Zustaendigkeit_pruefen" targetRef="Task_Antrag_weiterleiten" />
+    <bpmn:sequenceFlow id="Flow_Weiterleiten_Ende" sourceRef="Task_Antrag_weiterleiten" targetRef="EndEvent_Poststelle" />
+  </bpmn:process>
+  <bpmn:process id="Process_Sachbearbeiter" name="Wohngeld_Sachbearbeiter" isExecutable="true">
+    <bpmn:laneSet id="LaneSet_Sachbearbeiter">
+      <bpmn:lane id="Lane_Sachbearbeiter" name="Sachbearbeiter Wohngeld">
+        <bpmn:flowNodeRef>Task_Vorgang_anlegen</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Vollstaendigkeit_pruefen</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Vollstaendigkeit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Nachforderung_versenden</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_Unterlagen_eingegangen</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Frist</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Inhaltliche_Pruefung</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Anspruch</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Bewilligungsbescheid_erstellen</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Auszahlung_anstossen</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Bewilligungsbescheid_versenden</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Bewilligung</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Ablehnungsbescheid_erstellen</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Ablehnungsbescheid_versenden</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Ablehnung</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Ablehnungsbescheid_Frist_erstellen</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Ablehnungsbescheid_Frist_versenden</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Ablehnung_Frist</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:userTask id="Task_Vorgang_anlegen" name="Vorgang in Wohni anlegen">
+      <bpmn:outgoing>Flow_Anlegen_Vollstaendigkeit</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Vollstaendigkeit_pruefen" name="Vollstaendigkeit pruefen">
+      <bpmn:documentation>Prüfung: Formularfelder ausgefüllt, erforderliche Unterlagen beigefügt, Unterschriften vorhanden</bpmn:documentation>
+      <bpmn:incoming>Flow_Anlegen_Vollstaendigkeit</bpmn:incoming>
+      <bpmn:incoming>Flow_Unterlagen_erneut_pruefen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Vollstaendigkeit_Gateway</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_Vollstaendigkeit" name="Vollstaendig?">
+      <bpmn:incoming>Flow_Vollstaendigkeit_Gateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_Vollstaendig_Ja</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Vollstaendig_Nein</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_Nachforderung_versenden" name="Unterlagen per Brief nachfordern">
+      <bpmn:documentation>Frist: 14 Tage</bpmn:documentation>
+      <bpmn:incoming>Flow_Vollstaendig_Nein</bpmn:incoming>
+      <bpmn:outgoing>Flow_Nachforderung_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:eventBasedGateway id="Gateway_Frist" name="">
+      <bpmn:incoming>Flow_Nachforderung_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Frist_Unterlagen</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Frist_Ablauf</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:intermediateCatchEvent id="Event_Unterlagen_eingegangen" name="Unterlagen eingegangen">
+      <bpmn:incoming>Flow_Frist_Unterlagen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Unterlagen_erneut_pruefen</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Unterlagen" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="Event_Frist_abgelaufen" name="14 Tage abgelaufen">
+      <bpmn:incoming>Flow_Frist_Ablauf</bpmn:incoming>
+      <bpmn:outgoing>Flow_Frist_Ablehnung</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDef_Frist">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">P14D</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:userTask id="Task_Inhaltliche_Pruefung" name="Inhaltliche Pruefung durchfuehren">
+      <bpmn:documentation>Prüfung: Anspruchsvoraussetzungen, Einkommensgrenzen, Wohnkosten. Automatische Berechnung der Wohngeldhöhe im Fachverfahren.</bpmn:documentation>
+      <bpmn:incoming>Flow_Vollstaendig_Ja</bpmn:incoming>
+      <bpmn:outgoing>Flow_Pruefung_Gateway</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_Anspruch" name="Anspruch?">
+      <bpmn:incoming>Flow_Pruefung_Gateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_Anspruch_Ja</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Anspruch_Nein</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_Bewilligungsbescheid_erstellen" name="Bewilligungsbescheid erstellen">
+      <bpmn:documentation>Erstellung im Fachverfahren Wohni mit Bescheidvorlage</bpmn:documentation>
+      <bpmn:incoming>Flow_Anspruch_Ja</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bewilligung_Auszahlung</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Auszahlung_anstossen" name="Auszahlung in Wohni anstossen">
+      <bpmn:incoming>Flow_Bewilligung_Auszahlung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Auszahlung_Versand</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sendTask id="Task_Bewilligungsbescheid_versenden" name="Bescheid ueber zentralen Druck versenden">
+      <bpmn:incoming>Flow_Auszahlung_Versand</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bewilligung_Ende</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="EndEvent_Bewilligung" name="Wohngeld bewilligt">
+      <bpmn:incoming>Flow_Bewilligung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Task_Ablehnungsbescheid_erstellen" name="Ablehnungsbescheid erstellen">
+      <bpmn:documentation>Erstellung im Fachverfahren Wohni mit Vorlage</bpmn:documentation>
+      <bpmn:incoming>Flow_Anspruch_Nein</bpmn:incoming>
+      <bpmn:outgoing>Flow_Ablehnung_Versand</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sendTask id="Task_Ablehnungsbescheid_versenden" name="Bescheid ueber zentralen Druck versenden">
+      <bpmn:incoming>Flow_Ablehnung_Versand</bpmn:incoming>
+      <bpmn:outgoing>Flow_Ablehnung_Ende</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="EndEvent_Ablehnung" name="Antrag abgelehnt">
+      <bpmn:incoming>Flow_Ablehnung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Task_Ablehnungsbescheid_Frist_erstellen" name="Ablehnungsbescheid erstellen">
+      <bpmn:documentation>Erstellung im Fachverfahren Wohni mit Vorlage - Ablehnung wegen fehlender Unterlagen</bpmn:documentation>
+      <bpmn:incoming>Flow_Frist_Ablehnung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Frist_Ablehnung_Versand</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sendTask id="Task_Ablehnungsbescheid_Frist_versenden" name="Bescheid ueber zentralen Druck versenden">
+      <bpmn:incoming>Flow_Frist_Ablehnung_Versand</bpmn:incoming>
+      <bpmn:outgoing>Flow_Frist_Ablehnung_Ende</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="EndEvent_Ablehnung_Frist" name="Antrag abgelehnt">
+      <bpmn:incoming>Flow_Frist_Ablehnung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Anlegen_Vollstaendigkeit" sourceRef="Task_Vorgang_anlegen" targetRef="Task_Vollstaendigkeit_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Vollstaendigkeit_Gateway" sourceRef="Task_Vollstaendigkeit_pruefen" targetRef="Gateway_Vollstaendigkeit" />
+    <bpmn:sequenceFlow id="Flow_Vollstaendig_Ja" name="Ja" sourceRef="Gateway_Vollstaendigkeit" targetRef="Task_Inhaltliche_Pruefung" />
+    <bpmn:sequenceFlow id="Flow_Vollstaendig_Nein" name="Nein" sourceRef="Gateway_Vollstaendigkeit" targetRef="Task_Nachforderung_versenden" />
+    <bpmn:sequenceFlow id="Flow_Nachforderung_Warten" sourceRef="Task_Nachforderung_versenden" targetRef="Gateway_Frist" />
+    <bpmn:sequenceFlow id="Flow_Frist_Unterlagen" sourceRef="Gateway_Frist" targetRef="Event_Unterlagen_eingegangen" />
+    <bpmn:sequenceFlow id="Flow_Frist_Ablauf" sourceRef="Gateway_Frist" targetRef="Event_Frist_abgelaufen" />
+    <bpmn:sequenceFlow id="Flow_Unterlagen_erneut_pruefen" sourceRef="Event_Unterlagen_eingegangen" targetRef="Task_Vollstaendigkeit_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Frist_Ablehnung" sourceRef="Event_Frist_abgelaufen" targetRef="Task_Ablehnungsbescheid_Frist_erstellen" />
+    <bpmn:sequenceFlow id="Flow_Pruefung_Gateway" sourceRef="Task_Inhaltliche_Pruefung" targetRef="Gateway_Anspruch" />
+    <bpmn:sequenceFlow id="Flow_Anspruch_Ja" name="Ja" sourceRef="Gateway_Anspruch" targetRef="Task_Bewilligungsbescheid_erstellen" />
+    <bpmn:sequenceFlow id="Flow_Anspruch_Nein" name="Nein" sourceRef="Gateway_Anspruch" targetRef="Task_Ablehnungsbescheid_erstellen" />
+    <bpmn:sequenceFlow id="Flow_Bewilligung_Auszahlung" sourceRef="Task_Bewilligungsbescheid_erstellen" targetRef="Task_Auszahlung_anstossen" />
+    <bpmn:sequenceFlow id="Flow_Auszahlung_Versand" sourceRef="Task_Auszahlung_anstossen" targetRef="Task_Bewilligungsbescheid_versenden" />
+    <bpmn:sequenceFlow id="Flow_Bewilligung_Ende" sourceRef="Task_Bewilligungsbescheid_versenden" targetRef="EndEvent_Bewilligung" />
+    <bpmn:sequenceFlow id="Flow_Ablehnung_Versand" sourceRef="Task_Ablehnungsbescheid_erstellen" targetRef="Task_Ablehnungsbescheid_versenden" />
+    <bpmn:sequenceFlow id="Flow_Ablehnung_Ende" sourceRef="Task_Ablehnungsbescheid_versenden" targetRef="EndEvent_Ablehnung" />
+    <bpmn:sequenceFlow id="Flow_Frist_Ablehnung_Versand" sourceRef="Task_Ablehnungsbescheid_Frist_erstellen" targetRef="Task_Ablehnungsbescheid_Frist_versenden" />
+    <bpmn:sequenceFlow id="Flow_Frist_Ablehnung_Ende" sourceRef="Task_Ablehnungsbescheid_Frist_versenden" targetRef="EndEvent_Ablehnung_Frist" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Wohngeld">
+    <bpmndi:BPMNPlane id="BPMNPlane_Wohngeld" bpmnElement="Collab_Wohngeld_beantragen">
+      <bpmndi:BPMNShape id="Participant_Poststelle_di" bpmnElement="Participant_Poststelle" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="800" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Antrag_di" bpmnElement="StartEvent_Antrag">
+        <dc:Bounds x="222" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="206" y="205" width="68" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Zustaendigkeit_pruefen_di" bpmnElement="Task_Zustaendigkeit_pruefen">
+        <dc:Bounds x="310" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antrag_weiterleiten_di" bpmnElement="Task_Antrag_weiterleiten">
+        <dc:Bounds x="470" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Poststelle_di" bpmnElement="EndEvent_Poststelle">
+        <dc:Bounds x="632" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="613" y="205" width="74" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_Zustaendigkeit_di" bpmnElement="Flow_Start_Zustaendigkeit">
+        <di:waypoint x="258" y="180" />
+        <di:waypoint x="310" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Zustaendigkeit_Weiterleiten_di" bpmnElement="Flow_Zustaendigkeit_Weiterleiten">
+        <di:waypoint x="410" y="180" />
+        <di:waypoint x="470" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Weiterleiten_Ende_di" bpmnElement="Flow_Weiterleiten_Ende">
+        <di:waypoint x="570" y="180" />
+        <di:waypoint x="632" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Participant_Sachbearbeiter_di" bpmnElement="Participant_Sachbearbeiter" isHorizontal="true">
+        <dc:Bounds x="160" y="340" width="2800" height="400" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Sachbearbeiter_di" bpmnElement="Lane_Sachbearbeiter" isHorizontal="true">
+        <dc:Bounds x="190" y="340" width="2770" height="400" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Vorgang_anlegen_di" bpmnElement="Task_Vorgang_anlegen">
+        <dc:Bounds x="310" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Vollstaendigkeit_pruefen_di" bpmnElement="Task_Vollstaendigkeit_pruefen">
+        <dc:Bounds x="470" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Vollstaendigkeit_di" bpmnElement="Gateway_Vollstaendigkeit" isMarkerVisible="true">
+        <dc:Bounds x="635" y="495" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="625" y="552" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Nachforderung_versenden_di" bpmnElement="Task_Nachforderung_versenden">
+        <dc:Bounds x="610" y="380" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Frist_di" bpmnElement="Gateway_Frist">
+        <dc:Bounds x="775" y="395" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Unterlagen_eingegangen_di" bpmnElement="Event_Unterlagen_eingegangen">
+        <dc:Bounds x="782" y="502" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="766" y="545" width="68" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Frist_abgelaufen_di" bpmnElement="Event_Frist_abgelaufen">
+        <dc:Bounds x="892" y="402" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="878" y="378" width="64" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Inhaltliche_Pruefung_di" bpmnElement="Task_Inhaltliche_Pruefung">
+        <dc:Bounds x="750" y="580" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Anspruch_di" bpmnElement="Gateway_Anspruch" isMarkerVisible="true">
+        <dc:Bounds x="915" y="595" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="915" y="652" width="50" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Bewilligungsbescheid_erstellen_di" bpmnElement="Task_Bewilligungsbescheid_erstellen">
+        <dc:Bounds x="1030" y="650" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Auszahlung_anstossen_di" bpmnElement="Task_Auszahlung_anstossen">
+        <dc:Bounds x="1190" y="650" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Bewilligungsbescheid_versenden_di" bpmnElement="Task_Bewilligungsbescheid_versenden">
+        <dc:Bounds x="1350" y="650" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Bewilligung_di" bpmnElement="EndEvent_Bewilligung">
+        <dc:Bounds x="1512" y="672" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1496" y="715" width="68" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Ablehnungsbescheid_erstellen_di" bpmnElement="Task_Ablehnungsbescheid_erstellen">
+        <dc:Bounds x="1030" y="530" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Ablehnungsbescheid_versenden_di" bpmnElement="Task_Ablehnungsbescheid_versenden">
+        <dc:Bounds x="1190" y="530" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Ablehnung_di" bpmnElement="EndEvent_Ablehnung">
+        <dc:Bounds x="1352" y="552" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1332" y="595" width="76" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Ablehnungsbescheid_Frist_erstellen_di" bpmnElement="Task_Ablehnungsbescheid_Frist_erstellen">
+        <dc:Bounds x="990" y="380" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Ablehnungsbescheid_Frist_versenden_di" bpmnElement="Task_Ablehnungsbescheid_Frist_versenden">
+        <dc:Bounds x="1150" y="380" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Ablehnung_Frist_di" bpmnElement="EndEvent_Ablehnung_Frist">
+        <dc:Bounds x="1312" y="402" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1292" y="445" width="76" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Anlegen_Vollstaendigkeit_di" bpmnElement="Flow_Anlegen_Vollstaendigkeit">
+        <di:waypoint x="410" y="520" />
+        <di:waypoint x="470" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Vollstaendigkeit_Gateway_di" bpmnElement="Flow_Vollstaendigkeit_Gateway">
+        <di:waypoint x="570" y="520" />
+        <di:waypoint x="635" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Vollstaendig_Ja_di" bpmnElement="Flow_Vollstaendig_Ja">
+        <di:waypoint x="660" y="545" />
+        <di:waypoint x="660" y="620" />
+        <di:waypoint x="750" y="620" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="668" y="563" width="13" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Vollstaendig_Nein_di" bpmnElement="Flow_Vollstaendig_Nein">
+        <di:waypoint x="660" y="495" />
+        <di:waypoint x="660" y="460" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="664" y="475" width="23" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Nachforderung_Warten_di" bpmnElement="Flow_Nachforderung_Warten">
+        <di:waypoint x="710" y="420" />
+        <di:waypoint x="775" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Frist_Unterlagen_di" bpmnElement="Flow_Frist_Unterlagen">
+        <di:waypoint x="800" y="445" />
+        <di:waypoint x="800" y="502" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Frist_Ablauf_di" bpmnElement="Flow_Frist_Ablauf">
+        <di:waypoint x="825" y="420" />
+        <di:waypoint x="892" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Unterlagen_erneut_pruefen_di" bpmnElement="Flow_Unterlagen_erneut_pruefen">
+        <di:waypoint x="782" y="520" />
+        <di:waypoint x="570" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Frist_Ablehnung_di" bpmnElement="Flow_Frist_Ablehnung">
+        <di:waypoint x="928" y="420" />
+        <di:waypoint x="990" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Pruefung_Gateway_di" bpmnElement="Flow_Pruefung_Gateway">
+        <di:waypoint x="850" y="620" />
+        <di:waypoint x="915" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Anspruch_Ja_di" bpmnElement="Flow_Anspruch_Ja">
+        <di:waypoint x="940" y="645" />
+        <di:waypoint x="940" y="690" />
+        <di:waypoint x="1030" y="690" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="948" y="665" width="13" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Anspruch_Nein_di" bpmnElement="Flow_Anspruch_Nein">
+        <di:waypoint x="940" y="595" />
+        <di:waypoint x="940" y="570" />
+        <di:waypoint x="1030" y="570" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="944" y="580" width="23" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Bewilligung_Auszahlung_di" bpmnElement="Flow_Bewilligung_Auszahlung">
+        <di:waypoint x="1130" y="690" />
+        <di:waypoint x="1190" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Auszahlung_Versand_di" bpmnElement="Flow_Auszahlung_Versand">
+        <di:waypoint x="1290" y="690" />
+        <di:waypoint x="1350" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Bewilligung_Ende_di" bpmnElement="Flow_Bewilligung_Ende">
+        <di:waypoint x="1450" y="690" />
+        <di:waypoint x="1512" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Ablehnung_Versand_di" bpmnElement="Flow_Ablehnung_Versand">
+        <di:waypoint x="1130" y="570" />
+        <di:waypoint x="1190" y="570" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Ablehnung_Ende_di" bpmnElement="Flow_Ablehnung_Ende">
+        <di:waypoint x="1290" y="570" />
+        <di:waypoint x="1352" y="570" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Frist_Ablehnung_Versand_di" bpmnElement="Flow_Frist_Ablehnung_Versand">
+        <di:waypoint x="1090" y="420" />
+        <di:waypoint x="1150" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Frist_Ablehnung_Ende_di" bpmnElement="Flow_Frist_Ablehnung_Ende">
+        <di:waypoint x="1250" y="420" />
+        <di:waypoint x="1312" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Antrag_Weiterleitung_di" bpmnElement="MsgFlow_Antrag_Weiterleitung">
+        <di:waypoint x="520" y="220" />
+        <di:waypoint x="360" y="480" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="395" y="330" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Unterlagen_Eingang_di" bpmnElement="MsgFlow_Unterlagen_Eingang">
+        <di:waypoint x="520" y="220" />
+        <di:waypoint x="800" y="502" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="625" y="340" width="70" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
