@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0">
+
+  <!-- =====================================================
+       COLLABORATION - Miteinbuergerung genehmigen
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_Miteinbuergerung_genehmigen">
+    
+    <!-- Participant: Buerger -->
+    <bpmn:participant id="Participant_Buerger"
+                      name="Buerger"
+                      processRef="Process_Buerger" />
+    
+    <!-- Participant: IT -->
+    <bpmn:participant id="Participant_IT"
+                      name="IT"
+                      processRef="Process_IT" />
+    
+    <!-- Participant: Einbuergerungsbehoerde -->
+    <bpmn:participant id="Participant_Behoerde"
+                      name="Einbuergerungsbehoerde"
+                      processRef="Process_Behoerde" />
+    
+    <!-- Message Flows zwischen Participanten -->
+    <bpmn:messageFlow id="MsgFlow_Antrag"
+                      name="Antrag auf Miteinbuergerung"
+                      sourceRef="Task_Antrag_einreichen"
+                      targetRef="Task_Antrag_entgegennehmen" />
+    
+    <bpmn:messageFlow id="MsgFlow_Daten_an_IT"
+                      name="Antragsdaten"
+                      sourceRef="Task_Antrag_entgegennehmen"
+                      targetRef="Task_Antragsdaten_erfassen" />
+    
+    <bpmn:messageFlow id="MsgFlow_Daten_von_IT"
+                      name="Entscheidungsgrundlage"
+                      sourceRef="Task_Entscheidungsgrundlage_bereitstellen"
+                      targetRef="Task_Voraussetzungen_pruefen" />
+    
+    <bpmn:messageFlow id="MsgFlow_Bescheid"
+                      name="Genehmigungsbescheid"
+                      sourceRef="Task_Bescheid_uebermitteln"
+                      targetRef="Task_Rueckmeldung_empfangen" />
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       BUERGER PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Buerger"
+                name="Miteinbuergerung_Buerger"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Buerger" name="Miteinbuergerung beantragt">
+      <bpmn:outgoing>Flow_B_Start_Antrag</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Antrag einreichen -->
+    <bpmn:userTask id="Task_Antrag_einreichen" name="Antrag einreichen">
+      <bpmn:incoming>Flow_B_Start_Antrag</bpmn:incoming>
+      <bpmn:outgoing>Flow_B_Antrag_Rueckmeldung</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Rueckmeldung empfangen -->
+    <bpmn:userTask id="Task_Rueckmeldung_empfangen" name="Rueckmeldung empfangen">
+      <bpmn:incoming>Flow_B_Antrag_Rueckmeldung</bpmn:incoming>
+      <bpmn:outgoing>Flow_B_Rueckmeldung_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Buerger" name="Prozess abgeschlossen">
+      <bpmn:incoming>Flow_B_Rueckmeldung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Buerger -->
+    <bpmn:sequenceFlow id="Flow_B_Start_Antrag"
+                       sourceRef="StartEvent_Buerger"
+                       targetRef="Task_Antrag_einreichen" />
+    
+    <bpmn:sequenceFlow id="Flow_B_Antrag_Rueckmeldung"
+                       sourceRef="Task_Antrag_einreichen"
+                       targetRef="Task_Rueckmeldung_empfangen" />
+    
+    <bpmn:sequenceFlow id="Flow_B_Rueckmeldung_Ende"
+                       sourceRef="Task_Rueckmeldung_empfangen"
+                       targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       IT PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_IT"
+                name="Miteinbuergerung_IT"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_IT" name="Daten eingegangen">
+      <bpmn:outgoing>Flow_IT_Start_Erfassen</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Service Task: Antragsdaten erfassen -->
+    <bpmn:serviceTask id="Task_Antragsdaten_erfassen" name="Antragsdaten erfassen">
+      <bpmn:incoming>Flow_IT_Start_Erfassen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Erfassen_Bereitstellen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Service Task: Entscheidungsgrundlage bereitstellen -->
+    <bpmn:serviceTask id="Task_Entscheidungsgrundlage_bereitstellen" name="Entscheidungsgrundlage bereitstellen">
+      <bpmn:incoming>Flow_IT_Erfassen_Bereitstellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Bereitstellen_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_IT" name="Daten bereitgestellt">
+      <bpmn:incoming>Flow_IT_Bereitstellen_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - IT -->
+    <bpmn:sequenceFlow id="Flow_IT_Start_Erfassen"
+                       sourceRef="StartEvent_IT"
+                       targetRef="Task_Antragsdaten_erfassen" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Erfassen_Bereitstellen"
+                       sourceRef="Task_Antragsdaten_erfassen"
+                       targetRef="Task_Entscheidungsgrundlage_bereitstellen" />
+    
+    <bpmn:sequenceFlow id="Flow_IT_Bereitstellen_Ende"
+                       sourceRef="Task_Entscheidungsgrundlage_bereitstellen"
+                       targetRef="EndEvent_IT" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       BEHOERDEN PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Behoerde"
+                name="Miteinbuergerung_Behoerde"
+                isExecutable="true">
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Behoerde" name="Antrag eingegangen">
+      <bpmn:outgoing>Flow_Beh_Start_Entgegennehmen</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Task: Antrag entgegennehmen -->
+    <bpmn:userTask id="Task_Antrag_entgegennehmen" name="Antrag entgegennehmen">
+      <bpmn:incoming>Flow_Beh_Start_Entgegennehmen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Beh_Entgegennehmen_Pruefen</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Voraussetzungen pruefen -->
+    <bpmn:userTask id="Task_Voraussetzungen_pruefen" name="Voraussetzungen pruefen">
+      <bpmn:incoming>Flow_Beh_Entgegennehmen_Pruefen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Beh_Pruefen_Genehmigen</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Genehmigung erteilen -->
+    <bpmn:userTask id="Task_Genehmigung_erteilen" name="Genehmigung erteilen">
+      <bpmn:incoming>Flow_Beh_Pruefen_Genehmigen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Beh_Genehmigen_Bescheid</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- User Task: Bescheid uebermitteln -->
+    <bpmn:userTask id="Task_Bescheid_uebermitteln" name="Bescheid uebermitteln">
+      <bpmn:incoming>Flow_Beh_Genehmigen_Bescheid</bpmn:incoming>
+      <bpmn:outgoing>Flow_Beh_Bescheid_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Behoerde" name="Miteinbuergerung genehmigt">
+      <bpmn:incoming>Flow_Beh_Bescheid_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows - Behoerde -->
+    <bpmn:sequenceFlow id="Flow_Beh_Start_Entgegennehmen"
+                       sourceRef="StartEvent_Behoerde"
+                       targetRef="Task_Antrag_entgegennehmen" />
+    
+    <bpmn:sequenceFlow id="Flow_Beh_Entgegennehmen_Pruefen"
+                       sourceRef="Task_Antrag_entgegennehmen"
+                       targetRef="Task_Voraussetzungen_pruefen" />
+    
+    <bpmn:sequenceFlow id="Flow_Beh_Pruefen_Genehmigen"
+                       sourceRef="Task_Voraussetzungen_pruefen"
+                       targetRef="Task_Genehmigung_erteilen" />
+    
+    <bpmn:sequenceFlow id="Flow_Beh_Genehmigen_Bescheid"
+                       sourceRef="Task_Genehmigung_erteilen"
+                       targetRef="Task_Bescheid_uebermitteln" />
+    
+    <bpmn:sequenceFlow id="Flow_Beh_Bescheid_Ende"
+                       sourceRef="Task_Bescheid_uebermitteln"
+                       targetRef="EndEvent_Behoerde" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       BPMN DIAGRAM INTERCHANGE
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Miteinbuergerung">
+    <bpmndi:BPMNPlane id="BPMNPlane_Miteinbuergerung" bpmnElement="Collab_Miteinbuergerung_genehmigen">
+      
+      <!-- ===== POOL: BUERGER (y=80) ===== -->
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- Buerger: Start Event -->
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="225" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Buerger: Task 1 - Antrag einreichen -->
+      <bpmndi:BPMNShape id="Task_Antrag_einreichen_di" bpmnElement="Task_Antrag_einreichen">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- Buerger: Task 2 - Rueckmeldung empfangen -->
+      <bpmndi:BPMNShape id="Task_Rueckmeldung_empfangen_di" bpmnElement="Task_Rueckmeldung_empfangen">
+        <dc:Bounds x="470" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- Buerger: End Event -->
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="632" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="606" y="225" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Buerger: Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_B_Start_Antrag_di" bpmnElement="Flow_B_Start_Antrag">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_B_Antrag_Rueckmeldung_di" bpmnElement="Flow_B_Antrag_Rueckmeldung">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="470" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_B_Rueckmeldung_Ende_di" bpmnElement="Flow_B_Rueckmeldung_Ende">
+        <di:waypoint x="570" y="200" />
+        <di:waypoint x="632" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===== POOL: IT (y=370) ===== -->
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="1200" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- IT: Start Event -->
+      <bpmndi:BPMNShape id="StartEvent_IT_di" bpmnElement="StartEvent_IT">
+        <dc:Bounds x="222" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="520" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- IT: Task 1 - Antragsdaten erfassen -->
+      <bpmndi:BPMNShape id="Task_Antragsdaten_erfassen_di" bpmnElement="Task_Antragsdaten_erfassen">
+        <dc:Bounds x="310" y="455" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- IT: Task 2 - Entscheidungsgrundlage bereitstellen -->
+      <bpmndi:BPMNShape id="Task_Entscheidungsgrundlage_bereitstellen_di" bpmnElement="Task_Entscheidungsgrundlage_bereitstellen">
+        <dc:Bounds x="470" y="455" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- IT: End Event -->
+      <bpmndi:BPMNShape id="EndEvent_IT_di" bpmnElement="EndEvent_IT">
+        <dc:Bounds x="632" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="606" y="520" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- IT: Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_IT_Start_Erfassen_di" bpmnElement="Flow_IT_Start_Erfassen">
+        <di:waypoint x="258" y="495" />
+        <di:waypoint x="310" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Erfassen_Bereitstellen_di" bpmnElement="Flow_IT_Erfassen_Bereitstellen">
+        <di:waypoint x="410" y="495" />
+        <di:waypoint x="470" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_IT_Bereitstellen_Ende_di" bpmnElement="Flow_IT_Bereitstellen_Ende">
+        <di:waypoint x="570" y="495" />
+        <di:waypoint x="632" y="495" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===== POOL: BEHOERDE (y=660) ===== -->
+      <bpmndi:BPMNShape id="Participant_Behoerde_di" bpmnElement="Participant_Behoerde" isHorizontal="true">
+        <dc:Bounds x="160" y="660" width="1200" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- Behoerde: Start Event -->
+      <bpmndi:BPMNShape id="StartEvent_Behoerde_di" bpmnElement="StartEvent_Behoerde">
+        <dc:Bounds x="222" y="762" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="805" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Behoerde: Task 1 - Antrag entgegennehmen -->
+      <bpmndi:BPMNShape id="Task_Antrag_entgegennehmen_di" bpmnElement="Task_Antrag_entgegennehmen">
+        <dc:Bounds x="310" y="740" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- Behoerde: Task 2 - Voraussetzungen pruefen -->
+      <bpmndi:BPMNShape id="Task_Voraussetzungen_pruefen_di" bpmnElement="Task_Voraussetzungen_pruefen">
+        <dc:Bounds x="470" y="740" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- Behoerde: Task 3 - Genehmigung erteilen -->
+      <bpmndi:BPMNShape id="Task_Genehmigung_erteilen_di" bpmnElement="Task_Genehmigung_erteilen">
+        <dc:Bounds x="630" y="740" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- Behoerde: Task 4 - Bescheid uebermitteln -->
+      <bpmndi:BPMNShape id="Task_Bescheid_uebermitteln_di" bpmnElement="Task_Bescheid_uebermitteln">
+        <dc:Bounds x="790" y="740" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <!-- Behoerde: End Event -->
+      <bpmndi:BPMNShape id="EndEvent_Behoerde_di" bpmnElement="EndEvent_Behoerde">
+        <dc:Bounds x="952" y="762" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="926" y="805" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Behoerde: Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_Beh_Start_Entgegennehmen_di" bpmnElement="Flow_Beh_Start_Entgegennehmen">
+        <di:waypoint x="258" y="780" />
+        <di:waypoint x="310" y="780" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Beh_Entgegennehmen_Pruefen_di" bpmnElement="Flow_Beh_Entgegennehmen_Pruefen">
+        <di:waypoint x="410" y="780" />
+        <di:waypoint x="470" y="780" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Beh_Pruefen_Genehmigen_di" bpmnElement="Flow_Beh_Pruefen_Genehmigen">
+        <di:waypoint x="570" y="780" />
+        <di:waypoint x="630" y="780" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Beh_Genehmigen_Bescheid_di" bpmnElement="Flow_Beh_Genehmigen_Bescheid">
+        <di:waypoint x="730" y="780" />
+        <di:waypoint x="790" y="780" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Beh_Bescheid_Ende_di" bpmnElement="Flow_Beh_Bescheid_Ende">
+        <di:waypoint x="890" y="780" />
+        <di:waypoint x="952" y="780" />
+      </bpmndi:BPMNEdge>
+      
+      <!-- ===== MESSAGE FLOWS ===== -->
+      
+      <!-- Message Flow: Buerger -> Behoerde (Antrag) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Antrag_di" bpmnElement="MsgFlow_Antrag">
+        <di:waypoint x="360" y="240" />
+        <di:waypoint x="360" y="740" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="365" y="486" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Message Flow: Behoerde -> IT (Daten an IT) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Daten_an_IT_di" bpmnElement="MsgFlow_Daten_an_IT">
+        <di:waypoint x="360" y="740" />
+        <di:waypoint x="360" y="535" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="365" y="633" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Message Flow: IT -> Behoerde (Entscheidungsgrundlage) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Daten_von_IT_di" bpmnElement="MsgFlow_Daten_von_IT">
+        <di:waypoint x="520" y="535" />
+        <di:waypoint x="520" y="740" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="525" y="633" width="100" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Message Flow: Behoerde -> Buerger (Bescheid) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Bescheid_di" bpmnElement="MsgFlow_Bescheid">
+        <di:waypoint x="840" y="740" />
+        <di:waypoint x="840" y="490" />
+        <di:waypoint x="520" y="490" />
+        <di:waypoint x="520" y="240" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="645" y="470" width="100" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

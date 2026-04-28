@@ -11,12 +11,12 @@
 | Antrag auf einfaches Führungszeugnis entgegennehmen und weiterleiten   |        |
 | Einbürgerungstest durchführen                                          |   X    |
 | Einbürgerung von Ausländern genehmigen                                 |        |
-| Miteinbürgerung genehmigen                                             |        |
+| Miteinbürgerung genehmigen                                             |   x    |
 | Staatsangehörigkeitsausweis ausstellen                                 |   X    |
 | Niederlassungserlaubnis erteilen                                       |        |
 | Aufenthaltserlaubnis bei Asylantrag erteilen                           |    x   |
 | Erlaubnis zur Aufnahme einer Erwerbstätigkeit erteilen                 |        |
-| Geburt beurkunden                                                      |       |
+| Geburt beurkunden                                                      |        |
 | Totgeburt beurkunden                                                   |    x   |
 | Eheschließung vornehmen und beurkunden                                 |        |
 | Wählerverzeichnis aufstellen und führen                                |        |

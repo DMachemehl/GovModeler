@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 9,
+  "exporter": {
+    "name": "GitHub-Copilot-GovModeler",
+    "version": "2.0"
+  },
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0",
+  "type": "default",
+  "id": "Form_Miteinbuergerung_Antrag",
+  "components": [
+    {
+      "type": "text",
+      "id": "Field_Headline",
+      "text": "# Antrag auf Miteinbürgerung"
+    },
+    {
+      "type": "text",
+      "id": "Field_Description",
+      "text": "Füllen Sie bitte die folgenden Felder sorgfältig aus."
+    },
+    {
+      "type": "group",
+      "id": "Field_Group_Antragsteller",
+      "label": "Angaben zum Hauptantragsteller",
+      "components": [
+        {
+          "label": "Vorname",
+          "type": "textfield",
+          "id": "Field_Antragsteller_Vorname",
+          "key": "antragstellerVorname",
+          "validate": {
+            "required": true
+          }
+        },
+        {
+          "label": "Nachname",
+          "type": "textfield",
+          "id": "Field_Antragsteller_Nachname",
+          "key": "antragstellerNachname",
+          "validate": {
+            "required": true
+          }
+        },
+        {
+          "label": "Geburtsdatum",
+          "type": "textfield",
+          "id": "Field_Antragsteller_Geburtsdatum",
+          "key": "antragstellerGeburtsdatum",
+          "description": "Format: TT.MM.JJJJ",
+          "validate": {
+            "required": true,
+            "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\\\d{2}$"
+          }
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "id": "Field_Group_Miteinzubuergernder",
+      "label": "Angaben zur miteinzubürgernden Person",
+      "components": [
+        {
+          "label": "Vorname",
+          "type": "textfield",
+          "id": "Field_Miteinbuergernder_Vorname",
+          "key": "miteinbuergernderVorname",
+          "validate": {
+            "required": true
+          }
+        },
+        {
+          "label": "Nachname",
+          "type": "textfield",
+          "id": "Field_Miteinbuergernder_Nachname",
+          "key": "miteinbuergernderNachname",
+          "validate": {
+            "required": true
+          }
+        },
+        {
+          "label": "Verwandtschaftsverhältnis",
+          "type": "select",
+          "id": "Field_Miteinbuergernder_Verwandtschaft",
+          "key": "verwandtschaftsverhaeltnis",
+          "values": [
+            {
+              "label": "Ehegatte/Ehegattin",
+              "value": "ehegatte"
+            },
+            {
+              "label": "Lebenspartner/in",
+              "value": "lebenspartner"
+            },
+            {
+              "label": "Kind",
+              "value": "kind"
+            }
+          ],
+          "validate": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "id": "Field_Group_Erklaerung",
+      "label": "Erklärungen",
+      "components": [
+        {
+          "type": "checkbox",
+          "id": "Field_Datenschutz",
+          "key": "datenschutzAkzeptiert",
+          "label": "Ich habe die Datenschutzerklärung gelesen und akzeptiere sie.",
+          "validate": {
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "type": "button",
+      "id": "Field_Submit",
+      "label": "Antrag absenden",
+      "action": "submit"
+    }
+  ]
+}
