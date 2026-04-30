@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0">
+
+  <bpmn:collaboration id="Collab_ServiceNow_Service_anlegen">
+    <bpmn:participant id="Participant_IT" name="IT" processRef="Process_IT_ServiceNow_Service_anlegen" />
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_IT_ServiceNow_Service_anlegen"
+                name="IT_Datenverarbeitung_ServiceNow_Service_anlegen"
+                isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_Serviceanforderung_empfangen" name="Serviceanforderung empfangen">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_Anforderungsdaten_empfangen" name="Anforderungsdaten empfangen">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Request_Struktur_validieren" name="Request-Struktur validieren">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Pflichtattribute_pruefen" name="Pflichtattribute pruefen">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Datenformate_validieren" name="Datenformate validieren">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Katalogdaten_normalisieren" name="Katalogdaten normalisieren">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Service_Owner_abrufen" name="Service-Owner abrufen">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Zustaendigkeitsdaten_abrufen" name="Zustaendigkeitsdaten abrufen">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Servicekategorie_zuordnen" name="Servicekategorie zuordnen">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Serviceeintrag_erzeugen" name="Serviceeintrag erzeugen">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_SLA_Konfiguration_anwenden" name="SLA-Konfiguration anwenden">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Berechtigungsrollen_zuweisen" name="Berechtigungsrollen zuweisen">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Portal_Sichtbarkeit_konfigurieren" name="Portal-Sichtbarkeit konfigurieren">
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Serviceeintrag_speichern" name="Serviceeintrag speichern">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Audit_Protokoll_schreiben" name="Audit-Protokoll schreiben">
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+      <bpmn:outgoing>Flow_15</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Veroeffentlichungsstatus_aktualisieren" name="Veroeffentlichungsstatus aktualisieren">
+      <bpmn:incoming>Flow_15</bpmn:incoming>
+      <bpmn:outgoing>Flow_16</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Bereitstellungsbestaetigung_generieren" name="Bereitstellungsbestaetigung generieren">
+      <bpmn:incoming>Flow_16</bpmn:incoming>
+      <bpmn:outgoing>Flow_17</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_Service_in_ServiceNow_angelegt" name="Service in ServiceNow angelegt">
+      <bpmn:incoming>Flow_17</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Serviceanforderung_empfangen" targetRef="Task_Anforderungsdaten_empfangen" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_Anforderungsdaten_empfangen" targetRef="Task_Request_Struktur_validieren" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_Request_Struktur_validieren" targetRef="Task_Pflichtattribute_pruefen" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_Pflichtattribute_pruefen" targetRef="Task_Datenformate_validieren" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_Datenformate_validieren" targetRef="Task_Katalogdaten_normalisieren" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_Katalogdaten_normalisieren" targetRef="Task_Service_Owner_abrufen" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_Service_Owner_abrufen" targetRef="Task_Zustaendigkeitsdaten_abrufen" />
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_Zustaendigkeitsdaten_abrufen" targetRef="Task_Servicekategorie_zuordnen" />
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_Servicekategorie_zuordnen" targetRef="Task_Serviceeintrag_erzeugen" />
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Task_Serviceeintrag_erzeugen" targetRef="Task_SLA_Konfiguration_anwenden" />
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Task_SLA_Konfiguration_anwenden" targetRef="Task_Berechtigungsrollen_zuweisen" />
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="Task_Berechtigungsrollen_zuweisen" targetRef="Task_Portal_Sichtbarkeit_konfigurieren" />
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Task_Portal_Sichtbarkeit_konfigurieren" targetRef="Task_Serviceeintrag_speichern" />
+    <bpmn:sequenceFlow id="Flow_14" sourceRef="Task_Serviceeintrag_speichern" targetRef="Task_Audit_Protokoll_schreiben" />
+    <bpmn:sequenceFlow id="Flow_15" sourceRef="Task_Audit_Protokoll_schreiben" targetRef="Task_Veroeffentlichungsstatus_aktualisieren" />
+    <bpmn:sequenceFlow id="Flow_16" sourceRef="Task_Veroeffentlichungsstatus_aktualisieren" targetRef="Task_Bereitstellungsbestaetigung_generieren" />
+    <bpmn:sequenceFlow id="Flow_17" sourceRef="Task_Bereitstellungsbestaetigung_generieren" targetRef="EndEvent_Service_in_ServiceNow_angelegt" />
+
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ServiceNow_Service_anlegen">
+    <bpmndi:BPMNPlane id="BPMNPlane_ServiceNow_Service_anlegen" bpmnElement="Collab_ServiceNow_Service_anlegen">
+
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="2780" height="250" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_Serviceanforderung_empfangen_di" bpmnElement="StartEvent_Serviceanforderung_empfangen">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Anforderungsdaten_empfangen_di" bpmnElement="Task_Anforderungsdaten_empfangen">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Request_Struktur_validieren_di" bpmnElement="Task_Request_Struktur_validieren">
+        <dc:Bounds x="470" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Pflichtattribute_pruefen_di" bpmnElement="Task_Pflichtattribute_pruefen">
+        <dc:Bounds x="630" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Datenformate_validieren_di" bpmnElement="Task_Datenformate_validieren">
+        <dc:Bounds x="790" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Katalogdaten_normalisieren_di" bpmnElement="Task_Katalogdaten_normalisieren">
+        <dc:Bounds x="950" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Service_Owner_abrufen_di" bpmnElement="Task_Service_Owner_abrufen">
+        <dc:Bounds x="1110" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Zustaendigkeitsdaten_abrufen_di" bpmnElement="Task_Zustaendigkeitsdaten_abrufen">
+        <dc:Bounds x="1270" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Servicekategorie_zuordnen_di" bpmnElement="Task_Servicekategorie_zuordnen">
+        <dc:Bounds x="1430" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Serviceeintrag_erzeugen_di" bpmnElement="Task_Serviceeintrag_erzeugen">
+        <dc:Bounds x="1590" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SLA_Konfiguration_anwenden_di" bpmnElement="Task_SLA_Konfiguration_anwenden">
+        <dc:Bounds x="1750" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Berechtigungsrollen_zuweisen_di" bpmnElement="Task_Berechtigungsrollen_zuweisen">
+        <dc:Bounds x="1910" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Portal_Sichtbarkeit_konfigurieren_di" bpmnElement="Task_Portal_Sichtbarkeit_konfigurieren">
+        <dc:Bounds x="2070" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Serviceeintrag_speichern_di" bpmnElement="Task_Serviceeintrag_speichern">
+        <dc:Bounds x="2230" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Audit_Protokoll_schreiben_di" bpmnElement="Task_Audit_Protokoll_schreiben">
+        <dc:Bounds x="2390" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Veroeffentlichungsstatus_aktualisieren_di" bpmnElement="Task_Veroeffentlichungsstatus_aktualisieren">
+        <dc:Bounds x="2550" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Bereitstellungsbestaetigung_generieren_di" bpmnElement="Task_Bereitstellungsbestaetigung_generieren">
+        <dc:Bounds x="2710" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_Service_in_ServiceNow_angelegt_di" bpmnElement="EndEvent_Service_in_ServiceNow_angelegt">
+        <dc:Bounds x="2892" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="470" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="570" y="200" />
+        <di:waypoint x="630" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="730" y="200" />
+        <di:waypoint x="790" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="890" y="200" />
+        <di:waypoint x="950" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="1050" y="200" />
+        <di:waypoint x="1110" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="1210" y="200" />
+        <di:waypoint x="1270" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="1370" y="200" />
+        <di:waypoint x="1430" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="1530" y="200" />
+        <di:waypoint x="1590" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="1690" y="200" />
+        <di:waypoint x="1750" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="1850" y="200" />
+        <di:waypoint x="1910" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12">
+        <di:waypoint x="2010" y="200" />
+        <di:waypoint x="2070" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
+        <di:waypoint x="2170" y="200" />
+        <di:waypoint x="2230" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14_di" bpmnElement="Flow_14">
+        <di:waypoint x="2330" y="200" />
+        <di:waypoint x="2390" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15_di" bpmnElement="Flow_15">
+        <di:waypoint x="2490" y="200" />
+        <di:waypoint x="2550" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16_di" bpmnElement="Flow_16">
+        <di:waypoint x="2650" y="200" />
+        <di:waypoint x="2710" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17_di" bpmnElement="Flow_17">
+        <di:waypoint x="2810" y="200" />
+        <di:waypoint x="2892" y="200" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

@@ -1,0 +1,500 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0">
+
+  <!-- =====================================================
+       COLLABORATION
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_ServiceNRW_anlegen">
+
+    <bpmn:participant id="Participant_Buerger"
+                      name="Buerger"
+                      processRef="Process_Buerger" />
+
+    <bpmn:participant id="Participant_IT"
+                      name="IT"
+                      processRef="Process_IT" />
+
+    <bpmn:participant id="Participant_Behoerde"
+                      name="Behoerde"
+                      processRef="Process_Behoerde" />
+
+    <!-- Message Flows -->
+    <bpmn:messageFlow id="MsgFlow_Anlagedaten"
+                      name="Anlagedaten"
+                      sourceRef="Task_Anlagedaten_uebermitteln"
+                      targetRef="StartEvent_IT" />
+
+    <bpmn:messageFlow id="MsgFlow_Bestaetigung"
+                      name="Anlagebestaetigung"
+                      sourceRef="Task_Anlage_rueckmelden"
+                      targetRef="Catch_Bestaetigung_erhalten" />
+
+    <bpmn:messageFlow id="MsgFlow_Service_bereitgestellt"
+                      name="Service bereitgestellt"
+                      sourceRef="Task_Service_veroeffentlichen"
+                      targetRef="StartEvent_Buerger" />
+
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       BUERGER PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Buerger"
+                name="Buerger_Prozess"
+                isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_Buerger" name="Service bereitgestellt">
+      <bpmn:outgoing>Flow_Buerger_Start_Aufrufen</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Buerger_Start"
+                                   messageRef="Message_Service_bereitgestellt" />
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="Task_Service_aufrufen" name="Service aufrufen">
+      <bpmn:incoming>Flow_Buerger_Start_Aufrufen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Aufrufen_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:endEvent id="EndEvent_Buerger" name="Service genutzt">
+      <bpmn:incoming>Flow_Buerger_Aufrufen_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_Buerger_Start_Aufrufen"
+                       sourceRef="StartEvent_Buerger"
+                       targetRef="Task_Service_aufrufen" />
+
+    <bpmn:sequenceFlow id="Flow_Buerger_Aufrufen_Ende"
+                       sourceRef="Task_Service_aufrufen"
+                       targetRef="EndEvent_Buerger" />
+
+  </bpmn:process>
+
+  <!-- =====================================================
+       IT PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_IT"
+                name="IT_Prozess"
+                isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_IT" name="Anlagedaten erhalten">
+      <bpmn:outgoing>Flow_IT_Start_Validieren</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_IT_Start"
+                                   messageRef="Message_Anlagedaten" />
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_Servicedaten_validieren" name="Servicedaten validieren">
+      <bpmn:incoming>Flow_IT_Start_Validieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Validieren_Anlegen</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Service_anlegen" name="Service anlegen">
+      <bpmn:incoming>Flow_IT_Validieren_Anlegen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Anlegen_Konfigurieren</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Service_konfigurieren" name="Service konfigurieren">
+      <bpmn:incoming>Flow_IT_Anlegen_Konfigurieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Konfigurieren_Rueckmelden</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Anlage_rueckmelden" name="Anlage rueckmelden">
+      <bpmn:incoming>Flow_IT_Konfigurieren_Rueckmelden</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Rueckmelden_Veroeffentlichen</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Service_veroeffentlichen" name="Service veroeffentlichen">
+      <bpmn:incoming>Flow_IT_Rueckmelden_Veroeffentlichen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Veroeffentlichen_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_IT" name="Service in ServiceNRW bereitgestellt">
+      <bpmn:incoming>Flow_IT_Veroeffentlichen_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_IT_Start_Validieren"
+                       sourceRef="StartEvent_IT"
+                       targetRef="Task_Servicedaten_validieren" />
+
+    <bpmn:sequenceFlow id="Flow_IT_Validieren_Anlegen"
+                       sourceRef="Task_Servicedaten_validieren"
+                       targetRef="Task_Service_anlegen" />
+
+    <bpmn:sequenceFlow id="Flow_IT_Anlegen_Konfigurieren"
+                       sourceRef="Task_Service_anlegen"
+                       targetRef="Task_Service_konfigurieren" />
+
+    <bpmn:sequenceFlow id="Flow_IT_Konfigurieren_Rueckmelden"
+                       sourceRef="Task_Service_konfigurieren"
+                       targetRef="Task_Anlage_rueckmelden" />
+
+    <bpmn:sequenceFlow id="Flow_IT_Rueckmelden_Veroeffentlichen"
+                       sourceRef="Task_Anlage_rueckmelden"
+                       targetRef="Task_Service_veroeffentlichen" />
+
+    <bpmn:sequenceFlow id="Flow_IT_Veroeffentlichen_Ende"
+                       sourceRef="Task_Service_veroeffentlichen"
+                       targetRef="EndEvent_IT" />
+
+  </bpmn:process>
+
+  <!-- =====================================================
+       BEHOERDE PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Behoerde"
+                name="Behoerde_Prozess"
+                isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_Behoerde" name="Anforderung eingegangen">
+      <bpmn:outgoing>Flow_Behoerde_Start_Erfassen</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="Task_Serviceinhalt_erfassen" name="Serviceinhalt erfassen">
+      <bpmn:incoming>Flow_Behoerde_Start_Erfassen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Erfassen_Freigabe</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:userTask id="Task_Servicefreigabe_erteilen" name="Servicefreigabe erteilen">
+      <bpmn:incoming>Flow_Behoerde_Erfassen_Freigabe</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Freigabe_Uebermitteln</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:userTask id="Task_Anlagedaten_uebermitteln" name="Anlagedaten uebermitteln">
+      <bpmn:incoming>Flow_Behoerde_Freigabe_Uebermitteln</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Uebermitteln_Bestaetigung</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:intermediateCatchEvent id="Catch_Bestaetigung_erhalten"
+                                 name="Bestaetigung erhalten">
+      <bpmn:incoming>Flow_Behoerde_Uebermitteln_Bestaetigung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Bestaetigung_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Bestaetigung"
+                                   messageRef="Message_Bestaetigung" />
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:endEvent id="EndEvent_Behoerde" name="Service angelegt">
+      <bpmn:incoming>Flow_Behoerde_Bestaetigung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_Behoerde_Start_Erfassen"
+                       sourceRef="StartEvent_Behoerde"
+                       targetRef="Task_Serviceinhalt_erfassen" />
+
+    <bpmn:sequenceFlow id="Flow_Behoerde_Erfassen_Freigabe"
+                       sourceRef="Task_Serviceinhalt_erfassen"
+                       targetRef="Task_Servicefreigabe_erteilen" />
+
+    <bpmn:sequenceFlow id="Flow_Behoerde_Freigabe_Uebermitteln"
+                       sourceRef="Task_Servicefreigabe_erteilen"
+                       targetRef="Task_Anlagedaten_uebermitteln" />
+
+    <bpmn:sequenceFlow id="Flow_Behoerde_Uebermitteln_Bestaetigung"
+                       sourceRef="Task_Anlagedaten_uebermitteln"
+                       targetRef="Catch_Bestaetigung_erhalten" />
+
+    <bpmn:sequenceFlow id="Flow_Behoerde_Bestaetigung_Ende"
+                       sourceRef="Catch_Bestaetigung_erhalten"
+                       targetRef="EndEvent_Behoerde" />
+
+  </bpmn:process>
+
+  <!-- =====================================================
+       MESSAGE DEFINITIONEN
+       ===================================================== -->
+  <bpmn:message id="Message_Anlagedaten"             name="Anlagedaten" />
+  <bpmn:message id="Message_Bestaetigung"            name="Anlagebestaetigung" />
+  <bpmn:message id="Message_Service_bereitgestellt"  name="Service bereitgestellt" />
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG
+       Pool-Reihenfolge: Buerger (y=80) | IT (y=370) | Behoerde (y=660)
+       Y-Koordinaten Tasks: Buerger y=160 | IT y=455 | Behoerde y=760
+       Y-Koordinaten Events: Buerger y=182 | IT y=477 | Behoerde y=782
+       Horizontaler Abstand Tasks: 160px (100px Breite + 60px Abstand)
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ServiceNRW_anlegen">
+    <bpmndi:BPMNPlane id="BPMNPlane_ServiceNRW_anlegen"
+                      bpmnElement="Collab_ServiceNRW_anlegen">
+
+      <!-- ===============================
+           POOL: BUERGER  (y=80..330)
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Buerger_di"
+                        bpmnElement="Participant_Buerger"
+                        isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="190" width="20" height="60" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- StartEvent: message — ausgeloest durch IT -->
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di"
+                        bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="225" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Service_aufrufen_di"
+                        bpmnElement="Task_Service_aufrufen">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di"
+                        bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="470" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="452" y="225" width="72" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- ===============================
+           POOL: IT  (y=370..620)
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_IT_di"
+                        bpmnElement="Participant_IT"
+                        isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="1200" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="485" width="20" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- StartEvent: message — ausgeloest durch Behoerde -->
+      <bpmndi:BPMNShape id="StartEvent_IT_di"
+                        bpmnElement="StartEvent_IT">
+        <dc:Bounds x="222" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="520" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Servicedaten_validieren_di"
+                        bpmnElement="Task_Servicedaten_validieren">
+        <dc:Bounds x="310" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Service_anlegen_di"
+                        bpmnElement="Task_Service_anlegen">
+        <dc:Bounds x="470" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Service_konfigurieren_di"
+                        bpmnElement="Task_Service_konfigurieren">
+        <dc:Bounds x="630" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Anlage_rueckmelden_di"
+                        bpmnElement="Task_Anlage_rueckmelden">
+        <dc:Bounds x="790" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Service_veroeffentlichen_di"
+                        bpmnElement="Task_Service_veroeffentlichen">
+        <dc:Bounds x="950" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_IT_di"
+                        bpmnElement="EndEvent_IT">
+        <dc:Bounds x="1110" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1083" y="520" width="90" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- ===============================
+           POOL: BEHOERDE  (y=660..960)
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Behoerde_di"
+                        bpmnElement="Participant_Behoerde"
+                        isHorizontal="true">
+        <dc:Bounds x="160" y="660" width="1200" height="300" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="795" width="20" height="70" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_Behoerde_di"
+                        bpmnElement="StartEvent_Behoerde">
+        <dc:Bounds x="222" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="825" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Serviceinhalt_erfassen_di"
+                        bpmnElement="Task_Serviceinhalt_erfassen">
+        <dc:Bounds x="310" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Servicefreigabe_erteilen_di"
+                        bpmnElement="Task_Servicefreigabe_erteilen">
+        <dc:Bounds x="470" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Anlagedaten_uebermitteln_di"
+                        bpmnElement="Task_Anlagedaten_uebermitteln">
+        <dc:Bounds x="630" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Intermediate Catch Event: Bestaetigung von IT -->
+      <bpmndi:BPMNShape id="Catch_Bestaetigung_erhalten_di"
+                        bpmnElement="Catch_Bestaetigung_erhalten">
+        <dc:Bounds x="808" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="782" y="825" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_Behoerde_di"
+                        bpmnElement="EndEvent_Behoerde">
+        <dc:Bounds x="952" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="934" y="825" width="72" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- ===============================
+           SEQUENCE FLOWS: BUERGER
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_Buerger_Start_Aufrufen_di"
+                       bpmnElement="Flow_Buerger_Start_Aufrufen">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Buerger_Aufrufen_Ende_di"
+                       bpmnElement="Flow_Buerger_Aufrufen_Ende">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="470" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===============================
+           SEQUENCE FLOWS: IT
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_IT_Start_Validieren_di"
+                       bpmnElement="Flow_IT_Start_Validieren">
+        <di:waypoint x="258" y="495" />
+        <di:waypoint x="310" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_IT_Validieren_Anlegen_di"
+                       bpmnElement="Flow_IT_Validieren_Anlegen">
+        <di:waypoint x="410" y="495" />
+        <di:waypoint x="470" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_IT_Anlegen_Konfigurieren_di"
+                       bpmnElement="Flow_IT_Anlegen_Konfigurieren">
+        <di:waypoint x="570" y="495" />
+        <di:waypoint x="630" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_IT_Konfigurieren_Rueckmelden_di"
+                       bpmnElement="Flow_IT_Konfigurieren_Rueckmelden">
+        <di:waypoint x="730" y="495" />
+        <di:waypoint x="790" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_IT_Rueckmelden_Veroeffentlichen_di"
+                       bpmnElement="Flow_IT_Rueckmelden_Veroeffentlichen">
+        <di:waypoint x="890" y="495" />
+        <di:waypoint x="950" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_IT_Veroeffentlichen_Ende_di"
+                       bpmnElement="Flow_IT_Veroeffentlichen_Ende">
+        <di:waypoint x="1050" y="495" />
+        <di:waypoint x="1110" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===============================
+           SEQUENCE FLOWS: BEHOERDE
+           =============================== -->
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Start_Erfassen_di"
+                       bpmnElement="Flow_Behoerde_Start_Erfassen">
+        <di:waypoint x="258" y="800" />
+        <di:waypoint x="310" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Erfassen_Freigabe_di"
+                       bpmnElement="Flow_Behoerde_Erfassen_Freigabe">
+        <di:waypoint x="410" y="800" />
+        <di:waypoint x="470" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Freigabe_Uebermitteln_di"
+                       bpmnElement="Flow_Behoerde_Freigabe_Uebermitteln">
+        <di:waypoint x="570" y="800" />
+        <di:waypoint x="630" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Uebermitteln_Bestaetigung_di"
+                       bpmnElement="Flow_Behoerde_Uebermitteln_Bestaetigung">
+        <di:waypoint x="730" y="800" />
+        <di:waypoint x="808" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Bestaetigung_Ende_di"
+                       bpmnElement="Flow_Behoerde_Bestaetigung_Ende">
+        <di:waypoint x="844" y="800" />
+        <di:waypoint x="952" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===============================
+           MESSAGE FLOWS
+           Buerger-Pool:   y=80..330
+           IT-Pool:        y=370..620
+           Behoerde-Pool:  y=660..960
+           Gap IT-Behoerde: y=640 (zwischen 620 und 660)
+           Gap Buerger-IT:  y=350 (zwischen 330 und 370)
+           =============================== -->
+
+      <!-- MsgFlow 1: Behoerde → IT  (Anlagedaten uebermitteln → StartEvent IT) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Anlagedaten_di"
+                       bpmnElement="MsgFlow_Anlagedaten">
+        <di:waypoint x="680" y="760" />
+        <di:waypoint x="680" y="640" />
+        <di:waypoint x="240" y="640" />
+        <di:waypoint x="240" y="495" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="435" y="620" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- MsgFlow 2: IT → Behoerde  (Anlage rueckmelden → Catch Bestaetigung) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Bestaetigung_di"
+                       bpmnElement="MsgFlow_Bestaetigung">
+        <di:waypoint x="840" y="535" />
+        <di:waypoint x="840" y="640" />
+        <di:waypoint x="826" y="640" />
+        <di:waypoint x="826" y="782" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="843" y="693" width="86" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- MsgFlow 3: IT → Buerger  (Service veroeffentlichen → StartEvent Buerger) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Service_bereitgestellt_di"
+                       bpmnElement="MsgFlow_Service_bereitgestellt">
+        <di:waypoint x="1000" y="455" />
+        <di:waypoint x="1000" y="350" />
+        <di:waypoint x="240" y="350" />
+        <di:waypoint x="240" y="182" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="576" y="330" width="88" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

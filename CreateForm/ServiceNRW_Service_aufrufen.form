@@ -1,0 +1,209 @@
+{
+  "components": [
+    {
+      "text": "## Service aufrufen",
+      "type": "text",
+      "id": "Field_Titel",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "text": "Bitte waehlen Sie den gewuenschten Service aus und geben Sie Ihre Kontaktdaten an. Nach dem Absenden wird Ihre Anfrage an die zutaendige Behoerde weitergeleitet.",
+      "type": "text",
+      "id": "Field_Hinweis",
+      "layout": {
+        "row": "Row_1"
+      }
+    },
+    {
+      "label": "Serviceauswahl",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Serviceauswahl",
+      "layout": {
+        "row": "Row_2"
+      }
+    },
+    {
+      "label": "Servicekategorie",
+      "values": [
+        {
+          "label": "Meldewesen",
+          "value": "meldewesen"
+        },
+        {
+          "label": "Kraftfahrzeugwesen",
+          "value": "kfz"
+        },
+        {
+          "label": "Sozialleistungen",
+          "value": "sozial"
+        },
+        {
+          "label": "Bauen und Wohnen",
+          "value": "bauen"
+        },
+        {
+          "label": "Bildung und Familie",
+          "value": "bildung"
+        },
+        {
+          "label": "Sonstiges",
+          "value": "sonstiges"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Servicekategorie",
+      "key": "servicekategorie",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Servicename",
+      "type": "textfield",
+      "id": "Field_Servicename",
+      "key": "servicename",
+      "description": "Bezeichnung des gewuenschten Services",
+      "validate": {
+        "required": true,
+        "minLength": 3,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Beschreibung des Anliegens",
+      "type": "textarea",
+      "id": "Field_Anliegen",
+      "key": "anliegen",
+      "description": "Beschreiben Sie kurz, was Sie benoetigen.",
+      "validate": {
+        "required": false,
+        "maxLength": 500
+      },
+      "layout": {
+        "row": "Row_4"
+      }
+    },
+    {
+      "label": "Persoenliche Angaben",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Persoenlich",
+      "layout": {
+        "row": "Row_5"
+      }
+    },
+    {
+      "label": "Vorname",
+      "type": "textfield",
+      "id": "Field_Vorname",
+      "key": "vorname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_6",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Nachname",
+      "type": "textfield",
+      "id": "Field_Nachname",
+      "key": "nachname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_6",
+        "columns": 6
+      }
+    },
+    {
+      "label": "E-Mail-Adresse",
+      "type": "textfield",
+      "id": "Field_Email",
+      "key": "email",
+      "description": "Fuer Rueckfragen und Benachrichtigungen",
+      "validate": {
+        "required": true,
+        "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+      },
+      "layout": {
+        "row": "Row_7",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Telefonnummer",
+      "type": "textfield",
+      "id": "Field_Telefon",
+      "key": "telefon",
+      "description": "Optional, fuer Rueckfragen",
+      "validate": {
+        "required": false,
+        "maxLength": 20
+      },
+      "layout": {
+        "row": "Row_7",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Datenschutz",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Datenschutz",
+      "layout": {
+        "row": "Row_8"
+      }
+    },
+    {
+      "label": "Ich habe die Datenschutzhinweise gelesen und stimme der Verarbeitung meiner personenbezogenen Daten zu.",
+      "type": "checkbox",
+      "id": "Field_Datenschutz",
+      "key": "datenschutzAkzeptiert",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_9"
+      }
+    },
+    {
+      "label": "Anfrage absenden",
+      "action": "submit",
+      "type": "button",
+      "id": "Field_Submit",
+      "layout": {
+        "row": "Row_10"
+      }
+    }
+  ],
+  "type": "default",
+  "id": "ServiceNRW_Service_aufrufen",
+  "exporter": {
+    "name": "GitHub-Copilot-GovModeler",
+    "version": "2.0"
+  },
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0",
+  "schemaVersion": 17
+}
