@@ -77,7 +77,7 @@ Wenn der Nutzer die Erstellung eines BPMN-Modells bestaetigt:
                targetNamespace="http://www.boc-group.com">
   ```
 
-- **3 Pools**: Immer Kunde-Pool (oben), Organisation-Pool (Mitte), IT-Pool (unten)
+- **3 Pools**: Immer Kunde-Pool (oben), IT-Pool (Mitte), Organisation-Pool (unten) in dieser Reihenfolge
 - **Pool-Dimensionen** (BPMN-DI):
   - Breite: 1830px (Pool-Rahmen: 1830px, Lane: 1800px)
   - Hoehe: 380px pro Pool
@@ -134,7 +134,6 @@ Diese Dokumente MUESSEN vor der BPMN-Modell-Erstellung gelesen werden:
 - Beispiel-Struktur fuer Kunde-, Organisation- und IT-Prozesse
 - Message Flow Definitionen zwischen Pools
 - Vollstaendige BPMN-DI Visualisierung mit ADONIS-konformen Koordinaten
-
 
 ### 2. BPMN-DI_Guidelines.md
 - Technische Standards fuer BPMN Diagram Interchange
