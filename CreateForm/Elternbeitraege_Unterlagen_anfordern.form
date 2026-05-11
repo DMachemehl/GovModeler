@@ -1,0 +1,417 @@
+{
+  "components": [
+    {
+      "text": "## Unterlagen anfordern – Elternbeitraege Kindertageseinrichtung",
+      "type": "text",
+      "id": "Field_Titel",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "text": "Bitte erfassen Sie die Angaben zum Betreuungsverhaeltnis und waehlen Sie die erforderlichen Unterlagen aus, die bei den Eltern anzufordern sind.",
+      "type": "text",
+      "id": "Field_Hinweis",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "label": "Angaben zum Kind",
+      "type": "group",
+      "id": "Field_Group_Kind",
+      "layout": {
+        "row": "Row_1"
+      }
+    },
+    {
+      "label": "Vorname des Kindes",
+      "type": "textfield",
+      "id": "Field_Kind_Vorname",
+      "key": "kindVorname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Nachname des Kindes",
+      "type": "textfield",
+      "id": "Field_Kind_Nachname",
+      "key": "kindNachname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsdatum des Kindes",
+      "type": "textfield",
+      "id": "Field_Kind_Geburtsdatum",
+      "key": "kindGeburtsdatum",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Aktenzeichen",
+      "type": "textfield",
+      "id": "Field_Aktenzeichen",
+      "key": "aktenzeichen",
+      "description": "Internes Aktenzeichen des Betreuungsfalles",
+      "validate": {
+        "required": false,
+        "maxLength": 30
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Name der Kindertageseinrichtung",
+      "type": "textfield",
+      "id": "Field_Kita_Name",
+      "key": "kitaName",
+      "validate": {
+        "required": true,
+        "minLength": 3,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_4",
+        "columns": 8
+      }
+    },
+    {
+      "label": "Betreuungsbeginn",
+      "type": "textfield",
+      "id": "Field_Betreuungsbeginn",
+      "key": "betreuungsbeginn",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_4",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Angaben zu den Eltern",
+      "type": "group",
+      "id": "Field_Group_Eltern",
+      "layout": {
+        "row": "Row_5"
+      }
+    },
+    {
+      "label": "Vorname des Erziehungsberechtigten",
+      "type": "textfield",
+      "id": "Field_Eltern_Vorname",
+      "key": "elternVorname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_6",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Nachname des Erziehungsberechtigten",
+      "type": "textfield",
+      "id": "Field_Eltern_Nachname",
+      "key": "elternNachname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_6",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Strasse und Hausnummer",
+      "type": "textfield",
+      "id": "Field_Strasse",
+      "key": "strasse",
+      "validate": {
+        "required": true,
+        "minLength": 3,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_7",
+        "columns": 8
+      }
+    },
+    {
+      "label": "PLZ",
+      "type": "textfield",
+      "id": "Field_PLZ",
+      "key": "plz",
+      "validate": {
+        "required": true,
+        "pattern": "^[0-9]{5}$"
+      },
+      "layout": {
+        "row": "Row_8",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Ort",
+      "type": "textfield",
+      "id": "Field_Ort",
+      "key": "ort",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_8",
+        "columns": 8
+      }
+    },
+    {
+      "label": "E-Mail-Adresse",
+      "type": "textfield",
+      "id": "Field_Email",
+      "key": "email",
+      "validate": {
+        "required": false,
+        "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_9",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Telefonnummer",
+      "type": "textfield",
+      "id": "Field_Telefon",
+      "key": "telefon",
+      "validate": {
+        "required": false,
+        "maxLength": 30
+      },
+      "layout": {
+        "row": "Row_9",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Anzufordernde Unterlagen",
+      "type": "group",
+      "id": "Field_Group_Unterlagen",
+      "layout": {
+        "row": "Row_10"
+      }
+    },
+    {
+      "label": "Welche Unterlagen werden angefordert?",
+      "type": "checklist",
+      "id": "Field_Unterlagen_Auswahl",
+      "key": "unterlagenAuswahl",
+      "values": [
+        {
+          "label": "Einkommenssteuerbescheid (letztes Veranlagungsjahr)",
+          "value": "steuerbescheid"
+        },
+        {
+          "label": "Gehaltsabrechnungen (letzte 3 Monate)",
+          "value": "gehaltsabrechnungen"
+        },
+        {
+          "label": "Bescheid ueber Arbeitslosengeld / Buergergeld",
+          "value": "alg_bescheid"
+        },
+        {
+          "label": "Bescheid ueber Elterngeld",
+          "value": "elterngeld_bescheid"
+        },
+        {
+          "label": "Nachweise ueber sonstige Einkuenfte",
+          "value": "sonstige_einkuenfte"
+        },
+        {
+          "label": "Nachweis ueber Befreiung von Rundfunkbeitraegen",
+          "value": "rundfunk_befreiung"
+        },
+        {
+          "label": "Behindertenausweis (falls vorhanden)",
+          "value": "behindertenausweis"
+        },
+        {
+          "label": "Sonstige Unterlagen",
+          "value": "sonstige"
+        }
+      ],
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_11"
+      }
+    },
+    {
+      "label": "Sonstige Unterlagen (Beschreibung)",
+      "type": "textarea",
+      "id": "Field_Sonstige_Beschreibung",
+      "key": "sonstigeBeschreibung",
+      "description": "Nur ausfuellen, wenn 'Sonstige Unterlagen' ausgewaehlt wurde",
+      "validate": {
+        "required": false,
+        "maxLength": 500
+      },
+      "layout": {
+        "row": "Row_12"
+      }
+    },
+    {
+      "label": "Frist und Hinweise",
+      "type": "group",
+      "id": "Field_Group_Frist",
+      "layout": {
+        "row": "Row_13"
+      }
+    },
+    {
+      "label": "Einreichungsfrist",
+      "type": "textfield",
+      "id": "Field_Frist",
+      "key": "einreichungsfrist",
+      "description": "Format: TT.MM.JJJJ – Bis wann muessen die Unterlagen eingereicht werden?",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_14",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Einreichungsweg",
+      "type": "select",
+      "id": "Field_Einreichungsweg",
+      "key": "einreichungsweg",
+      "values": [
+        {
+          "label": "Digital (Online-Portal)",
+          "value": "digital"
+        },
+        {
+          "label": "Per Post",
+          "value": "post"
+        },
+        {
+          "label": "Persoenliche Abgabe",
+          "value": "persoenlich"
+        }
+      ],
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_14",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Hinweise fuer die Eltern",
+      "type": "textarea",
+      "id": "Field_Hinweise_Eltern",
+      "key": "hinweiseEltern",
+      "description": "Optionale Anmerkungen oder Hinweise fuer die Eltern",
+      "validate": {
+        "required": false,
+        "maxLength": 1000
+      },
+      "layout": {
+        "row": "Row_15"
+      }
+    },
+    {
+      "label": "Sachbearbeitung",
+      "type": "group",
+      "id": "Field_Group_Sachbearbeitung",
+      "layout": {
+        "row": "Row_16"
+      }
+    },
+    {
+      "label": "Name der Sachbearbeitung",
+      "type": "textfield",
+      "id": "Field_Sachbearbeiter",
+      "key": "sachbearbeiterName",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_17",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Datum der Anforderung",
+      "type": "textfield",
+      "id": "Field_Datum_Anforderung",
+      "key": "datumAnforderung",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_17",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Anforderung absenden",
+      "type": "button",
+      "id": "Field_Submit",
+      "action": "submit",
+      "layout": {
+        "row": "Row_18"
+      }
+    }
+  ],
+  "type": "default",
+  "id": "Elternbeitraege_Unterlagen_anfordern",
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0",
+  "exporter": {
+    "name": "GitHub-Copilot-GovModeler",
+    "version": "2.0"
+  },
+  "schemaVersion": 9
+}

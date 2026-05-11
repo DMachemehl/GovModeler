@@ -1,0 +1,522 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0">
+
+  <!-- =====================================================
+       COLLABORATION
+       Pool 1: Buerger-Service-Portal     (6 Tasks, width=1180)
+       Pool 2: Fachverfahren Kita-Beitraege (7 Tasks, width=1340)
+       Pool 3: Dokumenten-Management-System (4 Tasks, width=860)
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_IT_Elternbeitraege_erheben">
+
+    <bpmn:participant id="Participant_Portal"
+                      name="Buerger-Service-Portal"
+                      processRef="Process_Portal" />
+
+    <bpmn:participant id="Participant_Fachverfahren"
+                      name="Fachverfahren Kita-Beitraege"
+                      processRef="Process_Fachverfahren" />
+
+    <bpmn:participant id="Participant_DMS"
+                      name="Dokumenten-Management-System (DMS)"
+                      processRef="Process_DMS" />
+
+    <!-- Message Flow: Portal → Fachverfahren (Einkommensdaten) -->
+    <bpmn:messageFlow id="MsgFlow_Portal_FV"
+                      name="Einkommensdaten"
+                      sourceRef="Task_Portal_Daten_uebermitteln"
+                      targetRef="StartEvent_Fachverfahren" />
+
+    <!-- Message Flow: Fachverfahren → DMS (Beitragsbescheid) -->
+    <bpmn:messageFlow id="MsgFlow_FV_DMS"
+                      name="Beitragsbescheid"
+                      sourceRef="Task_FV_Bescheid_uebermitteln"
+                      targetRef="StartEvent_DMS" />
+
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       POOL 1: BUERGER-SERVICE-PORTAL
+       Empfaengt Einkommensnachweise der Eltern (extern),
+       validiert und leitet Daten an das Fachverfahren weiter.
+       ===================================================== -->
+  <bpmn:process id="Process_Portal" name="Buerger_Service_Portal" isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_Portal" name="Einkommensnachweise eingegangen">
+      <bpmn:outgoing>Flow_Portal_S_1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Portal_Start" />
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_Portal_Empfangen" name="Einkommensnachweise empfangen">
+      <bpmn:incoming>Flow_Portal_S_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_Portal_1_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Portal_Format_validieren" name="Dateiformat validieren">
+      <bpmn:incoming>Flow_Portal_1_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_Portal_2_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Portal_Vollstaendigkeit_pruefen" name="Vollstaendigkeit pruefen">
+      <bpmn:incoming>Flow_Portal_2_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_Portal_3_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Portal_Daten_extrahieren" name="Antragsdaten extrahieren">
+      <bpmn:incoming>Flow_Portal_3_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Portal_4_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Portal_Dokumente_speichern" name="Dokumente zwischenspeichern">
+      <bpmn:incoming>Flow_Portal_4_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_Portal_5_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sendTask id="Task_Portal_Daten_uebermitteln" name="Daten an Fachverfahren uebermitteln">
+      <bpmn:incoming>Flow_Portal_5_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_Portal_6_E</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:endEvent id="EndEvent_Portal" name="Daten uebermittelt">
+      <bpmn:incoming>Flow_Portal_6_E</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_Portal_S_1"  sourceRef="StartEvent_Portal"              targetRef="Task_Portal_Empfangen" />
+    <bpmn:sequenceFlow id="Flow_Portal_1_2"  sourceRef="Task_Portal_Empfangen"           targetRef="Task_Portal_Format_validieren" />
+    <bpmn:sequenceFlow id="Flow_Portal_2_3"  sourceRef="Task_Portal_Format_validieren"   targetRef="Task_Portal_Vollstaendigkeit_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Portal_3_4"  sourceRef="Task_Portal_Vollstaendigkeit_pruefen" targetRef="Task_Portal_Daten_extrahieren" />
+    <bpmn:sequenceFlow id="Flow_Portal_4_5"  sourceRef="Task_Portal_Daten_extrahieren"   targetRef="Task_Portal_Dokumente_speichern" />
+    <bpmn:sequenceFlow id="Flow_Portal_5_6"  sourceRef="Task_Portal_Dokumente_speichern" targetRef="Task_Portal_Daten_uebermitteln" />
+    <bpmn:sequenceFlow id="Flow_Portal_6_E"  sourceRef="Task_Portal_Daten_uebermitteln"  targetRef="EndEvent_Portal" />
+
+  </bpmn:process>
+
+  <!-- =====================================================
+       POOL 2: FACHVERFAHREN KITA-BEITRAEGE
+       Empfaengt Einkommensdaten vom Portal, berechnet
+       den Elternbeitrag und uebergibt den Bescheid an das DMS.
+       ===================================================== -->
+  <bpmn:process id="Process_Fachverfahren" name="Fachverfahren_Kita_Beitraege" isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_Fachverfahren" name="Einkommensdaten empfangen">
+      <bpmn:outgoing>Flow_FV_S_1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_FV_Start" />
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_FV_Einkommensdaten_validieren" name="Einkommensdaten validieren">
+      <bpmn:incoming>Flow_FV_S_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_FV_1_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_FV_Plausibilitaet_pruefen" name="Plausibilitaetspruefung durchfuehren">
+      <bpmn:incoming>Flow_FV_1_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_FV_2_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_FV_Beitragstabelle_abfragen" name="Beitragstabelle abfragen">
+      <bpmn:incoming>Flow_FV_2_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_FV_3_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_FV_Elternbeitrag_berechnen" name="Elternbeitrag berechnen">
+      <bpmn:incoming>Flow_FV_3_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_FV_4_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_FV_Beitragsbescheid_generieren" name="Beitragsbescheid generieren">
+      <bpmn:incoming>Flow_FV_4_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_FV_5_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_FV_Beitragsdaten_speichern" name="Beitragsdaten speichern">
+      <bpmn:incoming>Flow_FV_5_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_FV_6_7</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sendTask id="Task_FV_Bescheid_uebermitteln" name="Bescheid an DMS uebermitteln">
+      <bpmn:incoming>Flow_FV_6_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_FV_7_E</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:endEvent id="EndEvent_Fachverfahren" name="Beitrag gespeichert">
+      <bpmn:incoming>Flow_FV_7_E</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_FV_S_1"  sourceRef="StartEvent_Fachverfahren"           targetRef="Task_FV_Einkommensdaten_validieren" />
+    <bpmn:sequenceFlow id="Flow_FV_1_2"  sourceRef="Task_FV_Einkommensdaten_validieren"  targetRef="Task_FV_Plausibilitaet_pruefen" />
+    <bpmn:sequenceFlow id="Flow_FV_2_3"  sourceRef="Task_FV_Plausibilitaet_pruefen"      targetRef="Task_FV_Beitragstabelle_abfragen" />
+    <bpmn:sequenceFlow id="Flow_FV_3_4"  sourceRef="Task_FV_Beitragstabelle_abfragen"    targetRef="Task_FV_Elternbeitrag_berechnen" />
+    <bpmn:sequenceFlow id="Flow_FV_4_5"  sourceRef="Task_FV_Elternbeitrag_berechnen"     targetRef="Task_FV_Beitragsbescheid_generieren" />
+    <bpmn:sequenceFlow id="Flow_FV_5_6"  sourceRef="Task_FV_Beitragsbescheid_generieren" targetRef="Task_FV_Beitragsdaten_speichern" />
+    <bpmn:sequenceFlow id="Flow_FV_6_7"  sourceRef="Task_FV_Beitragsdaten_speichern"     targetRef="Task_FV_Bescheid_uebermitteln" />
+    <bpmn:sequenceFlow id="Flow_FV_7_E"  sourceRef="Task_FV_Bescheid_uebermitteln"       targetRef="EndEvent_Fachverfahren" />
+
+  </bpmn:process>
+
+  <!-- =====================================================
+       POOL 3: DOKUMENTEN-MANAGEMENT-SYSTEM (DMS)
+       Empfaengt den Beitragsbescheid vom Fachverfahren,
+       indexiert und archiviert alle Dokumente.
+       ===================================================== -->
+  <bpmn:process id="Process_DMS" name="Dokumenten_Management_System" isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_DMS" name="Bescheid eingegangen">
+      <bpmn:outgoing>Flow_DMS_S_1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_DMS_Start" />
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_DMS_Bescheid_empfangen" name="Bescheid empfangen">
+      <bpmn:incoming>Flow_DMS_S_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_DMS_1_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_DMS_Metadaten_indexieren" name="Metadaten indexieren">
+      <bpmn:incoming>Flow_DMS_1_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_DMS_2_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_DMS_Dokumente_archivieren" name="Dokumente archivieren">
+      <bpmn:incoming>Flow_DMS_2_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_DMS_3_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_DMS_Speicherbestaetigung_senden" name="Speicherbestaetigung senden">
+      <bpmn:incoming>Flow_DMS_3_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_DMS_4_E</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_DMS" name="Dokumente archiviert">
+      <bpmn:incoming>Flow_DMS_4_E</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_DMS_S_1"  sourceRef="StartEvent_DMS"                    targetRef="Task_DMS_Bescheid_empfangen" />
+    <bpmn:sequenceFlow id="Flow_DMS_1_2"  sourceRef="Task_DMS_Bescheid_empfangen"        targetRef="Task_DMS_Metadaten_indexieren" />
+    <bpmn:sequenceFlow id="Flow_DMS_2_3"  sourceRef="Task_DMS_Metadaten_indexieren"      targetRef="Task_DMS_Dokumente_archivieren" />
+    <bpmn:sequenceFlow id="Flow_DMS_3_4"  sourceRef="Task_DMS_Dokumente_archivieren"     targetRef="Task_DMS_Speicherbestaetigung_senden" />
+    <bpmn:sequenceFlow id="Flow_DMS_4_E"  sourceRef="Task_DMS_Speicherbestaetigung_senden" targetRef="EndEvent_DMS" />
+
+  </bpmn:process>
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG
+       
+       Pool 1 (Portal):       y=80,  height=250, width=1180  (6 Tasks)
+       Pool 2 (Fachverfahren): y=420, height=250, width=1340  (7 Tasks)
+       Pool 3 (DMS):          y=760, height=250, width=860   (4 Tasks)
+       
+       Task Y-Koordinaten:
+         Pool 1: Tasks y=140, Events y=162
+         Pool 2: Tasks y=480, Events y=502
+         Pool 3: Tasks y=820, Events y=842
+       
+       Task X-Abstände: 160px (100px Breite + 60px Abstand)
+       Erste Task: x=310, StartEvent: x=222
+       
+       Pool-Breite: 220 + (Anzahl Tasks × 160)
+         Pool 1: 220 + 6×160 = 1180
+         Pool 2: 220 + 7×160 = 1340
+         Pool 3: 220 + 4×160 = 860
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_IT_Elternbeitraege">
+    <bpmndi:BPMNPlane id="BPMNPlane_IT_Elternbeitraege" bpmnElement="Collab_IT_Elternbeitraege_erheben">
+
+      <!-- ===============================
+           POOL 1: BUERGER-SERVICE-PORTAL
+           x=160, y=80, width=1180, height=250
+           Tasks y=140  |  Events y=162
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Portal_di" bpmnElement="Participant_Portal" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1180" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="188" width="20" height="74" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- StartEvent Portal: x=222, y=162 -->
+      <bpmndi:BPMNShape id="StartEvent_Portal_di" bpmnElement="StartEvent_Portal">
+        <dc:Bounds x="222" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="205" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Task 1: Einkommensnachweise empfangen — x=310, y=140 -->
+      <bpmndi:BPMNShape id="Task_Portal_Empfangen_di" bpmnElement="Task_Portal_Empfangen">
+        <dc:Bounds x="310" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 2: Dateiformat validieren — x=470, y=140 -->
+      <bpmndi:BPMNShape id="Task_Portal_Format_validieren_di" bpmnElement="Task_Portal_Format_validieren">
+        <dc:Bounds x="470" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 3: Vollstaendigkeit pruefen — x=630, y=140 -->
+      <bpmndi:BPMNShape id="Task_Portal_Vollstaendigkeit_pruefen_di" bpmnElement="Task_Portal_Vollstaendigkeit_pruefen">
+        <dc:Bounds x="630" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 4: Antragsdaten extrahieren — x=790, y=140 -->
+      <bpmndi:BPMNShape id="Task_Portal_Daten_extrahieren_di" bpmnElement="Task_Portal_Daten_extrahieren">
+        <dc:Bounds x="790" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 5: Dokumente zwischenspeichern — x=950, y=140 -->
+      <bpmndi:BPMNShape id="Task_Portal_Dokumente_speichern_di" bpmnElement="Task_Portal_Dokumente_speichern">
+        <dc:Bounds x="950" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 6: Daten an Fachverfahren uebermitteln — x=1110, y=140 -->
+      <bpmndi:BPMNShape id="Task_Portal_Daten_uebermitteln_di" bpmnElement="Task_Portal_Daten_uebermitteln">
+        <dc:Bounds x="1110" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- EndEvent Portal: x=1262, y=162 -->
+      <bpmndi:BPMNShape id="EndEvent_Portal_di" bpmnElement="EndEvent_Portal">
+        <dc:Bounds x="1262" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1240" y="205" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Portal Sequence Flows (y=180, center of tasks) -->
+      <bpmndi:BPMNEdge id="Flow_Portal_S_1_di" bpmnElement="Flow_Portal_S_1">
+        <di:waypoint x="258" y="180" />
+        <di:waypoint x="310" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Portal_1_2_di" bpmnElement="Flow_Portal_1_2">
+        <di:waypoint x="410" y="180" />
+        <di:waypoint x="470" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Portal_2_3_di" bpmnElement="Flow_Portal_2_3">
+        <di:waypoint x="570" y="180" />
+        <di:waypoint x="630" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Portal_3_4_di" bpmnElement="Flow_Portal_3_4">
+        <di:waypoint x="730" y="180" />
+        <di:waypoint x="790" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Portal_4_5_di" bpmnElement="Flow_Portal_4_5">
+        <di:waypoint x="890" y="180" />
+        <di:waypoint x="950" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Portal_5_6_di" bpmnElement="Flow_Portal_5_6">
+        <di:waypoint x="1050" y="180" />
+        <di:waypoint x="1110" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Portal_6_E_di" bpmnElement="Flow_Portal_6_E">
+        <di:waypoint x="1210" y="180" />
+        <di:waypoint x="1262" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===============================
+           POOL 2: FACHVERFAHREN KITA-BEITRAEGE
+           x=160, y=420, width=1340, height=250
+           Tasks y=480  |  Events y=502
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Fachverfahren_di" bpmnElement="Participant_Fachverfahren" isHorizontal="true">
+        <dc:Bounds x="160" y="420" width="1340" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="528" width="20" height="74" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- StartEvent Fachverfahren: x=222, y=502 -->
+      <bpmndi:BPMNShape id="StartEvent_Fachverfahren_di" bpmnElement="StartEvent_Fachverfahren">
+        <dc:Bounds x="222" y="502" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="545" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Task 1: Einkommensdaten validieren — x=310, y=480 -->
+      <bpmndi:BPMNShape id="Task_FV_Einkommensdaten_validieren_di" bpmnElement="Task_FV_Einkommensdaten_validieren">
+        <dc:Bounds x="310" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 2: Plausibilitaetspruefung — x=470, y=480 -->
+      <bpmndi:BPMNShape id="Task_FV_Plausibilitaet_pruefen_di" bpmnElement="Task_FV_Plausibilitaet_pruefen">
+        <dc:Bounds x="470" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 3: Beitragstabelle abfragen — x=630, y=480 -->
+      <bpmndi:BPMNShape id="Task_FV_Beitragstabelle_abfragen_di" bpmnElement="Task_FV_Beitragstabelle_abfragen">
+        <dc:Bounds x="630" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 4: Elternbeitrag berechnen — x=790, y=480 -->
+      <bpmndi:BPMNShape id="Task_FV_Elternbeitrag_berechnen_di" bpmnElement="Task_FV_Elternbeitrag_berechnen">
+        <dc:Bounds x="790" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 5: Beitragsbescheid generieren — x=950, y=480 -->
+      <bpmndi:BPMNShape id="Task_FV_Beitragsbescheid_generieren_di" bpmnElement="Task_FV_Beitragsbescheid_generieren">
+        <dc:Bounds x="950" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 6: Beitragsdaten speichern — x=1110, y=480 -->
+      <bpmndi:BPMNShape id="Task_FV_Beitragsdaten_speichern_di" bpmnElement="Task_FV_Beitragsdaten_speichern">
+        <dc:Bounds x="1110" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 7: Bescheid an DMS uebermitteln — x=1270, y=480 -->
+      <bpmndi:BPMNShape id="Task_FV_Bescheid_uebermitteln_di" bpmnElement="Task_FV_Bescheid_uebermitteln">
+        <dc:Bounds x="1270" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- EndEvent Fachverfahren: x=1422, y=502 -->
+      <bpmndi:BPMNShape id="EndEvent_Fachverfahren_di" bpmnElement="EndEvent_Fachverfahren">
+        <dc:Bounds x="1422" y="502" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1400" y="545" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Fachverfahren Sequence Flows (y=520, center of tasks) -->
+      <bpmndi:BPMNEdge id="Flow_FV_S_1_di" bpmnElement="Flow_FV_S_1">
+        <di:waypoint x="258" y="520" />
+        <di:waypoint x="310" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_FV_1_2_di" bpmnElement="Flow_FV_1_2">
+        <di:waypoint x="410" y="520" />
+        <di:waypoint x="470" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_FV_2_3_di" bpmnElement="Flow_FV_2_3">
+        <di:waypoint x="570" y="520" />
+        <di:waypoint x="630" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_FV_3_4_di" bpmnElement="Flow_FV_3_4">
+        <di:waypoint x="730" y="520" />
+        <di:waypoint x="790" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_FV_4_5_di" bpmnElement="Flow_FV_4_5">
+        <di:waypoint x="890" y="520" />
+        <di:waypoint x="950" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_FV_5_6_di" bpmnElement="Flow_FV_5_6">
+        <di:waypoint x="1050" y="520" />
+        <di:waypoint x="1110" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_FV_6_7_di" bpmnElement="Flow_FV_6_7">
+        <di:waypoint x="1210" y="520" />
+        <di:waypoint x="1270" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_FV_7_E_di" bpmnElement="Flow_FV_7_E">
+        <di:waypoint x="1370" y="520" />
+        <di:waypoint x="1422" y="520" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===============================
+           POOL 3: DOKUMENTEN-MANAGEMENT-SYSTEM (DMS)
+           x=160, y=760, width=860, height=250
+           Tasks y=820  |  Events y=842
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_DMS_di" bpmnElement="Participant_DMS" isHorizontal="true">
+        <dc:Bounds x="160" y="760" width="860" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="868" width="20" height="74" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- StartEvent DMS: x=222, y=842 -->
+      <bpmndi:BPMNShape id="StartEvent_DMS_di" bpmnElement="StartEvent_DMS">
+        <dc:Bounds x="222" y="842" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="198" y="885" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Task 1: Bescheid empfangen — x=310, y=820 -->
+      <bpmndi:BPMNShape id="Task_DMS_Bescheid_empfangen_di" bpmnElement="Task_DMS_Bescheid_empfangen">
+        <dc:Bounds x="310" y="820" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 2: Metadaten indexieren — x=470, y=820 -->
+      <bpmndi:BPMNShape id="Task_DMS_Metadaten_indexieren_di" bpmnElement="Task_DMS_Metadaten_indexieren">
+        <dc:Bounds x="470" y="820" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 3: Dokumente archivieren — x=630, y=820 -->
+      <bpmndi:BPMNShape id="Task_DMS_Dokumente_archivieren_di" bpmnElement="Task_DMS_Dokumente_archivieren">
+        <dc:Bounds x="630" y="820" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Task 4: Speicherbestaetigung senden — x=790, y=820 -->
+      <bpmndi:BPMNShape id="Task_DMS_Speicherbestaetigung_senden_di" bpmnElement="Task_DMS_Speicherbestaetigung_senden">
+        <dc:Bounds x="790" y="820" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- EndEvent DMS: x=942, y=842 -->
+      <bpmndi:BPMNShape id="EndEvent_DMS_di" bpmnElement="EndEvent_DMS">
+        <dc:Bounds x="942" y="842" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="918" y="885" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- DMS Sequence Flows (y=860, center of tasks) -->
+      <bpmndi:BPMNEdge id="Flow_DMS_S_1_di" bpmnElement="Flow_DMS_S_1">
+        <di:waypoint x="258" y="860" />
+        <di:waypoint x="310" y="860" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_DMS_1_2_di" bpmnElement="Flow_DMS_1_2">
+        <di:waypoint x="410" y="860" />
+        <di:waypoint x="470" y="860" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_DMS_2_3_di" bpmnElement="Flow_DMS_2_3">
+        <di:waypoint x="570" y="860" />
+        <di:waypoint x="630" y="860" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_DMS_3_4_di" bpmnElement="Flow_DMS_3_4">
+        <di:waypoint x="730" y="860" />
+        <di:waypoint x="790" y="860" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_DMS_4_E_di" bpmnElement="Flow_DMS_4_E">
+        <di:waypoint x="890" y="860" />
+        <di:waypoint x="942" y="860" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===============================
+           MESSAGE FLOWS
+           =============================== -->
+
+      <!-- MsgFlow 1: Portal Task 6 (bottom-center) → StartEvent Fachverfahren (top)
+           Quelle: Task_Portal_Daten_uebermitteln: x=1110+50=1160, y=140+80=220
+           Ziel:   StartEvent_Fachverfahren:       x=222+18=240,   y=502
+           Route:  runter unter Pool 1, quer, rein in Pool 2 -->
+      <bpmndi:BPMNEdge id="MsgFlow_Portal_FV_di" bpmnElement="MsgFlow_Portal_FV">
+        <di:waypoint x="1160" y="220" />
+        <di:waypoint x="1160" y="375" />
+        <di:waypoint x="240"  y="375" />
+        <di:waypoint x="240"  y="502" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="670" y="357" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- MsgFlow 2: Fachverfahren Task 7 (bottom-center) → StartEvent DMS (top)
+           Quelle: Task_FV_Bescheid_uebermitteln: x=1270+50=1320, y=480+80=560
+           Ziel:   StartEvent_DMS:               x=222+18=240,   y=842
+           Route:  runter unter Pool 2, quer, rein in Pool 3 -->
+      <bpmndi:BPMNEdge id="MsgFlow_FV_DMS_di" bpmnElement="MsgFlow_FV_DMS">
+        <di:waypoint x="1320" y="560" />
+        <di:waypoint x="1320" y="715" />
+        <di:waypoint x="240"  y="715" />
+        <di:waypoint x="240"  y="842" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="760" y="697" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>
