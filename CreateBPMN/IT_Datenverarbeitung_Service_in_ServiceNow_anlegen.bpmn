@@ -1,0 +1,595 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0">
+
+  <!-- Messages -->
+  <bpmn:message id="Message_CMDB_Erstellung" name="CMDB_Erstellung" />
+  <bpmn:message id="Message_Katalog_Registrierung" name="Katalog_Registrierung" />
+  <bpmn:message id="Message_Benachrichtigung" name="Benachrichtigung" />
+
+  <!-- =====================================================
+       COLLABORATION
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_ServiceNow_Service_anlegen">
+
+    <bpmn:participant id="Participant_APIGateway"
+                      name="ServiceNow API Gateway"
+                      processRef="Process_APIGateway" />
+
+    <bpmn:participant id="Participant_CMDB"
+                      name="ServiceNow CMDB"
+                      processRef="Process_CMDB" />
+
+    <bpmn:participant id="Participant_ServiceCatalog"
+                      name="ServiceNow Service Catalog"
+                      processRef="Process_ServiceCatalog" />
+
+    <bpmn:participant id="Participant_NotificationService"
+                      name="ServiceNow Notification Service"
+                      processRef="Process_NotificationService" />
+
+    <!-- Message Flows -->
+    <bpmn:messageFlow id="MsgFlow_CMDB_Erstellung"
+                      name="Service-Erstellungsauftrag"
+                      sourceRef="Task_CMDB_Erstellung_ausloesen"
+                      targetRef="StartEvent_CMDB" />
+
+    <bpmn:messageFlow id="MsgFlow_Katalog_Registrierung"
+                      name="Katalog-Registrierungsauftrag"
+                      sourceRef="Task_Katalog_Eintrag_ausloesen"
+                      targetRef="StartEvent_ServiceCatalog" />
+
+    <bpmn:messageFlow id="MsgFlow_Benachrichtigung"
+                      name="Benachrichtigungsauftrag"
+                      sourceRef="Task_Benachrichtigung_ausloesen"
+                      targetRef="StartEvent_NotificationService" />
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       POOL 1: ServiceNow API Gateway
+       Tasks: 4 | Breite: 220 + 4x160 = 860
+       ===================================================== -->
+  <bpmn:process id="Process_APIGateway" name="ServiceNow_API_Gateway" isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_APIGateway" name="Serviceanfrage eingegangen">
+      <bpmn:outgoing>Flow_AG_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:receiveTask id="Task_Serviceanfrage_empfangen" name="Serviceanfrage empfangen">
+      <bpmn:incoming>Flow_AG_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_AG_2</bpmn:outgoing>
+    </bpmn:receiveTask>
+
+    <bpmn:serviceTask id="Task_Eingabedaten_validieren" name="Eingabedaten validieren">
+      <bpmn:incoming>Flow_AG_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_AG_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Service_Kategorie_pruefen" name="Service-Kategorie prüfen">
+      <bpmn:incoming>Flow_AG_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_AG_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sendTask id="Task_CMDB_Erstellung_ausloesen" name="CMDB-Erstellung auslösen">
+      <bpmn:incoming>Flow_AG_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_AG_5</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:endEvent id="EndEvent_APIGateway" name="Anfrage weitergeleitet">
+      <bpmn:incoming>Flow_AG_5</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_AG_1" sourceRef="StartEvent_APIGateway" targetRef="Task_Serviceanfrage_empfangen" />
+    <bpmn:sequenceFlow id="Flow_AG_2" sourceRef="Task_Serviceanfrage_empfangen" targetRef="Task_Eingabedaten_validieren" />
+    <bpmn:sequenceFlow id="Flow_AG_3" sourceRef="Task_Eingabedaten_validieren" targetRef="Task_Service_Kategorie_pruefen" />
+    <bpmn:sequenceFlow id="Flow_AG_4" sourceRef="Task_Service_Kategorie_pruefen" targetRef="Task_CMDB_Erstellung_ausloesen" />
+    <bpmn:sequenceFlow id="Flow_AG_5" sourceRef="Task_CMDB_Erstellung_ausloesen" targetRef="EndEvent_APIGateway" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       POOL 2: ServiceNow CMDB
+       Tasks: 5 | Breite: 220 + 5x160 = 1020
+       ===================================================== -->
+  <bpmn:process id="Process_CMDB" name="ServiceNow_CMDB" isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_CMDB" name="Erstellungsauftrag eingegangen">
+      <bpmn:outgoing>Flow_CMDB_1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_CMDB" messageRef="Message_CMDB_Erstellung" />
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_Service_Stammdaten_anlegen" name="Service-Stammdaten anlegen">
+      <bpmn:incoming>Flow_CMDB_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_CMDB_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Service_Attribute_konfigurieren" name="Service-Attribute konfigurieren">
+      <bpmn:incoming>Flow_CMDB_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_CMDB_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_CI_Abhaengigkeiten_verknuepfen" name="CI-Abhängigkeiten verknüpfen">
+      <bpmn:incoming>Flow_CMDB_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_CMDB_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Service_Datensatz_speichern" name="Service-Datensatz speichern">
+      <bpmn:incoming>Flow_CMDB_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_CMDB_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sendTask id="Task_Katalog_Eintrag_ausloesen" name="Katalog-Eintrag auslösen">
+      <bpmn:incoming>Flow_CMDB_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_CMDB_6</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:endEvent id="EndEvent_CMDB" name="Service-Datensatz gespeichert">
+      <bpmn:incoming>Flow_CMDB_6</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_CMDB_1" sourceRef="StartEvent_CMDB" targetRef="Task_Service_Stammdaten_anlegen" />
+    <bpmn:sequenceFlow id="Flow_CMDB_2" sourceRef="Task_Service_Stammdaten_anlegen" targetRef="Task_Service_Attribute_konfigurieren" />
+    <bpmn:sequenceFlow id="Flow_CMDB_3" sourceRef="Task_Service_Attribute_konfigurieren" targetRef="Task_CI_Abhaengigkeiten_verknuepfen" />
+    <bpmn:sequenceFlow id="Flow_CMDB_4" sourceRef="Task_CI_Abhaengigkeiten_verknuepfen" targetRef="Task_Service_Datensatz_speichern" />
+    <bpmn:sequenceFlow id="Flow_CMDB_5" sourceRef="Task_Service_Datensatz_speichern" targetRef="Task_Katalog_Eintrag_ausloesen" />
+    <bpmn:sequenceFlow id="Flow_CMDB_6" sourceRef="Task_Katalog_Eintrag_ausloesen" targetRef="EndEvent_CMDB" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       POOL 3: ServiceNow Service Catalog
+       Tasks: 6 | Breite: 220 + 6x160 = 1180
+       ===================================================== -->
+  <bpmn:process id="Process_ServiceCatalog" name="ServiceNow_Service_Catalog" isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_ServiceCatalog" name="Registrierungsauftrag eingegangen">
+      <bpmn:outgoing>Flow_SC_1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Catalog" messageRef="Message_Katalog_Registrierung" />
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_Katalogeintrag_erstellen" name="Katalogeintrag erstellen">
+      <bpmn:incoming>Flow_SC_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_SC_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_SLA_Parameter_zuweisen" name="SLA-Parameter zuweisen">
+      <bpmn:incoming>Flow_SC_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_SC_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Approval_Workflow_starten" name="Approval-Workflow starten">
+      <bpmn:incoming>Flow_SC_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_SC_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Genehmigung_verarbeiten" name="Genehmigung verarbeiten">
+      <bpmn:incoming>Flow_SC_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_SC_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Service_aktivieren" name="Service aktivieren">
+      <bpmn:incoming>Flow_SC_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_SC_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sendTask id="Task_Benachrichtigung_ausloesen" name="Benachrichtigung auslösen">
+      <bpmn:incoming>Flow_SC_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_SC_7</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:endEvent id="EndEvent_ServiceCatalog" name="Service im Katalog veröffentlicht">
+      <bpmn:incoming>Flow_SC_7</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_SC_1" sourceRef="StartEvent_ServiceCatalog" targetRef="Task_Katalogeintrag_erstellen" />
+    <bpmn:sequenceFlow id="Flow_SC_2" sourceRef="Task_Katalogeintrag_erstellen" targetRef="Task_SLA_Parameter_zuweisen" />
+    <bpmn:sequenceFlow id="Flow_SC_3" sourceRef="Task_SLA_Parameter_zuweisen" targetRef="Task_Approval_Workflow_starten" />
+    <bpmn:sequenceFlow id="Flow_SC_4" sourceRef="Task_Approval_Workflow_starten" targetRef="Task_Genehmigung_verarbeiten" />
+    <bpmn:sequenceFlow id="Flow_SC_5" sourceRef="Task_Genehmigung_verarbeiten" targetRef="Task_Service_aktivieren" />
+    <bpmn:sequenceFlow id="Flow_SC_6" sourceRef="Task_Service_aktivieren" targetRef="Task_Benachrichtigung_ausloesen" />
+    <bpmn:sequenceFlow id="Flow_SC_7" sourceRef="Task_Benachrichtigung_ausloesen" targetRef="EndEvent_ServiceCatalog" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       POOL 4: ServiceNow Notification Service
+       Tasks: 3 | Breite: 220 + 3x160 = 700
+       ===================================================== -->
+  <bpmn:process id="Process_NotificationService" name="ServiceNow_Notification_Service" isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_NotificationService" name="Benachrichtigungsauftrag eingegangen">
+      <bpmn:outgoing>Flow_NS_1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Notification" messageRef="Message_Benachrichtigung" />
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_Empfaengerliste_ermitteln" name="Empfängerliste ermitteln">
+      <bpmn:incoming>Flow_NS_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_NS_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Benachrichtigungsinhalt_generieren" name="Benachrichtigungsinhalt generieren">
+      <bpmn:incoming>Flow_NS_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_NS_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Email_versenden" name="E-Mail-Benachrichtigung versenden">
+      <bpmn:incoming>Flow_NS_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_NS_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_NotificationService" name="Stakeholder benachrichtigt">
+      <bpmn:incoming>Flow_NS_4</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_NS_1" sourceRef="StartEvent_NotificationService" targetRef="Task_Empfaengerliste_ermitteln" />
+    <bpmn:sequenceFlow id="Flow_NS_2" sourceRef="Task_Empfaengerliste_ermitteln" targetRef="Task_Benachrichtigungsinhalt_generieren" />
+    <bpmn:sequenceFlow id="Flow_NS_3" sourceRef="Task_Benachrichtigungsinhalt_generieren" targetRef="Task_Email_versenden" />
+    <bpmn:sequenceFlow id="Flow_NS_4" sourceRef="Task_Email_versenden" targetRef="EndEvent_NotificationService" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       BPMN DIAGRAM INTERCHANGE
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collab_ServiceNow_Service_anlegen">
+
+      <!-- ================================================
+           POOL 1: ServiceNow API Gateway
+           x=160, y=80, width=860, height=200
+           Tasks y=140 | Events y=162
+           ================================================ -->
+      <bpmndi:BPMNShape id="Participant_APIGateway_di" bpmnElement="Participant_APIGateway" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="860" height="200" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_APIGateway_di" bpmnElement="StartEvent_APIGateway">
+        <dc:Bounds x="222" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="198" y="205" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Serviceanfrage_empfangen_di" bpmnElement="Task_Serviceanfrage_empfangen">
+        <dc:Bounds x="310" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Eingabedaten_validieren_di" bpmnElement="Task_Eingabedaten_validieren">
+        <dc:Bounds x="470" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Service_Kategorie_pruefen_di" bpmnElement="Task_Service_Kategorie_pruefen">
+        <dc:Bounds x="630" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_CMDB_Erstellung_ausloesen_di" bpmnElement="Task_CMDB_Erstellung_ausloesen">
+        <dc:Bounds x="790" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_APIGateway_di" bpmnElement="EndEvent_APIGateway">
+        <dc:Bounds x="952" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="928" y="205" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Sequence Flows Pool 1 -->
+      <bpmndi:BPMNEdge id="Flow_AG_1_di" bpmnElement="Flow_AG_1">
+        <di:waypoint x="258" y="180" />
+        <di:waypoint x="310" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_AG_2_di" bpmnElement="Flow_AG_2">
+        <di:waypoint x="410" y="180" />
+        <di:waypoint x="470" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_AG_3_di" bpmnElement="Flow_AG_3">
+        <di:waypoint x="570" y="180" />
+        <di:waypoint x="630" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_AG_4_di" bpmnElement="Flow_AG_4">
+        <di:waypoint x="730" y="180" />
+        <di:waypoint x="790" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_AG_5_di" bpmnElement="Flow_AG_5">
+        <di:waypoint x="890" y="180" />
+        <di:waypoint x="952" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ================================================
+           POOL 2: ServiceNow CMDB
+           x=160, y=420, width=1020, height=200
+           Tasks y=480 | Events y=502
+           ================================================ -->
+      <bpmndi:BPMNShape id="Participant_CMDB_di" bpmnElement="Participant_CMDB" isHorizontal="true">
+        <dc:Bounds x="160" y="420" width="1020" height="200" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_CMDB_di" bpmnElement="StartEvent_CMDB">
+        <dc:Bounds x="222" y="502" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="545" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Service_Stammdaten_anlegen_di" bpmnElement="Task_Service_Stammdaten_anlegen">
+        <dc:Bounds x="310" y="480" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Service_Attribute_konfigurieren_di" bpmnElement="Task_Service_Attribute_konfigurieren">
+        <dc:Bounds x="470" y="480" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_CI_Abhaengigkeiten_verknuepfen_di" bpmnElement="Task_CI_Abhaengigkeiten_verknuepfen">
+        <dc:Bounds x="630" y="480" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Service_Datensatz_speichern_di" bpmnElement="Task_Service_Datensatz_speichern">
+        <dc:Bounds x="790" y="480" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Katalog_Eintrag_ausloesen_di" bpmnElement="Task_Katalog_Eintrag_ausloesen">
+        <dc:Bounds x="950" y="480" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_CMDB_di" bpmnElement="EndEvent_CMDB">
+        <dc:Bounds x="1112" y="502" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1085" y="545" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Sequence Flows Pool 2 -->
+      <bpmndi:BPMNEdge id="Flow_CMDB_1_di" bpmnElement="Flow_CMDB_1">
+        <di:waypoint x="258" y="520" />
+        <di:waypoint x="310" y="520" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_CMDB_2_di" bpmnElement="Flow_CMDB_2">
+        <di:waypoint x="410" y="520" />
+        <di:waypoint x="470" y="520" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_CMDB_3_di" bpmnElement="Flow_CMDB_3">
+        <di:waypoint x="570" y="520" />
+        <di:waypoint x="630" y="520" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_CMDB_4_di" bpmnElement="Flow_CMDB_4">
+        <di:waypoint x="730" y="520" />
+        <di:waypoint x="790" y="520" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_CMDB_5_di" bpmnElement="Flow_CMDB_5">
+        <di:waypoint x="890" y="520" />
+        <di:waypoint x="950" y="520" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_CMDB_6_di" bpmnElement="Flow_CMDB_6">
+        <di:waypoint x="1050" y="520" />
+        <di:waypoint x="1112" y="520" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ================================================
+           POOL 3: ServiceNow Service Catalog
+           x=160, y=760, width=1180, height=200
+           Tasks y=820 | Events y=842
+           ================================================ -->
+      <bpmndi:BPMNShape id="Participant_ServiceCatalog_di" bpmnElement="Participant_ServiceCatalog" isHorizontal="true">
+        <dc:Bounds x="160" y="760" width="1180" height="200" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_ServiceCatalog_di" bpmnElement="StartEvent_ServiceCatalog">
+        <dc:Bounds x="222" y="842" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="885" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Katalogeintrag_erstellen_di" bpmnElement="Task_Katalogeintrag_erstellen">
+        <dc:Bounds x="310" y="820" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_SLA_Parameter_zuweisen_di" bpmnElement="Task_SLA_Parameter_zuweisen">
+        <dc:Bounds x="470" y="820" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Approval_Workflow_starten_di" bpmnElement="Task_Approval_Workflow_starten">
+        <dc:Bounds x="630" y="820" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Genehmigung_verarbeiten_di" bpmnElement="Task_Genehmigung_verarbeiten">
+        <dc:Bounds x="790" y="820" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Service_aktivieren_di" bpmnElement="Task_Service_aktivieren">
+        <dc:Bounds x="950" y="820" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Benachrichtigung_ausloesen_di" bpmnElement="Task_Benachrichtigung_ausloesen">
+        <dc:Bounds x="1110" y="820" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_ServiceCatalog_di" bpmnElement="EndEvent_ServiceCatalog">
+        <dc:Bounds x="1272" y="842" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1246" y="885" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Sequence Flows Pool 3 -->
+      <bpmndi:BPMNEdge id="Flow_SC_1_di" bpmnElement="Flow_SC_1">
+        <di:waypoint x="258" y="860" />
+        <di:waypoint x="310" y="860" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_SC_2_di" bpmnElement="Flow_SC_2">
+        <di:waypoint x="410" y="860" />
+        <di:waypoint x="470" y="860" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_SC_3_di" bpmnElement="Flow_SC_3">
+        <di:waypoint x="570" y="860" />
+        <di:waypoint x="630" y="860" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_SC_4_di" bpmnElement="Flow_SC_4">
+        <di:waypoint x="730" y="860" />
+        <di:waypoint x="790" y="860" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_SC_5_di" bpmnElement="Flow_SC_5">
+        <di:waypoint x="890" y="860" />
+        <di:waypoint x="950" y="860" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_SC_6_di" bpmnElement="Flow_SC_6">
+        <di:waypoint x="1050" y="860" />
+        <di:waypoint x="1110" y="860" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_SC_7_di" bpmnElement="Flow_SC_7">
+        <di:waypoint x="1210" y="860" />
+        <di:waypoint x="1272" y="860" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ================================================
+           POOL 4: ServiceNow Notification Service
+           x=160, y=1100, width=700, height=200
+           Tasks y=1160 | Events y=1182
+           ================================================ -->
+      <bpmndi:BPMNShape id="Participant_NotificationService_di" bpmnElement="Participant_NotificationService" isHorizontal="true">
+        <dc:Bounds x="160" y="1100" width="700" height="200" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_NotificationService_di" bpmnElement="StartEvent_NotificationService">
+        <dc:Bounds x="222" y="1182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="1225" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Empfaengerliste_ermitteln_di" bpmnElement="Task_Empfaengerliste_ermitteln">
+        <dc:Bounds x="310" y="1160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Benachrichtigungsinhalt_generieren_di" bpmnElement="Task_Benachrichtigungsinhalt_generieren">
+        <dc:Bounds x="470" y="1160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Email_versenden_di" bpmnElement="Task_Email_versenden">
+        <dc:Bounds x="630" y="1160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_NotificationService_di" bpmnElement="EndEvent_NotificationService">
+        <dc:Bounds x="792" y="1182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="766" y="1225" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Sequence Flows Pool 4 -->
+      <bpmndi:BPMNEdge id="Flow_NS_1_di" bpmnElement="Flow_NS_1">
+        <di:waypoint x="258" y="1200" />
+        <di:waypoint x="310" y="1200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_NS_2_di" bpmnElement="Flow_NS_2">
+        <di:waypoint x="410" y="1200" />
+        <di:waypoint x="470" y="1200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_NS_3_di" bpmnElement="Flow_NS_3">
+        <di:waypoint x="570" y="1200" />
+        <di:waypoint x="630" y="1200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_NS_4_di" bpmnElement="Flow_NS_4">
+        <di:waypoint x="730" y="1200" />
+        <di:waypoint x="792" y="1200" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ================================================
+           MESSAGE FLOWS (Kollaboration zwischen Pools)
+           ================================================ -->
+
+      <!-- MsgFlow 1: API Gateway → CMDB
+           Task_CMDB_Erstellung_ausloesen (x=790,y=140,w=100,h=80)
+           Bottom-Center: x=840, y=220
+           StartEvent_CMDB Center: x=240, y=520
+           Routing: über Pool-Gap y=350 (zwischen y=280 und y=420)
+      -->
+      <bpmndi:BPMNEdge id="MsgFlow_CMDB_Erstellung_di" bpmnElement="MsgFlow_CMDB_Erstellung">
+        <di:waypoint x="840" y="220" />
+        <di:waypoint x="840" y="350" />
+        <di:waypoint x="240" y="350" />
+        <di:waypoint x="240" y="502" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="480" y="330" width="120" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- MsgFlow 2: CMDB → Service Catalog
+           Task_Katalog_Eintrag_ausloesen (x=950,y=480,w=100,h=80)
+           Bottom-Center: x=1000, y=560
+           StartEvent_ServiceCatalog Center: x=240, y=860
+           Routing: über Pool-Gap y=690 (zwischen y=620 und y=760)
+      -->
+      <bpmndi:BPMNEdge id="MsgFlow_Katalog_Registrierung_di" bpmnElement="MsgFlow_Katalog_Registrierung">
+        <di:waypoint x="1000" y="560" />
+        <di:waypoint x="1000" y="690" />
+        <di:waypoint x="240" y="690" />
+        <di:waypoint x="240" y="842" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="560" y="670" width="120" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- MsgFlow 3: Service Catalog → Notification Service
+           Task_Benachrichtigung_ausloesen (x=1110,y=820,w=100,h=80)
+           Bottom-Center: x=1160, y=900
+           StartEvent_NotificationService Center: x=240, y=1200
+           Routing: über Pool-Gap y=1030 (zwischen y=960 und y=1100)
+      -->
+      <bpmndi:BPMNEdge id="MsgFlow_Benachrichtigung_di" bpmnElement="MsgFlow_Benachrichtigung">
+        <di:waypoint x="1160" y="900" />
+        <di:waypoint x="1160" y="1030" />
+        <di:waypoint x="240" y="1030" />
+        <di:waypoint x="240" y="1182" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="640" y="1010" width="120" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
