@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0"
+  modeler:executionPlatform="Camunda Platform"
+  modeler:executionPlatformVersion="7.20.0">
+
+  <!-- =====================================================
+       NACHRICHTEN-DEFINITIONEN
+       ===================================================== -->
+  <bpmn:message id="Message_Antragsdaten"        name="Antragsdaten" />
+  <bpmn:message id="Message_Wohnsitzanfrage"     name="Wohnsitzanfrage" />
+  <bpmn:message id="Message_Wohnsitzbestaetigung" name="Wohnsitzbestaetigung" />
+
+  <!-- =====================================================
+       KOLLABORATION
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_Parkausweis_beantragen">
+
+    <bpmn:participant id="Participant_SVB"
+                      name="Fachverfahren Straßenverkehrsbehörde"
+                      processRef="Process_SVB" />
+
+    <bpmn:participant id="Participant_EWR"
+                      name="Einwohnermelderegister"
+                      processRef="Process_EWR" />
+
+    <!-- Message Flow 1: SVB sendet Wohnsitzanfrage → EWR Startereignis -->
+    <bpmn:messageFlow id="MsgFlow_Wohnsitzanfrage"
+                      name="Wohnsitzanfrage"
+                      sourceRef="Task_SVB_Anfrage_Senden"
+                      targetRef="StartEvent_EWR" />
+
+    <!-- Message Flow 2: EWR sendet Wohnsitzbestätigung → SVB Receive Task -->
+    <bpmn:messageFlow id="MsgFlow_Wohnsitzbestaetigung"
+                      name="Wohnsitzbestätigung"
+                      sourceRef="Task_EWR_Bestaetigung_Senden"
+                      targetRef="Task_SVB_Bestaetigung_Empfangen" />
+
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       PROZESS: Fachverfahren Straßenverkehrsbehörde (9 Tasks)
+       Pool-Breite: 220 + 9 × 160 = 1660
+       ===================================================== -->
+  <bpmn:process id="Process_SVB"
+                name="IT_Datenverarbeitung_Parkausweis_SVB"
+                isExecutable="true">
+
+    <!-- Startereignis: Antragsdaten empfangen (Message Start) -->
+    <bpmn:startEvent id="StartEvent_SVB" name="Antragsdaten empfangen">
+      <bpmn:outgoing>Flow_SVB_01</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgEvtDef_SVB_Start" messageRef="Message_Antragsdaten" />
+    </bpmn:startEvent>
+
+    <!-- Task 1: Antragsdaten validieren -->
+    <bpmn:serviceTask id="Task_SVB_01_Validieren" name="Antragsdaten validieren">
+      <bpmn:incoming>Flow_SVB_01</bpmn:incoming>
+      <bpmn:outgoing>Flow_SVB_02</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Task 2: KFZ-Kennzeichen prüfen -->
+    <bpmn:serviceTask id="Task_SVB_02_KFZ_Pruefen" name="KFZ-Kennzeichen prüfen">
+      <bpmn:incoming>Flow_SVB_02</bpmn:incoming>
+      <bpmn:outgoing>Flow_SVB_03</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Task 3: Antragsdaten transformieren -->
+    <bpmn:scriptTask id="Task_SVB_03_Transformieren" name="Antragsdaten transformieren">
+      <bpmn:incoming>Flow_SVB_03</bpmn:incoming>
+      <bpmn:outgoing>Flow_SVB_04</bpmn:outgoing>
+    </bpmn:scriptTask>
+
+    <!-- Task 4: Wohnsitzanfrage senden (Send Task → EWR) -->
+    <bpmn:sendTask id="Task_SVB_Anfrage_Senden" name="Wohnsitzanfrage senden">
+      <bpmn:incoming>Flow_SVB_04</bpmn:incoming>
+      <bpmn:outgoing>Flow_SVB_05</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <!-- Task 5: Wohnsitzbestätigung empfangen (Receive Task ← EWR) -->
+    <bpmn:receiveTask id="Task_SVB_Bestaetigung_Empfangen" name="Wohnsitzbestätigung empfangen" messageRef="Message_Wohnsitzbestaetigung">
+      <bpmn:incoming>Flow_SVB_05</bpmn:incoming>
+      <bpmn:outgoing>Flow_SVB_06</bpmn:outgoing>
+    </bpmn:receiveTask>
+
+    <!-- Task 6: Parkzone prüfen -->
+    <bpmn:serviceTask id="Task_SVB_06_Parkzone_Pruefen" name="Parkzone prüfen">
+      <bpmn:incoming>Flow_SVB_06</bpmn:incoming>
+      <bpmn:outgoing>Flow_SVB_07</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Task 7: Parkausweis-Datensatz erzeugen -->
+    <bpmn:serviceTask id="Task_SVB_07_Datensatz_Erzeugen" name="Parkausweis-Datensatz erzeugen">
+      <bpmn:incoming>Flow_SVB_07</bpmn:incoming>
+      <bpmn:outgoing>Flow_SVB_08</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Task 8: Parkausweis speichern -->
+    <bpmn:serviceTask id="Task_SVB_08_Speichern" name="Parkausweis speichern">
+      <bpmn:incoming>Flow_SVB_08</bpmn:incoming>
+      <bpmn:outgoing>Flow_SVB_09</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Task 9: Bescheid-Nachricht versenden -->
+    <bpmn:sendTask id="Task_SVB_09_Bescheid_Senden" name="Bescheid-Nachricht versenden">
+      <bpmn:incoming>Flow_SVB_09</bpmn:incoming>
+      <bpmn:outgoing>Flow_SVB_10</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <!-- Endereignis -->
+    <bpmn:endEvent id="EndEvent_SVB" name="Parkausweis persistiert und Bescheid versendet">
+      <bpmn:incoming>Flow_SVB_10</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequenzflüsse SVB -->
+    <bpmn:sequenceFlow id="Flow_SVB_01" sourceRef="StartEvent_SVB"              targetRef="Task_SVB_01_Validieren" />
+    <bpmn:sequenceFlow id="Flow_SVB_02" sourceRef="Task_SVB_01_Validieren"      targetRef="Task_SVB_02_KFZ_Pruefen" />
+    <bpmn:sequenceFlow id="Flow_SVB_03" sourceRef="Task_SVB_02_KFZ_Pruefen"     targetRef="Task_SVB_03_Transformieren" />
+    <bpmn:sequenceFlow id="Flow_SVB_04" sourceRef="Task_SVB_03_Transformieren"  targetRef="Task_SVB_Anfrage_Senden" />
+    <bpmn:sequenceFlow id="Flow_SVB_05" sourceRef="Task_SVB_Anfrage_Senden"     targetRef="Task_SVB_Bestaetigung_Empfangen" />
+    <bpmn:sequenceFlow id="Flow_SVB_06" sourceRef="Task_SVB_Bestaetigung_Empfangen" targetRef="Task_SVB_06_Parkzone_Pruefen" />
+    <bpmn:sequenceFlow id="Flow_SVB_07" sourceRef="Task_SVB_06_Parkzone_Pruefen"    targetRef="Task_SVB_07_Datensatz_Erzeugen" />
+    <bpmn:sequenceFlow id="Flow_SVB_08" sourceRef="Task_SVB_07_Datensatz_Erzeugen" targetRef="Task_SVB_08_Speichern" />
+    <bpmn:sequenceFlow id="Flow_SVB_09" sourceRef="Task_SVB_08_Speichern"           targetRef="Task_SVB_09_Bescheid_Senden" />
+    <bpmn:sequenceFlow id="Flow_SVB_10" sourceRef="Task_SVB_09_Bescheid_Senden"     targetRef="EndEvent_SVB" />
+
+  </bpmn:process>
+
+  <!-- =====================================================
+       PROZESS: Einwohnermelderegister (3 Tasks)
+       Pool-Breite: 220 + 3 × 160 = 700
+       ===================================================== -->
+  <bpmn:process id="Process_EWR"
+                name="IT_Datenverarbeitung_Parkausweis_EWR"
+                isExecutable="true">
+
+    <!-- Startereignis: Wohnsitzanfrage empfangen (Message Start) -->
+    <bpmn:startEvent id="StartEvent_EWR" name="Wohnsitzanfrage empfangen">
+      <bpmn:outgoing>Flow_EWR_01</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgEvtDef_EWR_Start" messageRef="Message_Wohnsitzanfrage" />
+    </bpmn:startEvent>
+
+    <!-- Task 1: Wohnsitzanfrage verarbeiten -->
+    <bpmn:serviceTask id="Task_EWR_01_Verarbeiten" name="Wohnsitzanfrage verarbeiten">
+      <bpmn:incoming>Flow_EWR_01</bpmn:incoming>
+      <bpmn:outgoing>Flow_EWR_02</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Task 2: Wohnsitz abfragen -->
+    <bpmn:serviceTask id="Task_EWR_02_Abfragen" name="Wohnsitz abfragen">
+      <bpmn:incoming>Flow_EWR_02</bpmn:incoming>
+      <bpmn:outgoing>Flow_EWR_03</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Task 3: Wohnsitzbestätigung senden (Send Task → SVB) -->
+    <bpmn:sendTask id="Task_EWR_Bestaetigung_Senden" name="Wohnsitzbestätigung senden">
+      <bpmn:incoming>Flow_EWR_03</bpmn:incoming>
+      <bpmn:outgoing>Flow_EWR_04</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <!-- Endereignis -->
+    <bpmn:endEvent id="EndEvent_EWR" name="Wohnsitzbestätigung gesendet">
+      <bpmn:incoming>Flow_EWR_04</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequenzflüsse EWR -->
+    <bpmn:sequenceFlow id="Flow_EWR_01" sourceRef="StartEvent_EWR"           targetRef="Task_EWR_01_Verarbeiten" />
+    <bpmn:sequenceFlow id="Flow_EWR_02" sourceRef="Task_EWR_01_Verarbeiten"  targetRef="Task_EWR_02_Abfragen" />
+    <bpmn:sequenceFlow id="Flow_EWR_03" sourceRef="Task_EWR_02_Abfragen"     targetRef="Task_EWR_Bestaetigung_Senden" />
+    <bpmn:sequenceFlow id="Flow_EWR_04" sourceRef="Task_EWR_Bestaetigung_Senden" targetRef="EndEvent_EWR" />
+
+  </bpmn:process>
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG
+       Koordinatensystem:
+         Pool 1 (SVB):  x=160, y=80,  width=1660, height=200
+         Pool 2 (EWR):  x=160, y=420, width=700,  height=200
+         Lücke zwischen Pools: y=280 bis y=420 → Mittelpunkt y=350
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Parkausweis">
+    <bpmndi:BPMNPlane id="BPMNPlane_Parkausweis" bpmnElement="Collab_Parkausweis_beantragen">
+
+      <!-- ===========================
+           POOL 1: Fachverfahren SVB
+           =========================== -->
+      <bpmndi:BPMNShape id="Participant_SVB_di" bpmnElement="Participant_SVB" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1660" height="200" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- SVB: Startereignis (x=222, y=162) -->
+      <bpmndi:BPMNShape id="StartEvent_SVB_di" bpmnElement="StartEvent_SVB">
+        <dc:Bounds x="222" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="198" y="205" width="85" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- SVB: Task 1 – Antragsdaten validieren (x=310) -->
+      <bpmndi:BPMNShape id="Task_SVB_01_Validieren_di" bpmnElement="Task_SVB_01_Validieren">
+        <dc:Bounds x="310" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- SVB: Task 2 – KFZ-Kennzeichen prüfen (x=470) -->
+      <bpmndi:BPMNShape id="Task_SVB_02_KFZ_Pruefen_di" bpmnElement="Task_SVB_02_KFZ_Pruefen">
+        <dc:Bounds x="470" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- SVB: Task 3 – Antragsdaten transformieren (x=630) -->
+      <bpmndi:BPMNShape id="Task_SVB_03_Transformieren_di" bpmnElement="Task_SVB_03_Transformieren">
+        <dc:Bounds x="630" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- SVB: Task 4 – Wohnsitzanfrage senden (x=790) -->
+      <bpmndi:BPMNShape id="Task_SVB_Anfrage_Senden_di" bpmnElement="Task_SVB_Anfrage_Senden">
+        <dc:Bounds x="790" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- SVB: Task 5 – Wohnsitzbestätigung empfangen (x=950) -->
+      <bpmndi:BPMNShape id="Task_SVB_Bestaetigung_Empfangen_di" bpmnElement="Task_SVB_Bestaetigung_Empfangen">
+        <dc:Bounds x="950" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- SVB: Task 6 – Parkzone prüfen (x=1110) -->
+      <bpmndi:BPMNShape id="Task_SVB_06_Parkzone_Pruefen_di" bpmnElement="Task_SVB_06_Parkzone_Pruefen">
+        <dc:Bounds x="1110" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- SVB: Task 7 – Parkausweis-Datensatz erzeugen (x=1270) -->
+      <bpmndi:BPMNShape id="Task_SVB_07_Datensatz_Erzeugen_di" bpmnElement="Task_SVB_07_Datensatz_Erzeugen">
+        <dc:Bounds x="1270" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- SVB: Task 8 – Parkausweis speichern (x=1430) -->
+      <bpmndi:BPMNShape id="Task_SVB_08_Speichern_di" bpmnElement="Task_SVB_08_Speichern">
+        <dc:Bounds x="1430" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- SVB: Task 9 – Bescheid-Nachricht versenden (x=1590) -->
+      <bpmndi:BPMNShape id="Task_SVB_09_Bescheid_Senden_di" bpmnElement="Task_SVB_09_Bescheid_Senden">
+        <dc:Bounds x="1590" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- SVB: Endereignis (x=1752) -->
+      <bpmndi:BPMNShape id="EndEvent_SVB_di" bpmnElement="EndEvent_SVB">
+        <dc:Bounds x="1752" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1726" y="205" width="90" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- SVB: Sequenzfluss-Kanten (alle auf y=180, horizontal) -->
+      <bpmndi:BPMNEdge id="Flow_SVB_01_di" bpmnElement="Flow_SVB_01">
+        <di:waypoint x="258" y="180" />
+        <di:waypoint x="310" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_SVB_02_di" bpmnElement="Flow_SVB_02">
+        <di:waypoint x="410" y="180" />
+        <di:waypoint x="470" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_SVB_03_di" bpmnElement="Flow_SVB_03">
+        <di:waypoint x="570" y="180" />
+        <di:waypoint x="630" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_SVB_04_di" bpmnElement="Flow_SVB_04">
+        <di:waypoint x="730" y="180" />
+        <di:waypoint x="790" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_SVB_05_di" bpmnElement="Flow_SVB_05">
+        <di:waypoint x="890" y="180" />
+        <di:waypoint x="950" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_SVB_06_di" bpmnElement="Flow_SVB_06">
+        <di:waypoint x="1050" y="180" />
+        <di:waypoint x="1110" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_SVB_07_di" bpmnElement="Flow_SVB_07">
+        <di:waypoint x="1210" y="180" />
+        <di:waypoint x="1270" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_SVB_08_di" bpmnElement="Flow_SVB_08">
+        <di:waypoint x="1370" y="180" />
+        <di:waypoint x="1430" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_SVB_09_di" bpmnElement="Flow_SVB_09">
+        <di:waypoint x="1530" y="180" />
+        <di:waypoint x="1590" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_SVB_10_di" bpmnElement="Flow_SVB_10">
+        <di:waypoint x="1690" y="180" />
+        <di:waypoint x="1752" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===========================
+           POOL 2: Einwohnermelderegister
+           =========================== -->
+      <bpmndi:BPMNShape id="Participant_EWR_di" bpmnElement="Participant_EWR" isHorizontal="true">
+        <dc:Bounds x="160" y="420" width="700" height="200" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- EWR: Startereignis (x=222, y=502) -->
+      <bpmndi:BPMNShape id="StartEvent_EWR_di" bpmnElement="StartEvent_EWR">
+        <dc:Bounds x="222" y="502" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="545" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- EWR: Task 1 – Wohnsitzanfrage verarbeiten (x=310) -->
+      <bpmndi:BPMNShape id="Task_EWR_01_Verarbeiten_di" bpmnElement="Task_EWR_01_Verarbeiten">
+        <dc:Bounds x="310" y="480" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- EWR: Task 2 – Wohnsitz abfragen (x=470) -->
+      <bpmndi:BPMNShape id="Task_EWR_02_Abfragen_di" bpmnElement="Task_EWR_02_Abfragen">
+        <dc:Bounds x="470" y="480" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- EWR: Task 3 – Wohnsitzbestätigung senden (x=630) -->
+      <bpmndi:BPMNShape id="Task_EWR_Bestaetigung_Senden_di" bpmnElement="Task_EWR_Bestaetigung_Senden">
+        <dc:Bounds x="630" y="480" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- EWR: Endereignis (x=782) -->
+      <bpmndi:BPMNShape id="EndEvent_EWR_di" bpmnElement="EndEvent_EWR">
+        <dc:Bounds x="782" y="502" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="756" y="545" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- EWR: Sequenzfluss-Kanten (alle auf y=520, horizontal) -->
+      <bpmndi:BPMNEdge id="Flow_EWR_01_di" bpmnElement="Flow_EWR_01">
+        <di:waypoint x="258" y="520" />
+        <di:waypoint x="310" y="520" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_EWR_02_di" bpmnElement="Flow_EWR_02">
+        <di:waypoint x="410" y="520" />
+        <di:waypoint x="470" y="520" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_EWR_03_di" bpmnElement="Flow_EWR_03">
+        <di:waypoint x="570" y="520" />
+        <di:waypoint x="630" y="520" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_EWR_04_di" bpmnElement="Flow_EWR_04">
+        <di:waypoint x="730" y="520" />
+        <di:waypoint x="782" y="520" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===========================
+           MESSAGE FLOWS (Kollaboration)
+           Lücken-Mittelpunkt: y=350
+           =========================== -->
+
+      <!-- MsgFlow 1: SVB Task 4 (Wohnsitzanfrage senden) → EWR Startereignis
+           Von: Unterseite Task_SVB_Anfrage_Senden (cx=840, y=220)
+           Über: Lücke bei y=350
+           Nach: Oberseite StartEvent_EWR (cx=240, y=502) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Wohnsitzanfrage_di" bpmnElement="MsgFlow_Wohnsitzanfrage">
+        <di:waypoint x="840" y="220" />
+        <di:waypoint x="840" y="350" />
+        <di:waypoint x="240" y="350" />
+        <di:waypoint x="240" y="502" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="508" y="332" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- MsgFlow 2: EWR Task 3 (Wohnsitzbestätigung senden) → SVB Task 5 (empfangen)
+           Von: Oberseite Task_EWR_Bestaetigung_Senden (cx=680, y=480)
+           Über: Lücke bei y=350
+           Nach: Unterseite Task_SVB_Bestaetigung_Empfangen (cx=1000, y=220) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Wohnsitzbestaetigung_di" bpmnElement="MsgFlow_Wohnsitzbestaetigung">
+        <di:waypoint x="680" y="480" />
+        <di:waypoint x="680" y="350" />
+        <di:waypoint x="1000" y="350" />
+        <di:waypoint x="1000" y="220" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="780" y="332" width="100" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>
