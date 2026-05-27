@@ -1,0 +1,289 @@
+{
+  "components": [
+    {
+      "text": "## Antrag auf Buechereiausweis",
+      "type": "text",
+      "id": "Field_Titel",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "text": "Bitte fuellen Sie alle Pflichtfelder aus, um Ihren Buechereiausweis zu beantragen. Pflichtfelder sind mit * gekennzeichnet.",
+      "type": "text",
+      "id": "Field_Hinweis",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "label": "Persoenliche Angaben",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Persoenlich",
+      "layout": {
+        "row": "Row_1"
+      }
+    },
+    {
+      "label": "Vorname",
+      "type": "textfield",
+      "id": "Field_Vorname",
+      "key": "vorname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Nachname",
+      "type": "textfield",
+      "id": "Field_Nachname",
+      "key": "nachname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsdatum",
+      "type": "textfield",
+      "id": "Field_Geburtsdatum",
+      "key": "geburtsdatum",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geschlecht",
+      "values": [
+        {
+          "label": "Weiblich",
+          "value": "w"
+        },
+        {
+          "label": "Maennlich",
+          "value": "m"
+        },
+        {
+          "label": "Divers",
+          "value": "d"
+        },
+        {
+          "label": "Keine Angabe",
+          "value": "k"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Geschlecht",
+      "key": "geschlecht",
+      "validate": {
+        "required": false
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Kontaktdaten",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Kontakt",
+      "layout": {
+        "row": "Row_4"
+      }
+    },
+    {
+      "label": "E-Mail-Adresse",
+      "type": "textfield",
+      "id": "Field_Email",
+      "key": "email",
+      "description": "Fuer Benachrichtigungen zur Ausleihfrist",
+      "validate": {
+        "required": false,
+        "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_5",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Telefonnummer",
+      "type": "textfield",
+      "id": "Field_Telefon",
+      "key": "telefon",
+      "validate": {
+        "required": false,
+        "maxLength": 30
+      },
+      "layout": {
+        "row": "Row_5",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Adresse",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Adresse",
+      "layout": {
+        "row": "Row_6"
+      }
+    },
+    {
+      "label": "Strasse und Hausnummer",
+      "type": "textfield",
+      "id": "Field_Strasse",
+      "key": "strasse",
+      "validate": {
+        "required": true,
+        "minLength": 3,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_7",
+        "columns": 8
+      }
+    },
+    {
+      "label": "PLZ",
+      "type": "textfield",
+      "id": "Field_PLZ",
+      "key": "plz",
+      "validate": {
+        "required": true,
+        "pattern": "^[0-9]{5}$"
+      },
+      "layout": {
+        "row": "Row_8",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Ort",
+      "type": "textfield",
+      "id": "Field_Ort",
+      "key": "ort",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_8",
+        "columns": 8
+      }
+    },
+    {
+      "label": "Ausweistyp",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Ausweistyp",
+      "layout": {
+        "row": "Row_9"
+      }
+    },
+    {
+      "label": "Welchen Ausweistyp moechten Sie beantragen?",
+      "values": [
+        {
+          "label": "Erwachsenenausweis (ab 18 Jahre)",
+          "value": "erwachsener"
+        },
+        {
+          "label": "Jugendausweis (bis 17 Jahre)",
+          "value": "jugendlicher"
+        },
+        {
+          "label": "Seniorenausweis (ab 65 Jahre)",
+          "value": "senior"
+        },
+        {
+          "label": "Ermaessigter Ausweis (Sozialleistungsempfaenger)",
+          "value": "ermaessigt"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Ausweistyp",
+      "key": "ausweistyp",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_10",
+        "columns": 8
+      }
+    },
+    {
+      "label": "Datenschutz und Einwilligung",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Datenschutz",
+      "layout": {
+        "row": "Row_11"
+      }
+    },
+    {
+      "text": "Ihre personenbezogenen Daten werden ausschliesslich zur Verwaltung Ihrer Bibliotheksmitgliedschaft verwendet und nicht an Dritte weitergegeben.",
+      "type": "text",
+      "id": "Field_Datenschutzhinweis",
+      "layout": {
+        "row": "Row_12"
+      }
+    },
+    {
+      "label": "Ich habe die Datenschutzhinweise gelesen und stimme der Verarbeitung meiner Daten zu.",
+      "type": "checkbox",
+      "id": "Field_DatenschutzAkzeptiert",
+      "key": "datenschutzAkzeptiert",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_13"
+      }
+    },
+    {
+      "label": "Antrag absenden",
+      "action": "submit",
+      "type": "button",
+      "id": "Field_Submit",
+      "layout": {
+        "row": "Row_14"
+      }
+    }
+  ],
+  "type": "default",
+  "id": "Buechereiausweis_Antrag",
+  "exporter": {
+    "name": "GitHub-Copilot-GovModeler",
+    "version": "2.0"
+  },
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0",
+  "schemaVersion": 17
+}

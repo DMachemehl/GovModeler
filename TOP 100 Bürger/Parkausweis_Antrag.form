@@ -1,0 +1,392 @@
+{
+  "components": [
+    {
+      "text": "## Antrag auf Ausstellung eines Parkausweises",
+      "type": "text",
+      "id": "Field_Titel",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "text": "Bitte fuellen Sie alle Pflichtfelder aus. Reichen Sie die erforderlichen Nachweise digital ein. Der Antrag wird nach Eingang an die zustaendige Behoerde weitergeleitet.",
+      "type": "text",
+      "id": "Field_Hinweis",
+      "layout": {
+        "row": "Row_0a"
+      }
+    },
+    {
+      "label": "Persoenliche Angaben",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Persoenlich",
+      "layout": {
+        "row": "Row_1"
+      }
+    },
+    {
+      "label": "Vorname",
+      "type": "textfield",
+      "id": "Field_Vorname",
+      "key": "vorname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Nachname",
+      "type": "textfield",
+      "id": "Field_Nachname",
+      "key": "nachname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsdatum",
+      "type": "textfield",
+      "id": "Field_Geburtsdatum",
+      "key": "geburtsdatum",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Ausweisart",
+      "values": [
+        {
+          "label": "Personalausweis",
+          "value": "personalausweis"
+        },
+        {
+          "label": "Reisepass",
+          "value": "reisepass"
+        },
+        {
+          "label": "Aufenthaltstitel",
+          "value": "aufenthaltstitel"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Ausweisart",
+      "key": "ausweisart",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Kontaktdaten",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Kontakt",
+      "layout": {
+        "row": "Row_4"
+      }
+    },
+    {
+      "label": "Strasse und Hausnummer",
+      "type": "textfield",
+      "id": "Field_Strasse",
+      "key": "strasse",
+      "validate": {
+        "required": true,
+        "minLength": 3,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_5",
+        "columns": 8
+      }
+    },
+    {
+      "label": "Adresszusatz",
+      "type": "textfield",
+      "id": "Field_Adresszusatz",
+      "key": "adresszusatz",
+      "description": "z.B. Wohnung, Etage",
+      "validate": {
+        "required": false,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_5",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Postleitzahl",
+      "type": "textfield",
+      "id": "Field_PLZ",
+      "key": "plz",
+      "validate": {
+        "required": true,
+        "pattern": "^[0-9]{5}$"
+      },
+      "layout": {
+        "row": "Row_6",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Ort",
+      "type": "textfield",
+      "id": "Field_Ort",
+      "key": "ort",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 80
+      },
+      "layout": {
+        "row": "Row_6",
+        "columns": 8
+      }
+    },
+    {
+      "label": "E-Mail-Adresse",
+      "type": "textfield",
+      "id": "Field_Email",
+      "key": "email",
+      "description": "Fuer Benachrichtigungen zum Antragsstand",
+      "validate": {
+        "required": true,
+        "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+      },
+      "layout": {
+        "row": "Row_7",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Telefonnummer",
+      "type": "textfield",
+      "id": "Field_Telefon",
+      "key": "telefon",
+      "description": "Fuer Rueckfragen der Behoerde",
+      "validate": {
+        "required": false,
+        "maxLength": 20
+      },
+      "layout": {
+        "row": "Row_7",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Fahrzeugdaten",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Fahrzeug",
+      "layout": {
+        "row": "Row_8"
+      }
+    },
+    {
+      "label": "Amtliches Kennzeichen",
+      "type": "textfield",
+      "id": "Field_Kennzeichen",
+      "key": "kennzeichen",
+      "description": "z.B. M-AB 1234",
+      "validate": {
+        "required": true,
+        "minLength": 3,
+        "maxLength": 12
+      },
+      "layout": {
+        "row": "Row_9",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Fahrzeugmarke",
+      "type": "textfield",
+      "id": "Field_Fahrzeugmarke",
+      "key": "fahrzeugmarke",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_9",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Berechtigungsnachweis",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Berechtigung",
+      "layout": {
+        "row": "Row_10"
+      }
+    },
+    {
+      "label": "Art der Berechtigung",
+      "values": [
+        {
+          "label": "Anwohnerparkausweis (Wohnsitz im Parkbereich)",
+          "value": "anwohner"
+        },
+        {
+          "label": "Schwerbehindertenausweis (Merkzeichen aG)",
+          "value": "schwerbehinderung"
+        },
+        {
+          "label": "Pflegebeduerftigkeit (ambulante Pflegekraft)",
+          "value": "pflege"
+        },
+        {
+          "label": "Gewerbliche Taetigkeit im Parkbereich",
+          "value": "gewerbe"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Berechtigungsart",
+      "key": "berechtigungsart",
+      "description": "Bitte waehlen Sie den Grund fuer die Beantragung des Parkausweises",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_11",
+        "columns": 12
+      }
+    },
+    {
+      "label": "Gewuenschte Parkzone",
+      "type": "textfield",
+      "id": "Field_Parkzone",
+      "key": "parkzone",
+      "description": "z.B. Zone A, Strasse oder Bezirk",
+      "validate": {
+        "required": true,
+        "minLength": 1,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_12",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Beantragte Gueltigkeitsdauer (Jahre)",
+      "type": "number",
+      "id": "Field_Gueltigkeitsdauer",
+      "key": "gueltigkeitsdauer",
+      "description": "Maximal 3 Jahre",
+      "validate": {
+        "required": true,
+        "min": 1,
+        "max": 3
+      },
+      "layout": {
+        "row": "Row_12",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Beizufuegende Nachweise",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Nachweise",
+      "layout": {
+        "row": "Row_13"
+      }
+    },
+    {
+      "text": "Bitte laden Sie die folgenden Nachweise als PDF oder Bilddatei hoch (max. 5 MB je Datei): Personalausweis oder Reisepass, Fahrzeugschein sowie ggf. Nachweis der Berechtigung (z.B. Schwerbehindertenausweis).",
+      "type": "text",
+      "id": "Field_Nachweis_Hinweis",
+      "layout": {
+        "row": "Row_13a"
+      }
+    },
+    {
+      "label": "Identitaetsnachweis (Personalausweis / Reisepass)",
+      "type": "filepicker",
+      "id": "Field_Nachweis_Identitaet",
+      "key": "nachweisIdentitaet",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_14"
+      }
+    },
+    {
+      "label": "Fahrzeugschein (Zulassungsbescheinigung Teil I)",
+      "type": "filepicker",
+      "id": "Field_Nachweis_Fahrzeugschein",
+      "key": "nachweisfahrzeugschein",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_15"
+      }
+    },
+    {
+      "label": "Berechtigungsnachweis (falls zutreffend)",
+      "type": "filepicker",
+      "id": "Field_Nachweis_Berechtigung",
+      "key": "nachweisberechtigung",
+      "description": "z.B. Schwerbehindertenausweis, Gewerbeanmeldung",
+      "validate": {
+        "required": false
+      },
+      "layout": {
+        "row": "Row_16"
+      }
+    },
+    {
+      "label": "Ich bestatige, dass alle Angaben wahrheitsgemaess und vollstaendig sind. Ich stimme der Verarbeitung meiner personenbezogenen Daten zum Zweck der Antragsbearbeitung gemaess der Datenschutzerklaerung zu.",
+      "type": "checkbox",
+      "id": "Field_Datenschutz",
+      "key": "datenschutzZustimmung",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_17"
+      }
+    }
+  ],
+  "type": "default",
+  "id": "Parkausweis_Antrag",
+  "exporter": {
+    "name": "GitHub-Copilot-GovModeler",
+    "version": "2.0"
+  },
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0",
+  "schemaVersion": 17
+}

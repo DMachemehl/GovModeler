@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:modeler="http://camunda.org/schema/modeler/1.0"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0"
+  modeler:executionPlatform="Camunda Platform"
+  modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collab_Parkausweis_beantragen">
+    <bpmn:participant id="Participant_Buerger" name="Buerger" processRef="Process_Buerger" />
+    <bpmn:participant id="Participant_IT" name="IT" processRef="Process_IT" />
+    <bpmn:participant id="Participant_Behoerde" name="Behoerde" processRef="Process_Behoerde" />
+    <bpmn:messageFlow id="MsgFlow_Antrag" name="Parkausweis-Antrag" sourceRef="Task_Antrag_absenden" targetRef="StartEvent_Antrag_eingegangen" />
+    <bpmn:messageFlow id="MsgFlow_Bescheid" name="Bewilligungsbescheid" sourceRef="Task_Bescheid_versenden" targetRef="Event_Bescheid_erhalten" />
+    <bpmn:messageFlow id="MsgFlow_Datenanfrage" name="Datenanfrage" sourceRef="Task_Datenanfrage_stellen" targetRef="StartEvent_Datenanfrage_erhalten" />
+    <bpmn:messageFlow id="MsgFlow_Pruefergebnis" name="Pruefergebnis" sourceRef="Task_Pruefergebnis_bereitstellen" targetRef="Event_Pruefergebnis_erhalten" />
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_Buerger" name="Parkausweis_beantragen_Buerger" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Buerger" name="Parkbedarf festgestellt">
+      <bpmn:outgoing>Flow_Buerger_Start_Ausfuellen</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_Antrag_ausfuellen" name="Antrag ausfuellen">
+      <bpmn:incoming>Flow_Buerger_Start_Ausfuellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Ausfuellen_Hochladen</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Nachweise_hochladen" name="Nachweise hochladen">
+      <bpmn:incoming>Flow_Buerger_Ausfuellen_Hochladen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Hochladen_Absenden</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Antrag_absenden" name="Antrag absenden">
+      <bpmn:incoming>Flow_Buerger_Hochladen_Absenden</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Absenden_Bescheid</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:intermediateCatchEvent id="Event_Bescheid_erhalten" name="Bescheid erhalten">
+      <bpmn:incoming>Flow_Buerger_Absenden_Bescheid</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Bescheid_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Bescheid" messageRef="Message_Bescheid" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="EndEvent_Buerger" name="Parkausweis beantragt">
+      <bpmn:incoming>Flow_Buerger_Bescheid_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Buerger_Start_Ausfuellen" sourceRef="StartEvent_Buerger" targetRef="Task_Antrag_ausfuellen" />
+    <bpmn:sequenceFlow id="Flow_Buerger_Ausfuellen_Hochladen" sourceRef="Task_Antrag_ausfuellen" targetRef="Task_Nachweise_hochladen" />
+    <bpmn:sequenceFlow id="Flow_Buerger_Hochladen_Absenden" sourceRef="Task_Nachweise_hochladen" targetRef="Task_Antrag_absenden" />
+    <bpmn:sequenceFlow id="Flow_Buerger_Absenden_Bescheid" sourceRef="Task_Antrag_absenden" targetRef="Event_Bescheid_erhalten" />
+    <bpmn:sequenceFlow id="Flow_Buerger_Bescheid_Ende" sourceRef="Event_Bescheid_erhalten" targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+
+  <bpmn:process id="Process_IT" name="Parkausweis_beantragen_IT" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Datenanfrage_erhalten" name="Datenanfrage erhalten">
+      <bpmn:outgoing>Flow_IT_Start_Registrieren</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_Antrag_registrieren" name="Antrag registrieren">
+      <bpmn:incoming>Flow_IT_Start_Registrieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Registrieren_Wohnsitz</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Wohnsitz_pruefen" name="Wohnsitz pruefen">
+      <bpmn:incoming>Flow_IT_Registrieren_Wohnsitz</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Wohnsitz_Berechtigung</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Berechtigung_abgleichen" name="Berechtigung abgleichen">
+      <bpmn:incoming>Flow_IT_Wohnsitz_Berechtigung</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Berechtigung_Ergebnis</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Pruefergebnis_bereitstellen" name="Pruefergebnis bereitstellen">
+      <bpmn:incoming>Flow_IT_Berechtigung_Ergebnis</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Ergebnis_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent_IT" name="Pruefergebnis gesendet">
+      <bpmn:incoming>Flow_IT_Ergebnis_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_IT_Start_Registrieren" sourceRef="StartEvent_Datenanfrage_erhalten" targetRef="Task_Antrag_registrieren" />
+    <bpmn:sequenceFlow id="Flow_IT_Registrieren_Wohnsitz" sourceRef="Task_Antrag_registrieren" targetRef="Task_Wohnsitz_pruefen" />
+    <bpmn:sequenceFlow id="Flow_IT_Wohnsitz_Berechtigung" sourceRef="Task_Wohnsitz_pruefen" targetRef="Task_Berechtigung_abgleichen" />
+    <bpmn:sequenceFlow id="Flow_IT_Berechtigung_Ergebnis" sourceRef="Task_Berechtigung_abgleichen" targetRef="Task_Pruefergebnis_bereitstellen" />
+    <bpmn:sequenceFlow id="Flow_IT_Ergebnis_Ende" sourceRef="Task_Pruefergebnis_bereitstellen" targetRef="EndEvent_IT" />
+  </bpmn:process>
+
+  <bpmn:process id="Process_Behoerde" name="Parkausweis_beantragen_Behoerde" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Antrag_eingegangen" name="Antrag eingegangen">
+      <bpmn:outgoing>Flow_Behoerde_Start_Pruefen</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_Antrag_pruefen" name="Antrag pruefen">
+      <bpmn:incoming>Flow_Behoerde_Start_Pruefen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Pruefen_Datenanfrage</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Datenanfrage_stellen" name="Datenanfrage stellen">
+      <bpmn:incoming>Flow_Behoerde_Pruefen_Datenanfrage</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Datenanfrage_Ergebnis</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:intermediateCatchEvent id="Event_Pruefergebnis_erhalten" name="Pruefergebnis erhalten">
+      <bpmn:incoming>Flow_Behoerde_Datenanfrage_Ergebnis</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Ergebnis_Entscheidung</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Pruefergebnis" messageRef="Message_Pruefergebnis" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:userTask id="Task_Entscheidung_treffen" name="Entscheidung treffen">
+      <bpmn:incoming>Flow_Behoerde_Ergebnis_Entscheidung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Entscheidung_Bescheid</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Bescheid_versenden" name="Bescheid versenden">
+      <bpmn:incoming>Flow_Behoerde_Entscheidung_Bescheid</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Bescheid_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_Behoerde" name="Parkausweis bewilligt">
+      <bpmn:incoming>Flow_Behoerde_Bescheid_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Behoerde_Start_Pruefen" sourceRef="StartEvent_Antrag_eingegangen" targetRef="Task_Antrag_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Pruefen_Datenanfrage" sourceRef="Task_Antrag_pruefen" targetRef="Task_Datenanfrage_stellen" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Datenanfrage_Ergebnis" sourceRef="Task_Datenanfrage_stellen" targetRef="Event_Pruefergebnis_erhalten" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Ergebnis_Entscheidung" sourceRef="Event_Pruefergebnis_erhalten" targetRef="Task_Entscheidung_treffen" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Entscheidung_Bescheid" sourceRef="Task_Entscheidung_treffen" targetRef="Task_Bescheid_versenden" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Bescheid_Ende" sourceRef="Task_Bescheid_versenden" targetRef="EndEvent_Behoerde" />
+  </bpmn:process>
+
+  <bpmn:message id="Message_Antrag" name="Parkausweis-Antrag" />
+  <bpmn:message id="Message_Bescheid" name="Bewilligungsbescheid" />
+  <bpmn:message id="Message_Datenanfrage" name="Datenanfrage" />
+  <bpmn:message id="Message_Pruefergebnis" name="Pruefergebnis" />
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Parkausweis_beantragen">
+    <bpmndi:BPMNPlane id="BPMNPlane_Parkausweis_beantragen" bpmnElement="Collab_Parkausweis_beantragen">
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="260" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antrag_ausfuellen_di" bpmnElement="Task_Antrag_ausfuellen">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Nachweise_hochladen_di" bpmnElement="Task_Nachweise_hochladen">
+        <dc:Bounds x="470" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antrag_absenden_di" bpmnElement="Task_Antrag_absenden">
+        <dc:Bounds x="630" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Bescheid_erhalten_di" bpmnElement="Event_Bescheid_erhalten">
+        <dc:Bounds x="792" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="952" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Start_Ausfuellen_di" bpmnElement="Flow_Buerger_Start_Ausfuellen">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Ausfuellen_Hochladen_di" bpmnElement="Flow_Buerger_Ausfuellen_Hochladen">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="470" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Hochladen_Absenden_di" bpmnElement="Flow_Buerger_Hochladen_Absenden">
+        <di:waypoint x="570" y="200" />
+        <di:waypoint x="630" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Absenden_Bescheid_di" bpmnElement="Flow_Buerger_Absenden_Bescheid">
+        <di:waypoint x="730" y="200" />
+        <di:waypoint x="792" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Bescheid_Ende_di" bpmnElement="Flow_Buerger_Bescheid_Ende">
+        <di:waypoint x="828" y="200" />
+        <di:waypoint x="952" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="1200" height="260" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Datenanfrage_erhalten_di" bpmnElement="StartEvent_Datenanfrage_erhalten">
+        <dc:Bounds x="222" y="477" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antrag_registrieren_di" bpmnElement="Task_Antrag_registrieren">
+        <dc:Bounds x="310" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Wohnsitz_pruefen_di" bpmnElement="Task_Wohnsitz_pruefen">
+        <dc:Bounds x="470" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Berechtigung_abgleichen_di" bpmnElement="Task_Berechtigung_abgleichen">
+        <dc:Bounds x="630" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Pruefergebnis_bereitstellen_di" bpmnElement="Task_Pruefergebnis_bereitstellen">
+        <dc:Bounds x="790" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_IT_di" bpmnElement="EndEvent_IT">
+        <dc:Bounds x="952" y="477" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_IT_Start_Registrieren_di" bpmnElement="Flow_IT_Start_Registrieren">
+        <di:waypoint x="258" y="495" />
+        <di:waypoint x="310" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Registrieren_Wohnsitz_di" bpmnElement="Flow_IT_Registrieren_Wohnsitz">
+        <di:waypoint x="410" y="495" />
+        <di:waypoint x="470" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Wohnsitz_Berechtigung_di" bpmnElement="Flow_IT_Wohnsitz_Berechtigung">
+        <di:waypoint x="570" y="495" />
+        <di:waypoint x="630" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Berechtigung_Ergebnis_di" bpmnElement="Flow_IT_Berechtigung_Ergebnis">
+        <di:waypoint x="730" y="495" />
+        <di:waypoint x="790" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Ergebnis_Ende_di" bpmnElement="Flow_IT_Ergebnis_Ende">
+        <di:waypoint x="890" y="495" />
+        <di:waypoint x="952" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNShape id="Participant_Behoerde_di" bpmnElement="Participant_Behoerde" isHorizontal="true">
+        <dc:Bounds x="160" y="660" width="1200" height="260" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Antrag_eingegangen_di" bpmnElement="StartEvent_Antrag_eingegangen">
+        <dc:Bounds x="222" y="782" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antrag_pruefen_di" bpmnElement="Task_Antrag_pruefen">
+        <dc:Bounds x="310" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Datenanfrage_stellen_di" bpmnElement="Task_Datenanfrage_stellen">
+        <dc:Bounds x="470" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Pruefergebnis_erhalten_di" bpmnElement="Event_Pruefergebnis_erhalten">
+        <dc:Bounds x="632" y="782" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Entscheidung_treffen_di" bpmnElement="Task_Entscheidung_treffen">
+        <dc:Bounds x="790" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Bescheid_versenden_di" bpmnElement="Task_Bescheid_versenden">
+        <dc:Bounds x="950" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Behoerde_di" bpmnElement="EndEvent_Behoerde">
+        <dc:Bounds x="1112" y="782" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Start_Pruefen_di" bpmnElement="Flow_Behoerde_Start_Pruefen">
+        <di:waypoint x="258" y="800" />
+        <di:waypoint x="310" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Pruefen_Datenanfrage_di" bpmnElement="Flow_Behoerde_Pruefen_Datenanfrage">
+        <di:waypoint x="410" y="800" />
+        <di:waypoint x="470" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Datenanfrage_Ergebnis_di" bpmnElement="Flow_Behoerde_Datenanfrage_Ergebnis">
+        <di:waypoint x="570" y="800" />
+        <di:waypoint x="632" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Ergebnis_Entscheidung_di" bpmnElement="Flow_Behoerde_Ergebnis_Entscheidung">
+        <di:waypoint x="668" y="800" />
+        <di:waypoint x="790" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Entscheidung_Bescheid_di" bpmnElement="Flow_Behoerde_Entscheidung_Bescheid">
+        <di:waypoint x="890" y="800" />
+        <di:waypoint x="950" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Bescheid_Ende_di" bpmnElement="Flow_Behoerde_Bescheid_Ende">
+        <di:waypoint x="1050" y="800" />
+        <di:waypoint x="1112" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="MsgFlow_Antrag_di" bpmnElement="MsgFlow_Antrag">
+        <di:waypoint x="680" y="240" />
+        <di:waypoint x="680" y="620" />
+        <di:waypoint x="240" y="620" />
+        <di:waypoint x="240" y="782" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Bescheid_di" bpmnElement="MsgFlow_Bescheid">
+        <di:waypoint x="1000" y="760" />
+        <di:waypoint x="1000" y="620" />
+        <di:waypoint x="810" y="620" />
+        <di:waypoint x="810" y="218" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Datenanfrage_di" bpmnElement="MsgFlow_Datenanfrage">
+        <di:waypoint x="520" y="760" />
+        <di:waypoint x="520" y="660" />
+        <di:waypoint x="240" y="660" />
+        <di:waypoint x="240" y="513" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Pruefergebnis_di" bpmnElement="MsgFlow_Pruefergebnis">
+        <di:waypoint x="840" y="455" />
+        <di:waypoint x="840" y="640" />
+        <di:waypoint x="650" y="640" />
+        <di:waypoint x="650" y="782" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
