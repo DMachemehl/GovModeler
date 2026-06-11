@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" targetNamespace="http://example.com/bpmn" exporter="GitHub-Copilot-GovModeler" exporterVersion="2.0">
+  <bpmn:collaboration id="Collab_Stuttgarter_Sportfoerderung_beantragen">
+    <bpmn:participant id="Participant_Buerger" name="Buerger" processRef="Process_Buerger" />
+    <bpmn:participant id="Participant_IT" name="IT" processRef="Process_IT" />
+    <bpmn:participant id="Participant_Behoerde" name="Behoerde" processRef="Process_Behoerde" />
+    <bpmn:messageFlow id="MsgFlow_Antrag" name="Foerderantrag" sourceRef="Task_Antrag_einreichen" targetRef="StartEvent_IT_Antrag_eingegangen" />
+    <bpmn:messageFlow id="MsgFlow_Antragsdaten" name="Antragsdaten" sourceRef="Task_Antragsdaten_uebermitteln" targetRef="StartEvent_Behoerde_Antrag_eingegangen" />
+    <bpmn:messageFlow id="MsgFlow_Bescheid_IT" name="Foerderbescheid" sourceRef="Task_Bescheid_erstellen" targetRef="Event_Bescheid_eingegangen" />
+    <bpmn:messageFlow id="MsgFlow_Bescheid_Buerger" name="Foerderbescheid" sourceRef="Task_Bescheid_bereitstellen" targetRef="Event_Bescheid_empfangen" />
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_Buerger" name="Stuttgarter_Sportfoerderung_beantragen_Buerger" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Buerger" name="Foerderbedarf festgestellt">
+      <bpmn:outgoing>Flow_Start_Vorbereiten</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_Antrag_vorbereiten" name="Antrag vorbereiten">
+      <bpmn:incoming>Flow_Start_Vorbereiten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Vorbereiten_Einreichen</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Antrag_einreichen" name="Antrag einreichen">
+      <bpmn:incoming>Flow_Vorbereiten_Einreichen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Einreichen_Warten</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:intermediateCatchEvent id="Event_Bescheid_empfangen" name="Bescheid empfangen">
+      <bpmn:incoming>Flow_Einreichen_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bescheid_Ende_Buerger</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Bescheid_Buerger" messageRef="Message_Foerderbescheid" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="EndEvent_Buerger" name="Foerderbescheid zugestellt">
+      <bpmn:incoming>Flow_Bescheid_Ende_Buerger</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_Vorbereiten" sourceRef="StartEvent_Buerger" targetRef="Task_Antrag_vorbereiten" />
+    <bpmn:sequenceFlow id="Flow_Vorbereiten_Einreichen" sourceRef="Task_Antrag_vorbereiten" targetRef="Task_Antrag_einreichen" />
+    <bpmn:sequenceFlow id="Flow_Einreichen_Warten" sourceRef="Task_Antrag_einreichen" targetRef="Event_Bescheid_empfangen" />
+    <bpmn:sequenceFlow id="Flow_Bescheid_Ende_Buerger" sourceRef="Event_Bescheid_empfangen" targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+
+  <bpmn:process id="Process_IT" name="Stuttgarter_Sportfoerderung_beantragen_IT" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_IT_Antrag_eingegangen" name="Antrag eingegangen">
+      <bpmn:outgoing>Flow_IT_Start_Erfassen</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_Antrag_erfassen" name="Antrag erfassen">
+      <bpmn:incoming>Flow_IT_Start_Erfassen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Erfassen_Pruefen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Unterlagen_pruefen" name="Unterlagen pruefen">
+      <bpmn:incoming>Flow_IT_Erfassen_Pruefen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Pruefen_Uebermitteln</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Antragsdaten_uebermitteln" name="Antragsdaten uebermitteln">
+      <bpmn:incoming>Flow_IT_Pruefen_Uebermitteln</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Uebermitteln_Warten</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:intermediateCatchEvent id="Event_Bescheid_eingegangen" name="Bescheid eingegangen">
+      <bpmn:incoming>Flow_IT_Uebermitteln_Warten</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Bescheid_Bereitstellen</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Bescheid_IT" messageRef="Message_Foerderbescheid" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:serviceTask id="Task_Bescheid_bereitstellen" name="Bescheid bereitstellen">
+      <bpmn:incoming>Flow_IT_Bescheid_Bereitstellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Bereitstellen_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent_IT" name="Bescheid bereitgestellt">
+      <bpmn:incoming>Flow_IT_Bereitstellen_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_IT_Start_Erfassen" sourceRef="StartEvent_IT_Antrag_eingegangen" targetRef="Task_Antrag_erfassen" />
+    <bpmn:sequenceFlow id="Flow_IT_Erfassen_Pruefen" sourceRef="Task_Antrag_erfassen" targetRef="Task_Unterlagen_pruefen" />
+    <bpmn:sequenceFlow id="Flow_IT_Pruefen_Uebermitteln" sourceRef="Task_Unterlagen_pruefen" targetRef="Task_Antragsdaten_uebermitteln" />
+    <bpmn:sequenceFlow id="Flow_IT_Uebermitteln_Warten" sourceRef="Task_Antragsdaten_uebermitteln" targetRef="Event_Bescheid_eingegangen" />
+    <bpmn:sequenceFlow id="Flow_IT_Bescheid_Bereitstellen" sourceRef="Event_Bescheid_eingegangen" targetRef="Task_Bescheid_bereitstellen" />
+    <bpmn:sequenceFlow id="Flow_IT_Bereitstellen_Ende" sourceRef="Task_Bescheid_bereitstellen" targetRef="EndEvent_IT" />
+  </bpmn:process>
+
+  <bpmn:process id="Process_Behoerde" name="Stuttgarter_Sportfoerderung_beantragen_Behoerde" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Behoerde_Antrag_eingegangen" name="Antragsdaten eingegangen">
+      <bpmn:outgoing>Flow_Behoerde_Start_Zustaendigkeit</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_Zustaendigkeit_pruefen" name="Zustaendigkeit pruefen">
+      <bpmn:incoming>Flow_Behoerde_Start_Zustaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Zustaendigkeit_Foerderfaehigkeit</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Foerderfaehigkeit_bewerten" name="Foerderfaehigkeit bewerten">
+      <bpmn:incoming>Flow_Zustaendigkeit_Foerderfaehigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Foerderfaehigkeit_Betrag</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Foerderbetrag_festlegen" name="Foerderbetrag festlegen">
+      <bpmn:incoming>Flow_Foerderfaehigkeit_Betrag</bpmn:incoming>
+      <bpmn:outgoing>Flow_Betrag_Bescheid</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Bescheid_erstellen" name="Bescheid erstellen">
+      <bpmn:incoming>Flow_Betrag_Bescheid</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bescheid_Ende_Behoerde</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_Behoerde" name="Antrag bearbeitet">
+      <bpmn:incoming>Flow_Bescheid_Ende_Behoerde</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Behoerde_Start_Zustaendigkeit" sourceRef="StartEvent_Behoerde_Antrag_eingegangen" targetRef="Task_Zustaendigkeit_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Zustaendigkeit_Foerderfaehigkeit" sourceRef="Task_Zustaendigkeit_pruefen" targetRef="Task_Foerderfaehigkeit_bewerten" />
+    <bpmn:sequenceFlow id="Flow_Foerderfaehigkeit_Betrag" sourceRef="Task_Foerderfaehigkeit_bewerten" targetRef="Task_Foerderbetrag_festlegen" />
+    <bpmn:sequenceFlow id="Flow_Betrag_Bescheid" sourceRef="Task_Foerderbetrag_festlegen" targetRef="Task_Bescheid_erstellen" />
+    <bpmn:sequenceFlow id="Flow_Bescheid_Ende_Behoerde" sourceRef="Task_Bescheid_erstellen" targetRef="EndEvent_Behoerde" />
+  </bpmn:process>
+
+  <bpmn:message id="Message_Foerderantrag" name="Foerderantrag" />
+  <bpmn:message id="Message_Antragsdaten" name="Antragsdaten" />
+  <bpmn:message id="Message_Foerderbescheid" name="Foerderbescheid" />
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Stuttgarter_Sportfoerderung">
+    <bpmndi:BPMNPlane id="BPMNPlane_Stuttgarter_Sportfoerderung" bpmnElement="Collab_Stuttgarter_Sportfoerderung_beantragen">
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1500" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="180" width="20" height="70" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antrag_vorbereiten_di" bpmnElement="Task_Antrag_vorbereiten">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antrag_einreichen_di" bpmnElement="Task_Antrag_einreichen">
+        <dc:Bounds x="470" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Bescheid_empfangen_di" bpmnElement="Event_Bescheid_empfangen">
+        <dc:Bounds x="1032" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1015" y="225" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="1192" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1170" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_Vorbereiten_di" bpmnElement="Flow_Start_Vorbereiten">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Vorbereiten_Einreichen_di" bpmnElement="Flow_Vorbereiten_Einreichen">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="470" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Einreichen_Warten_di" bpmnElement="Flow_Einreichen_Warten">
+        <di:waypoint x="570" y="200" />
+        <di:waypoint x="1032" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Bescheid_Ende_Buerger_di" bpmnElement="Flow_Bescheid_Ende_Buerger">
+        <di:waypoint x="1068" y="200" />
+        <di:waypoint x="1192" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="1500" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="475" width="20" height="30" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_IT_Antrag_eingegangen_di" bpmnElement="StartEvent_IT_Antrag_eingegangen">
+        <dc:Bounds x="222" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="205" y="520" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antrag_erfassen_di" bpmnElement="Task_Antrag_erfassen">
+        <dc:Bounds x="310" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Unterlagen_pruefen_di" bpmnElement="Task_Unterlagen_pruefen">
+        <dc:Bounds x="470" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antragsdaten_uebermitteln_di" bpmnElement="Task_Antragsdaten_uebermitteln">
+        <dc:Bounds x="630" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Bescheid_eingegangen_di" bpmnElement="Event_Bescheid_eingegangen">
+        <dc:Bounds x="792" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="775" y="520" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Bescheid_bereitstellen_di" bpmnElement="Task_Bescheid_bereitstellen">
+        <dc:Bounds x="950" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_IT_di" bpmnElement="EndEvent_IT">
+        <dc:Bounds x="1192" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1172" y="520" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_IT_Start_Erfassen_di" bpmnElement="Flow_IT_Start_Erfassen">
+        <di:waypoint x="258" y="495" />
+        <di:waypoint x="310" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Erfassen_Pruefen_di" bpmnElement="Flow_IT_Erfassen_Pruefen">
+        <di:waypoint x="410" y="495" />
+        <di:waypoint x="470" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Pruefen_Uebermitteln_di" bpmnElement="Flow_IT_Pruefen_Uebermitteln">
+        <di:waypoint x="570" y="495" />
+        <di:waypoint x="630" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Uebermitteln_Warten_di" bpmnElement="Flow_IT_Uebermitteln_Warten">
+        <di:waypoint x="730" y="495" />
+        <di:waypoint x="792" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Bescheid_Bereitstellen_di" bpmnElement="Flow_IT_Bescheid_Bereitstellen">
+        <di:waypoint x="828" y="495" />
+        <di:waypoint x="950" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Bereitstellen_Ende_di" bpmnElement="Flow_IT_Bereitstellen_Ende">
+        <di:waypoint x="1050" y="495" />
+        <di:waypoint x="1192" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNShape id="Participant_Behoerde_di" bpmnElement="Participant_Behoerde" isHorizontal="true">
+        <dc:Bounds x="160" y="660" width="1500" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="755" width="20" height="80" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Behoerde_Antrag_eingegangen_di" bpmnElement="StartEvent_Behoerde_Antrag_eingegangen">
+        <dc:Bounds x="222" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="825" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Zustaendigkeit_pruefen_di" bpmnElement="Task_Zustaendigkeit_pruefen">
+        <dc:Bounds x="310" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Foerderfaehigkeit_bewerten_di" bpmnElement="Task_Foerderfaehigkeit_bewerten">
+        <dc:Bounds x="470" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Foerderbetrag_festlegen_di" bpmnElement="Task_Foerderbetrag_festlegen">
+        <dc:Bounds x="630" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Bescheid_erstellen_di" bpmnElement="Task_Bescheid_erstellen">
+        <dc:Bounds x="790" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Behoerde_di" bpmnElement="EndEvent_Behoerde">
+        <dc:Bounds x="1192" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1170" y="825" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Start_Zustaendigkeit_di" bpmnElement="Flow_Behoerde_Start_Zustaendigkeit">
+        <di:waypoint x="258" y="800" />
+        <di:waypoint x="310" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Zustaendigkeit_Foerderfaehigkeit_di" bpmnElement="Flow_Zustaendigkeit_Foerderfaehigkeit">
+        <di:waypoint x="410" y="800" />
+        <di:waypoint x="470" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Foerderfaehigkeit_Betrag_di" bpmnElement="Flow_Foerderfaehigkeit_Betrag">
+        <di:waypoint x="570" y="800" />
+        <di:waypoint x="630" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Betrag_Bescheid_di" bpmnElement="Flow_Betrag_Bescheid">
+        <di:waypoint x="730" y="800" />
+        <di:waypoint x="790" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Bescheid_Ende_Behoerde_di" bpmnElement="Flow_Bescheid_Ende_Behoerde">
+        <di:waypoint x="890" y="800" />
+        <di:waypoint x="1192" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="MsgFlow_Antrag_di" bpmnElement="MsgFlow_Antrag">
+        <di:waypoint x="520" y="240" />
+        <di:waypoint x="520" y="345" />
+        <di:waypoint x="240" y="345" />
+        <di:waypoint x="240" y="477" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="330" y="325" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Antragsdaten_di" bpmnElement="MsgFlow_Antragsdaten">
+        <di:waypoint x="680" y="535" />
+        <di:waypoint x="680" y="640" />
+        <di:waypoint x="240" y="640" />
+        <di:waypoint x="240" y="782" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="420" y="620" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Bescheid_IT_di" bpmnElement="MsgFlow_Bescheid_IT">
+        <di:waypoint x="840" y="760" />
+        <di:waypoint x="840" y="640" />
+        <di:waypoint x="810" y="640" />
+        <di:waypoint x="810" y="513" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="830" y="620" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Bescheid_Buerger_di" bpmnElement="MsgFlow_Bescheid_Buerger">
+        <di:waypoint x="1000" y="455" />
+        <di:waypoint x="1000" y="345" />
+        <di:waypoint x="1050" y="345" />
+        <di:waypoint x="1050" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1010" y="325" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

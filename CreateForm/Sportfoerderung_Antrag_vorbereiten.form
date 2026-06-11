@@ -1,0 +1,466 @@
+{
+  "components": [
+    {
+      "text": "## Antrag auf finanzielle Foerderung - Stuttgarter Sportfoerderung",
+      "type": "text",
+      "id": "Field_Titel",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "text": "Bereiten Sie Ihren Foerderantrag vollstaendig vor. Bitte geben Sie alle erforderlichen Angaben zu Ihrer Person, Ihrem Verein sowie dem beantragten Foerderprojekt an. Halten Sie die notwendigen Nachweise bereit.",
+      "type": "text",
+      "id": "Field_Hinweis",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "label": "Angaben zum Antragsteller",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Antragsteller",
+      "layout": {
+        "row": "Row_1"
+      }
+    },
+    {
+      "label": "Vorname",
+      "type": "textfield",
+      "id": "Field_Vorname",
+      "key": "vorname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Nachname",
+      "type": "textfield",
+      "id": "Field_Nachname",
+      "key": "nachname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Geburtsdatum",
+      "type": "textfield",
+      "id": "Field_Geburtsdatum",
+      "key": "geburtsdatum",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Telefonnummer",
+      "type": "textfield",
+      "id": "Field_Telefon",
+      "key": "telefon",
+      "description": "Format: +49 711 1234567",
+      "validate": {
+        "required": true,
+        "pattern": "^[+]?[0-9\\s\\-\\/()]{7,20}$"
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "E-Mail-Adresse",
+      "type": "textfield",
+      "id": "Field_Email",
+      "key": "email",
+      "validate": {
+        "required": true,
+        "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+      },
+      "layout": {
+        "row": "Row_4",
+        "columns": 8
+      }
+    },
+    {
+      "label": "Funktion im Verein",
+      "type": "textfield",
+      "id": "Field_Funktion",
+      "key": "funktionImVerein",
+      "description": "z.B. Vorsitzender, Kassenwart, Geschaeftsfuehrer",
+      "validate": {
+        "required": true,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_4",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Angaben zum Sportverein",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Verein",
+      "layout": {
+        "row": "Row_5"
+      }
+    },
+    {
+      "label": "Vereinsname",
+      "type": "textfield",
+      "id": "Field_Vereinsname",
+      "key": "vereinsname",
+      "validate": {
+        "required": true,
+        "minLength": 3,
+        "maxLength": 150
+      },
+      "layout": {
+        "row": "Row_6",
+        "columns": 8
+      }
+    },
+    {
+      "label": "Vereinsregisternummer",
+      "type": "textfield",
+      "id": "Field_Vereinsregisternummer",
+      "key": "vereinsregisternummer",
+      "description": "Vereinsregisternummer beim Amtsgericht",
+      "validate": {
+        "required": false,
+        "maxLength": 30
+      },
+      "layout": {
+        "row": "Row_6",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Strasse und Hausnummer (Vereinssitz)",
+      "type": "textfield",
+      "id": "Field_Verein_Strasse",
+      "key": "vereinStrasse",
+      "validate": {
+        "required": true,
+        "minLength": 3,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_7",
+        "columns": 8
+      }
+    },
+    {
+      "label": "PLZ",
+      "type": "textfield",
+      "id": "Field_Verein_PLZ",
+      "key": "vereinPlz",
+      "validate": {
+        "required": true,
+        "pattern": "^[0-9]{5}$"
+      },
+      "layout": {
+        "row": "Row_8",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Ort",
+      "type": "textfield",
+      "id": "Field_Verein_Ort",
+      "key": "vereinOrt",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_8",
+        "columns": 8
+      }
+    },
+    {
+      "label": "Mitgliederzahl des Vereins",
+      "type": "textfield",
+      "id": "Field_Mitgliederzahl",
+      "key": "mitgliederzahl",
+      "description": "Aktuelle Anzahl der Vereinsmitglieder",
+      "validate": {
+        "required": true,
+        "pattern": "^[0-9]{1,6}$"
+      },
+      "layout": {
+        "row": "Row_9",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Sportarten des Vereins",
+      "type": "textfield",
+      "id": "Field_Sportarten",
+      "key": "sportarten",
+      "description": "z.B. Fussball, Leichtathletik, Schwimmen",
+      "validate": {
+        "required": true,
+        "maxLength": 200
+      },
+      "layout": {
+        "row": "Row_9",
+        "columns": 8
+      }
+    },
+    {
+      "label": "Angaben zur beantragten Foerderung",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Foerderung",
+      "layout": {
+        "row": "Row_10"
+      }
+    },
+    {
+      "label": "Art der Foerderung",
+      "values": [
+        {
+          "label": "Investitionsfoerderung (z.B. Geraete, Anlagen)",
+          "value": "investition"
+        },
+        {
+          "label": "Projektfoerderung (z.B. Jugendprojekte)",
+          "value": "projekt"
+        },
+        {
+          "label": "Sportveranstaltungsfoerderung",
+          "value": "veranstaltung"
+        },
+        {
+          "label": "Jugend- und Nachwuchsfoerderung",
+          "value": "jugend"
+        },
+        {
+          "label": "Breitensportfoerderung",
+          "value": "breitensport"
+        },
+        {
+          "label": "Sonstige Foerderung",
+          "value": "sonstige"
+        }
+      ],
+      "type": "select",
+      "id": "Field_Foerderart",
+      "key": "foerderart",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_11",
+        "columns": 8
+      }
+    },
+    {
+      "label": "Beantragter Foerderbetrag (EUR)",
+      "type": "textfield",
+      "id": "Field_Foerderbetrag",
+      "key": "foerderbetrag",
+      "description": "Betrag in Euro, z.B. 5000",
+      "validate": {
+        "required": true,
+        "pattern": "^[0-9]+(,[0-9]{1,2})?$"
+      },
+      "layout": {
+        "row": "Row_11",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Titel des Foerderprojekts",
+      "type": "textfield",
+      "id": "Field_Projekttitel",
+      "key": "projekttitel",
+      "validate": {
+        "required": true,
+        "minLength": 5,
+        "maxLength": 200
+      },
+      "layout": {
+        "row": "Row_12",
+        "columns": 12
+      }
+    },
+    {
+      "label": "Beschreibung des Foerderprojekts",
+      "type": "textarea",
+      "id": "Field_Projektbeschreibung",
+      "key": "projektbeschreibung",
+      "description": "Beschreiben Sie das Projekt, seinen Zweck und die geplante Verwendung der Foerdermittel.",
+      "validate": {
+        "required": true,
+        "minLength": 50,
+        "maxLength": 2000
+      },
+      "layout": {
+        "row": "Row_13",
+        "columns": 12
+      }
+    },
+    {
+      "label": "Massnahme geplant von",
+      "type": "textfield",
+      "id": "Field_MassnahmeVon",
+      "key": "massnahmeVon",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_14",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Massnahme geplant bis",
+      "type": "textfield",
+      "id": "Field_MassnahmeBis",
+      "key": "massnahmeBis",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_14",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Erforderliche Nachweise",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Nachweise",
+      "layout": {
+        "row": "Row_15"
+      }
+    },
+    {
+      "text": "Bitte bestaetigen Sie, dass Sie die folgenden Unterlagen vorbereitet haben und dem Antrag beifuegen:",
+      "type": "text",
+      "id": "Field_Nachweise_Hinweis",
+      "layout": {
+        "row": "Row_16"
+      }
+    },
+    {
+      "label": "Ich habe folgende Unterlagen vorbereitet",
+      "type": "checklist",
+      "id": "Field_NachweisListe",
+      "key": "nachweisListe",
+      "values": [
+        {
+          "label": "Vereinsatzung (aktuell)",
+          "value": "vereinssatzung"
+        },
+        {
+          "label": "Auszug aus dem Vereinsregister (nicht aelter als 3 Monate)",
+          "value": "vereinsregister"
+        },
+        {
+          "label": "Letzter Jahresabschluss / Kassenbericht",
+          "value": "jahresabschluss"
+        },
+        {
+          "label": "Kosten- und Finanzierungsplan fuer das Projekt",
+          "value": "finanzierungsplan"
+        },
+        {
+          "label": "Angebote oder Kostenvoranschlaege (bei Investitionen)",
+          "value": "angebote"
+        },
+        {
+          "label": "Freistellungsbescheid des Finanzamts (Gemeinnuetzigkeit)",
+          "value": "freistellungsbescheid"
+        }
+      ],
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_17"
+      }
+    },
+    {
+      "label": "Datenschutz und Erklaerungen",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Datenschutz",
+      "layout": {
+        "row": "Row_18"
+      }
+    },
+    {
+      "label": "Ich erklaere, dass alle Angaben in diesem Antrag wahrheitsgemaess und vollstaendig sind. Ich bin damit einverstanden, dass die Landeshauptstadt Stuttgart die angegebenen Daten zur Bearbeitung des Foerderantrags verarbeitet.",
+      "type": "checkbox",
+      "id": "Field_Richtigkeit",
+      "key": "richtigkeitserklaerung",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_19"
+      }
+    },
+    {
+      "label": "Ich habe die Datenschutzhinweise der Landeshauptstadt Stuttgart zur Kenntnis genommen.",
+      "type": "checkbox",
+      "id": "Field_Datenschutz",
+      "key": "datenschutzAkzeptiert",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_20"
+      }
+    },
+    {
+      "label": "Antrag vorbereiten",
+      "type": "button",
+      "id": "Field_Submit",
+      "action": "submit",
+      "layout": {
+        "row": "Row_21"
+      }
+    }
+  ],
+  "type": "default",
+  "id": "Sportfoerderung_Antrag_vorbereiten",
+  "exporter": {
+    "name": "GitHub-Copilot-GovModeler",
+    "version": "2.0"
+  },
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0",
+  "schemaVersion": 9
+}
