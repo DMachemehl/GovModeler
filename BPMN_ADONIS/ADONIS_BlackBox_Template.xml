@@ -29,11 +29,18 @@
 
   Koordinaten-System (Y-Achsen):
   ==============================
-  - Kunde Pool:       y=0,   height=57
-  - Organisation:     y=95,  height=170 (Lane y=95)
-  - IT Pool:          y=303, height=57
+  - Kunde Pool:       y=0,   height=57  (Unterkante y=57)
+  - Organisation:     y=95,  height=170 (Lane y=95, Unterkante y=265)
+  - IT Pool:          y=303, height=57  (Oberkante y=303)
   - Tasks in Lane:    y=140 (zentriert in Lane)
   - Events in Lane:   y=152 (zentriert)
+
+  Message Flow Waypoints (KRITISCH fuer ADONIS-Rendering):
+  ========================================================
+  Waypoints MUESSEN 5px Abstand zu Pool-Grenzen haben!
+  - Kunde-Pool Waypoint:  y=62  (57 + 5px)
+  - IT-Pool Waypoint:     y=298 (303 - 5px)
+  Ohne diesen Abstand werden Message Flows NICHT dargestellt!
 -->
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
              xmlns:adonis="http://www.boc-group.com"
@@ -352,49 +359,54 @@
 
       <!-- ================================================
            MESSAGE FLOWS
-           WICHTIG: Y-Koordinaten muessen Pool-Grenzen beruecksichtigen
-           - Kunde Pool:        y=0 bis y=57
-           - Organisation Pool: y=95 bis y=265
-           - IT Pool:           y=303 bis y=360
+           WICHTIG fuer ADONIS-Darstellung:
+           ================================
+           Waypoints MUESSEN 5px Abstand zu Pool-Grenzen haben!
+           - Kunde Pool:        y=0 bis y=57   → Waypoint y=62
+           - Organisation Pool: y=95 bis y=265 → Waypoint y=140 (Task-Mitte)
+           - IT Pool:           y=303 bis y=360 → Waypoint y=298
+           
+           Ohne diesen Abstand werden Message Flows in ADONIS
+           nicht korrekt gerendert!
            ================================================ -->
 
-      <!-- Message Flow: Kunde → Start Event -->
+      <!-- Message Flow: Kunde → Start Event (y=62 = Kunde-Pool-Unterkante + 5px) -->
       <bpmndi:BPMNEdge bpmnElement="_[MSGFLOW_K_O_UUID]"
                        id="BPMN_Edge_[MSGFLOW_K_O_UUID]">
-        <omgdi:waypoint x="118" y="57"/>
+        <omgdi:waypoint x="118" y="62"/>
         <omgdi:waypoint x="118" y="152"/>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="118" y="90" width="60" height="40"/>
+          <omgdc:Bounds x="128" y="90" width="60" height="40"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
 
-      <!-- Message Flow: Task → IT -->
+      <!-- Message Flow: Task → IT (y=298 = IT-Pool-Oberkante - 5px) -->
       <bpmndi:BPMNEdge bpmnElement="_[MSGFLOW_O_IT_UUID]"
                        id="BPMN_Edge_[MSGFLOW_O_IT_UUID]">
         <omgdi:waypoint x="250" y="220"/>
-        <omgdi:waypoint x="250" y="303"/>
+        <omgdi:waypoint x="250" y="298"/>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="250" y="250" width="60" height="40"/>
+          <omgdc:Bounds x="260" y="250" width="60" height="40"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
 
-      <!-- Message Flow: IT → Task/Event -->
+      <!-- Message Flow: IT → Task/Event (y=298 = IT-Pool-Oberkante - 5px) -->
       <bpmndi:BPMNEdge bpmnElement="_[MSGFLOW_IT_O_UUID]"
                        id="BPMN_Edge_[MSGFLOW_IT_O_UUID]">
-        <omgdi:waypoint x="320" y="303"/>
+        <omgdi:waypoint x="320" y="298"/>
         <omgdi:waypoint x="320" y="220"/>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="320" y="250" width="60" height="40"/>
+          <omgdc:Bounds x="330" y="250" width="60" height="40"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
 
-      <!-- Message Flow: End Event → Kunde -->
+      <!-- Message Flow: End Event → Kunde (y=62 = Kunde-Pool-Unterkante + 5px) -->
       <bpmndi:BPMNEdge bpmnElement="_[MSGFLOW_O_K_UUID]"
                        id="BPMN_Edge_[MSGFLOW_O_K_UUID]">
         <omgdi:waypoint x="388" y="152"/>
-        <omgdi:waypoint x="388" y="57"/>
+        <omgdi:waypoint x="388" y="62"/>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="388" y="90" width="60" height="40"/>
+          <omgdc:Bounds x="398" y="90" width="60" height="40"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
 

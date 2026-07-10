@@ -38,21 +38,32 @@ Wenn der Nutzer einen Prozessnamen nennt, erstelle eine strukturierte Prozessbes
 #### Kurze Zusammenfassung (2-3 Saetze)
 - Was ist der Zweck des Prozesses?
 - Wer sind die beteiligten Akteure (Bibliotheksnutzer, Bibliotheksmitarbeiter, IT-Systeme)?
+- Welches Kundenbeduernis wird befriedigt (e2e-Perspektive)?
+
+#### e2e-Rahmenbedingungen (PFLICHT)
+Vor der Ausarbeitung der Prozessschritte MUSS der e2e-Rahmen explizit definiert werden:
+- **Kundenbeduernis (Ausloser)**: Was benoetigt der Kunde? (z.B. "Leserausweis verlängern")
+- **Startereignis**: Leitet sich immer vom Kunden ab; im Perfekt formulieren (z.B. "Verlaengerungsantrag eingegangen")
+- **Endereignis**: Leitet sich immer vom Kunden ab; beschreibt die Befriedigung des Kundenbeduerfnisses (z.B. "Leserausweis verlaengert und ausgehaendigt")
+- **Alle Beteiligten**: Aktivitaeten aller Pools (Kunde, Organisation, IT) werden dargestellt
 
 #### Detaillierte Prozessbeschreibung
-- **Startereignis**: Im Perfekt formulieren (z.B. "Ausleihwunsch eingegangen", "Leserausweis beantragt")
+- **Startereignis**: Im Perfekt formulieren; leitet sich vom Kunden ab
 - **Prozessschritte**: In chronologischer Reihenfolge mit folgender Struktur:
   - Gruppierung nach Pools: **Kunde (Black-Box)**, **IT (Black-Box)**, **Organisation (ausfuehrlich)**
   - Schritt-Nummer und Name (Substantiv + Verb, z.B. "Verfuegbarkeit pruefen")
-  - Bei Kunde/IT: Nur Nachrichtenaustausch beschreiben
-  - Bei Organisation: Vollstaendige Aktivitaetsbeschreibung
-  - Bei Nachrichtenaustausch: Notation "Akteur → Akteur" (z.B. "Kunde → Organisation")
-- **Endereignis**: Im Perfekt oder als Zustand (z.B. "Medium ausgeliehen", "Leserausweis ausgestellt")
+  - Bei Kunde/IT: Nachrichtenaustausch beschreiben (was wird uebermittelt?)
+  - Bei Organisation: Vollstaendige Aktivitaetsbeschreibung aller notwendigen Schritte
+  - Bei Nachrichtenaustausch: Notation "Akteur → Akteur: [Inhalt]" (z.B. "Kunde → Organisation: Verlaengerungsantrag mit Ausweis")
+  - **Alle Schritte aus allen drei Pools muessen lueckenlos vom Startereignis bis zum Endereignis abgebildet sein**
+- **Endereignis**: Leitet sich vom Kunden ab; im Perfekt oder als Zustand (z.B. "Leserausweis verlaengert")
 
 #### Prozessbeschreibungs-Regeln:
 - Fachlicher und wissenschaftlicher Kommunikationsstil
-- Klare Benennung der Nachrichtenfluesse zwischen den Pools
+- Konsequente Kundenperspektive: Jeder Schritt traegt zur Befriedigung des Kundenbeduerfnisses bei
+- Klare Benennung der Nachrichtenfluesse zwischen den Pools inkl. uebermitteltem Inhalt
 - Bibliotheksfachterminologie verwenden
+- Keine Luecken im Prozessablauf: Alle Aktivitaeten aller Beteiligten muessen sichtbar sein
 
 **Nach der Prozessbeschreibung: Nutzer fragen, ob ein BPMN-XML-Modell erstellt werden soll**
 
@@ -190,6 +201,9 @@ Jeder `<messageFlow>` MUSS `adonis:connector` Extension Elements enthalten:
 ## Qualitaetssicherung
 
 Vor Abschluss pruefen:
+- ✅ **e2e-Rahmen definiert**: Kundenbeduernis, Startereignis (vom Kunden abgeleitet), Endereignis (vom Kunden abgeleitet)
+- ✅ **Alle Prozessbeteiligten dargestellt**: Aktivitaeten aus Kunde-, Organisation- und IT-Pool lueckenlos abgebildet
+- ✅ **Prozess aus Kundenperspektive**: Jeder Schritt traegt zur Befriedigung des Kundenbeduerfnisses bei
 - ✅ Template `ADONIS_BlackBox_Template.xml` als Basis verwendet
 - ✅ Alle Referenzdokumente wurden gelesen
 - ✅ 3-Pool-Struktur implementiert (Kunde Black-Box, Organisation White-Box, IT Black-Box)
