@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ADONIS BPMN 2.0 Black-Box Pool Template
+  ========================================
+  Spezialisiertes Template fuer BPMN-Prozessmodelle mit Black-Box Pools,
+  optimiert fuer den Import in ADONIS (BOC Group).
+
+  Struktur: 3-Pool-Kollaboration
+    - Kunde (Black-Box Pool, oben)
+    - Organisation (White-Box Pool mit Lane, Mitte)
+    - IT (Black-Box Pool, unten)
+
+  WICHTIG fuer ADONIS-Import:
+  ===========================
+  1. Namespace xmlns:adonis="http://www.boc-group.com" ist ERFORDERLICH
+  2. targetNamespace="http://www.boc-group.com"
+  3. IDs verwenden GUID-Format mit Unterstrich-Praefix: _[UUID]
+  4. BPMN-DI IDs verwenden Format: BPMN_Shape_[UUID] / BPMN_Edge_[UUID]
+  5. MessageFlows MUESSEN adonis:connector Extension Elements enthalten
+  6. Black-Box Pools: Leere <process> Elemente ohne laneSet, tasks, events
+
+  Message Flow Regeln fuer ADONIS:
+  ================================
+  - Jeder messageFlow MUSS extensionElements mit adonis:connector enthalten
+  - DISPLAY_DENOMNIATION steuert Beschriftungsanzeige (true/false)
+  - REPRESENTATION_HAS_PROCESS steuert Darstellung (automatisch/manuell)
+  - sourceRef/targetRef: Bei Black-Box Pool den Participant referenzieren
+  - sourceRef/targetRef: Bei White-Box Pool das konkrete Element referenzieren
+
+  Koordinaten-System (Y-Achsen):
+  ==============================
+  - Kunde Pool:       y=0,   height=57
+  - Organisation:     y=95,  height=170 (Lane y=95)
+  - IT Pool:          y=303, height=57
+  - Tasks in Lane:    y=140 (zentriert in Lane)
+  - Events in Lane:   y=152 (zentriert)
+-->
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:adonis="http://www.boc-group.com"
+             xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="definition__[DEFINITION_UUID]"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd"
+             targetNamespace="http://www.boc-group.com">
+
+  <!-- =====================================================
+       COLLABORATION
+       [PROZESSNAME]
+       3-Pool: Kunde (Black-Box), Organisation (White-Box), IT (Black-Box)
+       ===================================================== -->
+  <collaboration id="Collaboration_[COLLAB_UUID]"
+                 name="[PROZESSNAME]"
+                 isClosed="false">
+
+    <!-- Participants (Pools) - REIHENFOLGE: Organisation, Kunde, IT -->
+    <participant processRef="process_[ORGANISATION_UUID]"
+                 name="Organisation"
+                 id="_[ORGANISATION_PARTICIPANT_UUID]"/>
+    <participant processRef="process_[KUNDE_UUID]"
+                 name="Kunde"
+                 id="_[KUNDE_PARTICIPANT_UUID]"/>
+    <participant processRef="process_[IT_UUID]"
+                 name="IT"
+                 id="_[IT_PARTICIPANT_UUID]"/>
+
+    <!-- =====================================================
+         MESSAGE FLOWS
+         WICHTIG: Jeder messageFlow MUSS adonis:connector enthalten!
+         ===================================================== -->
+
+    <!-- Message Flow: Kunde → Organisation -->
+    <messageFlow id="_[MSGFLOW_K_O_UUID]"
+                 sourceRef="_[KUNDE_PARTICIPANT_UUID]"
+                 targetRef="_[ORG_RECEIVE_ELEMENT_UUID]">
+      <extensionElements>
+        <adonis:connector>
+          <adonis:attribute name="DISPLAY_DENOMNIATION"
+                            type="BOOL"
+                            notebook="1"
+                            sourcelang=""
+                            novalue="0">
+            <adonis:value>true</adonis:value>
+            <adonis:metavalue/>
+          </adonis:attribute>
+          <adonis:attribute name="REPRESENTATION_HAS_PROCESS"
+                            type="ENUM"
+                            notebook="1"
+                            sourcelang=""
+                            novalue="0"
+                            lang-independent="v0">
+            <adonis:value>automatisch</adonis:value>
+            <adonis:metavalue/>
+          </adonis:attribute>
+        </adonis:connector>
+      </extensionElements>
+    </messageFlow>
+
+    <!-- Message Flow: Organisation → IT -->
+    <messageFlow id="_[MSGFLOW_O_IT_UUID]"
+                 sourceRef="_[ORG_SEND_ELEMENT_UUID]"
+                 targetRef="_[IT_PARTICIPANT_UUID]">
+      <extensionElements>
+        <adonis:connector>
+          <adonis:attribute name="DISPLAY_DENOMNIATION"
+                            type="BOOL"
+                            notebook="1"
+                            sourcelang=""
+                            novalue="0">
+            <adonis:value>true</adonis:value>
+            <adonis:metavalue/>
+          </adonis:attribute>
+          <adonis:attribute name="REPRESENTATION_HAS_PROCESS"
+                            type="ENUM"
+                            notebook="1"
+                            sourcelang=""
+                            novalue="0"
+                            lang-independent="v0">
+            <adonis:value>automatisch</adonis:value>
+            <adonis:metavalue/>
+          </adonis:attribute>
+        </adonis:connector>
+      </extensionElements>
+    </messageFlow>
+
+    <!-- Message Flow: IT → Organisation -->
+    <messageFlow id="_[MSGFLOW_IT_O_UUID]"
+                 sourceRef="_[IT_PARTICIPANT_UUID]"
+                 targetRef="_[ORG_RECEIVE2_ELEMENT_UUID]">
+      <extensionElements>
+        <adonis:connector>
+          <adonis:attribute name="DISPLAY_DENOMNIATION"
+                            type="BOOL"
+                            notebook="1"
+                            sourcelang=""
+                            novalue="0">
+            <adonis:value>true</adonis:value>
+            <adonis:metavalue/>
+          </adonis:attribute>
+          <adonis:attribute name="REPRESENTATION_HAS_PROCESS"
+                            type="ENUM"
+                            notebook="1"
+                            sourcelang=""
+                            novalue="0"
+                            lang-independent="v0">
+            <adonis:value>automatisch</adonis:value>
+            <adonis:metavalue/>
+          </adonis:attribute>
+        </adonis:connector>
+      </extensionElements>
+    </messageFlow>
+
+    <!-- Message Flow: Organisation → Kunde -->
+    <messageFlow id="_[MSGFLOW_O_K_UUID]"
+                 sourceRef="_[ORG_SEND2_ELEMENT_UUID]"
+                 targetRef="_[KUNDE_PARTICIPANT_UUID]">
+      <extensionElements>
+        <adonis:connector>
+          <adonis:attribute name="DISPLAY_DENOMNIATION"
+                            type="BOOL"
+                            notebook="1"
+                            sourcelang=""
+                            novalue="0">
+            <adonis:value>true</adonis:value>
+            <adonis:metavalue/>
+          </adonis:attribute>
+          <adonis:attribute name="REPRESENTATION_HAS_PROCESS"
+                            type="ENUM"
+                            notebook="1"
+                            sourcelang=""
+                            novalue="0"
+                            lang-independent="v0">
+            <adonis:value>automatisch</adonis:value>
+            <adonis:metavalue/>
+          </adonis:attribute>
+        </adonis:connector>
+      </extensionElements>
+    </messageFlow>
+
+  </collaboration>
+
+  <!-- =====================================================
+       PROZESS: Organisation (White-Box Pool)
+       Enthaelt Lane(s) mit vollstaendigem Prozess
+       ===================================================== -->
+  <process name="Organisation"
+           id="process_[ORGANISATION_UUID]"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_[ORGANISATION_UUID]">
+      <lane name="[LANE_NAME]" id="_[LANE_UUID]">
+        <flowNodeRef>_[START_UUID]</flowNodeRef>
+        <flowNodeRef>_[TASK1_UUID]</flowNodeRef>
+        <!-- Weitere flowNodeRef fuer zusaetzliche Tasks -->
+        <flowNodeRef>_[END_UUID]</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <!-- Start Event (Message) -->
+    <startEvent name="[STARTEREIGNIS]" id="_[START_UUID]">
+      <outgoing>_[FLOW1_UUID]</outgoing>
+      <messageEventDefinition id="msgEvtDef_[START_UUID]"/>
+    </startEvent>
+
+    <!-- Task(s) -->
+    <task name="[TASK1_NAME]"
+          id="_[TASK1_UUID]"
+          isForCompensation="false">
+      <incoming>_[FLOW1_UUID]</incoming>
+      <outgoing>_[FLOW2_UUID]</outgoing>
+    </task>
+
+    <!-- End Event (Message) -->
+    <endEvent name="[ENDEREIGNIS]" id="_[END_UUID]">
+      <incoming>_[FLOW2_UUID]</incoming>
+      <messageEventDefinition id="msgEvtDef_[END_UUID]"/>
+    </endEvent>
+
+    <!-- Sequence Flows -->
+    <sequenceFlow sourceRef="_[START_UUID]"
+                  targetRef="_[TASK1_UUID]"
+                  id="_[FLOW1_UUID]"/>
+    <sequenceFlow sourceRef="_[TASK1_UUID]"
+                  targetRef="_[END_UUID]"
+                  id="_[FLOW2_UUID]"/>
+
+  </process>
+
+  <!-- =====================================================
+       PROZESS: Kunde (Black-Box Pool)
+       WICHTIG: KEINE internen Prozesselemente!
+       Leeres process-Element ohne laneSet, tasks, events
+       ===================================================== -->
+  <process name="Kunde"
+           id="process_[KUNDE_UUID]"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+    <!-- Black-Box Pool: Keine internen Elemente -->
+  </process>
+
+  <!-- =====================================================
+       PROZESS: IT (Black-Box Pool)
+       WICHTIG: KEINE internen Prozesselemente!
+       Leeres process-Element ohne laneSet, tasks, events
+       ===================================================== -->
+  <process name="IT"
+           id="process_[IT_UUID]"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+    <!-- Black-Box Pool: Keine internen Elemente -->
+  </process>
+
+  <!-- =====================================================
+       BPMN-DI: Visuelle Darstellung
+       =====================================================
+       Pool-Anordnung vertikal:
+         Kunde (Black-Box):     y=0,   height=57
+         Organisation:          y=95,  height=170
+         IT (Black-Box):        y=303, height=57
+
+       Tasks in Organisation-Lane: y=140 (zentriert)
+       Events in Organisation-Lane: y=152 (zentriert)
+
+       WICHTIG fuer ADONIS:
+       - BPMNShape id-Format: BPMN_Shape_[UUID]
+       - BPMNEdge id-Format:  BPMN_Edge_[UUID]
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="Diagram_[COLLAB_UUID]"
+                      name="[PROZESSNAME]">
+    <bpmndi:BPMNPlane id="BPMNPlane_[COLLAB_UUID]"
+                      bpmnElement="Collaboration_[COLLAB_UUID]">
+
+      <!-- ================================================
+           POOL: Kunde (Black-Box, oben)
+           ================================================ -->
+      <bpmndi:BPMNShape bpmnElement="_[KUNDE_PARTICIPANT_UUID]"
+                        isHorizontal="true"
+                        id="BPMN_Shape_[KUNDE_PARTICIPANT_UUID]">
+        <omgdc:Bounds height="57" width="1200" x="0" y="0"/>
+      </bpmndi:BPMNShape>
+
+      <!-- ================================================
+           POOL: Organisation (White-Box, Mitte)
+           ================================================ -->
+      <bpmndi:BPMNShape bpmnElement="_[ORGANISATION_PARTICIPANT_UUID]"
+                        isHorizontal="true"
+                        id="BPMN_Shape_[ORGANISATION_PARTICIPANT_UUID]">
+        <omgdc:Bounds height="170" width="1200" x="0" y="95"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane innerhalb Organisation -->
+      <bpmndi:BPMNShape bpmnElement="_[LANE_UUID]"
+                        isHorizontal="true"
+                        id="BPMN_Shape_[LANE_UUID]">
+        <omgdc:Bounds height="170" width="1160" x="40" y="95"/>
+      </bpmndi:BPMNShape>
+
+      <!-- ================================================
+           POOL: IT (Black-Box, unten)
+           ================================================ -->
+      <bpmndi:BPMNShape bpmnElement="_[IT_PARTICIPANT_UUID]"
+                        isHorizontal="true"
+                        id="BPMN_Shape_[IT_PARTICIPANT_UUID]">
+        <omgdc:Bounds height="57" width="1200" x="0" y="303"/>
+      </bpmndi:BPMNShape>
+
+      <!-- ================================================
+           PROZESSELEMENTE: Organisation
+           Tasks: y=140, height=80, width=100
+           Events: y=152, height=36, width=36
+           ================================================ -->
+
+      <!-- Start Event -->
+      <bpmndi:BPMNShape bpmnElement="_[START_UUID]"
+                        id="BPMN_Shape_[START_UUID]">
+        <omgdc:Bounds height="36" width="36" x="100" y="152"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task 1 -->
+      <bpmndi:BPMNShape bpmnElement="_[TASK1_UUID]"
+                        id="BPMN_Shape_[TASK1_UUID]">
+        <omgdc:Bounds height="80" width="100" x="200" y="140"/>
+      </bpmndi:BPMNShape>
+
+      <!-- End Event -->
+      <bpmndi:BPMNShape bpmnElement="_[END_UUID]"
+                        id="BPMN_Shape_[END_UUID]">
+        <omgdc:Bounds height="36" width="36" x="370" y="152"/>
+      </bpmndi:BPMNShape>
+
+      <!-- ================================================
+           SEQUENCE FLOWS
+           ================================================ -->
+      <bpmndi:BPMNEdge bpmnElement="_[FLOW1_UUID]"
+                       id="BPMN_Edge_[FLOW1_UUID]">
+        <omgdi:waypoint x="136" y="170"/>
+        <omgdi:waypoint x="200" y="170"/>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge bpmnElement="_[FLOW2_UUID]"
+                       id="BPMN_Edge_[FLOW2_UUID]">
+        <omgdi:waypoint x="300" y="170"/>
+        <omgdi:waypoint x="370" y="170"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ================================================
+           MESSAGE FLOWS
+           WICHTIG: Y-Koordinaten muessen Pool-Grenzen beruecksichtigen
+           - Kunde Pool:        y=0 bis y=57
+           - Organisation Pool: y=95 bis y=265
+           - IT Pool:           y=303 bis y=360
+           ================================================ -->
+
+      <!-- Message Flow: Kunde → Start Event -->
+      <bpmndi:BPMNEdge bpmnElement="_[MSGFLOW_K_O_UUID]"
+                       id="BPMN_Edge_[MSGFLOW_K_O_UUID]">
+        <omgdi:waypoint x="118" y="57"/>
+        <omgdi:waypoint x="118" y="152"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="118" y="90" width="60" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- Message Flow: Task → IT -->
+      <bpmndi:BPMNEdge bpmnElement="_[MSGFLOW_O_IT_UUID]"
+                       id="BPMN_Edge_[MSGFLOW_O_IT_UUID]">
+        <omgdi:waypoint x="250" y="220"/>
+        <omgdi:waypoint x="250" y="303"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="250" y="250" width="60" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- Message Flow: IT → Task/Event -->
+      <bpmndi:BPMNEdge bpmnElement="_[MSGFLOW_IT_O_UUID]"
+                       id="BPMN_Edge_[MSGFLOW_IT_O_UUID]">
+        <omgdi:waypoint x="320" y="303"/>
+        <omgdi:waypoint x="320" y="220"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="320" y="250" width="60" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- Message Flow: End Event → Kunde -->
+      <bpmndi:BPMNEdge bpmnElement="_[MSGFLOW_O_K_UUID]"
+                       id="BPMN_Edge_[MSGFLOW_O_K_UUID]">
+        <omgdi:waypoint x="388" y="152"/>
+        <omgdi:waypoint x="388" y="57"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="388" y="90" width="60" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</definitions>
