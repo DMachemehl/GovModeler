@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="utf-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:adonis="http://www.boc-group.com"
+             xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="definition_bib_tp3_medien_erwerben"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd"
+             targetNamespace="http://www.boc-group.com">
+
+  <!-- =====================================================
+       COLLABORATION: TP3 Medien erwerben
+       Uebergeordneter Prozess: Medien managen
+       Stadtbibliothek Stuttgart
+
+       Struktur: 2-Pool-Kollaboration (Kunde | Organisation)
+         Kunde:        y=0,    Hoehe=380  | Tasks y=152, Events y=172, Center y=190
+         Organisation: y=390,  Hoehe=600  | 2 Lanes (je 300px)
+           Lane 1 Lektoratsteam:  y=390,  Center y=540
+           Lane 2 Erwerbung:      y=690,  Center y=840
+
+       Supplier: TP2 Markt sichten → Kaufentscheidung mit Titelliste
+       Happy Path: Kaufentscheidung weitergeleitet → Medium ist bestellt
+       Message Flow: Organisation → Kunde (Bestellbestaetigung)
+       ===================================================== -->
+  <collaboration id="Collaboration_bib_tp3_medien_erwerben"
+                 name="TP3 Medien erwerben | Medien managen"
+                 isClosed="false">
+
+    <participant processRef="process_Kunde_tp3"
+                 name="Kunde"
+                 id="_Kunde_Participant_tp3"/>
+    <participant processRef="process_Org_tp3"
+                 name="Organisation"
+                 id="_Org_Participant_tp3"/>
+
+    <!-- Message Flow: Organisation → Kunde -->
+    <!-- Erwerbung bestaetigt dem Bibliotheksnutzer die Bestellung seines Anschaffungsvorschlags -->
+    <messageFlow id="_MF_Org_to_K_tp3"
+                 name="Bestellbestaetigung"
+                 sourceRef="_Org_Task_O6_tp3"
+                 targetRef="_Kunde_Task_K1_tp3"/>
+
+  </collaboration>
+
+  <!-- =====================================================
+       PROZESS: Kunde (Bibliotheksnutzer/-in)
+       e2e-Rahmen: Anschaffungsvorschlag eingereicht → Bestellung in Auftrag gegeben
+       ===================================================== -->
+  <process name="Kunde"
+           id="process_Kunde_tp3"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_Kunde_tp3">
+      <lane name="Bibliotheksnutzer/-in" id="_Kunde_Lane_tp3">
+        <flowNodeRef>_Kunde_Start_tp3</flowNodeRef>
+        <flowNodeRef>_Kunde_Task_K1_tp3</flowNodeRef>
+        <flowNodeRef>_Kunde_End_tp3</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <!-- Start Event: Anschaffungsvorschlag eingereicht -->
+    <startEvent name="Anschaffungsvorschlag&#10;eingereicht" id="_Kunde_Start_tp3">
+      <outgoing>_Kunde_Flow_01_tp3</outgoing>
+    </startEvent>
+
+    <!-- K1: Bestellbestaetigung erhalten -->
+    <!-- Bibliotheksnutzer erhaelt Rueckmeldung ueber die erfolgte Bestellung -->
+    <task name="Bestellbestaetigung&#10;erhalten" id="_Kunde_Task_K1_tp3" isForCompensation="false">
+      <incoming>_Kunde_Flow_01_tp3</incoming>
+      <outgoing>_Kunde_Flow_02_tp3</outgoing>
+    </task>
+
+    <!-- End Event: Bestellung in Auftrag gegeben -->
+    <endEvent name="Bestellung in&#10;Auftrag gegeben" id="_Kunde_End_tp3">
+      <incoming>_Kunde_Flow_02_tp3</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows Kunde -->
+    <sequenceFlow sourceRef="_Kunde_Start_tp3"    targetRef="_Kunde_Task_K1_tp3" id="_Kunde_Flow_01_tp3"/>
+    <sequenceFlow sourceRef="_Kunde_Task_K1_tp3"  targetRef="_Kunde_End_tp3"     id="_Kunde_Flow_02_tp3"/>
+
+  </process>
+
+  <!-- =====================================================
+       PROZESS: Organisation (Stadtbibliothek Stuttgart)
+       Lanes: Lektoratsteam | Erwerbung
+
+       Ablauf:
+         O-Start → O1 Bestellliste aufbereiten
+                 → O2 Lieferant auswaehlen → O3 Bestellung in aDIS/BMS erfassen
+                 → O4 Bestellung an Lieferant uebermitteln
+                 → O5 Bestellbestaetigung pruefen
+                 → O6 Leser:innenwunsch bestaetigen → O-End
+       ===================================================== -->
+  <process name="Organisation"
+           id="process_Org_tp3"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_Org_tp3">
+
+      <!-- Lane 1: Lektoratsteam (y=390, Hoehe=300) -->
+      <lane name="Lektoratsteam" id="_Org_Lane_Lektorat_tp3">
+        <flowNodeRef>_Org_Start_tp3</flowNodeRef>
+        <flowNodeRef>_Org_Task_O1_tp3</flowNodeRef>
+      </lane>
+
+      <!-- Lane 2: Erwerbung (y=690, Hoehe=300) -->
+      <lane name="Erwerbung" id="_Org_Lane_Erwerbung_tp3">
+        <flowNodeRef>_Org_Task_O2_tp3</flowNodeRef>
+        <flowNodeRef>_Org_Task_O3_tp3</flowNodeRef>
+        <flowNodeRef>_Org_Task_O4_tp3</flowNodeRef>
+        <flowNodeRef>_Org_Task_O5_tp3</flowNodeRef>
+        <flowNodeRef>_Org_Task_O6_tp3</flowNodeRef>
+        <flowNodeRef>_Org_End_tp3</flowNodeRef>
+      </lane>
+
+    </laneSet>
+
+    <!-- Start Event: Kaufentscheidung fuer Bestellung weitergeleitet -->
+    <!-- Interner Uebergabepunkt aus TP2: Markt sichten -->
+    <startEvent name="Kaufentscheidung fuer&#10;Bestellung weitergeleitet" id="_Org_Start_tp3">
+      <outgoing>_Org_Flow_01_tp3</outgoing>
+    </startEvent>
+
+    <!-- O1: Bestellliste aufbereiten (Lektoratsteam) -->
+    <!-- Titelliste aus TP2 in bestellfertige Bestelldaten ueberfuehren; -->
+    <!-- ISBNs, Medienformat, Exemplaranzahl und Standortzuordnung ergaenzen -->
+    <task name="Bestellliste&#10;aufbereiten" id="_Org_Task_O1_tp3" isForCompensation="false">
+      <incoming>_Org_Flow_01_tp3</incoming>
+      <outgoing>_Org_Flow_02_tp3</outgoing>
+    </task>
+
+    <!-- O2: Lieferant auswaehlen (Erwerbung) -->
+    <!-- Lieferant auf Basis von Vertraegen, Konditionen, Lieferzeiten und -->
+    <!-- Medienformat bestimmen (Buchhaendler, Verlage, digitale Plattformen) -->
+    <task name="Lieferant&#10;auswaehlen" id="_Org_Task_O2_tp3" isForCompensation="false">
+      <incoming>_Org_Flow_02_tp3</incoming>
+      <outgoing>_Org_Flow_03_tp3</outgoing>
+    </task>
+
+    <!-- O3: Bestellung in aDIS/BMS erfassen (Erwerbung) -->
+    <!-- Bestellvorgang im Erwerbungsmodul anlegen; Lieferantenzuordnung, -->
+    <!-- Kostenstelle und Erwerbungsbudget zuweisen -->
+    <task name="Bestellung in&#10;aDIS/BMS erfassen" id="_Org_Task_O3_tp3" isForCompensation="false">
+      <incoming>_Org_Flow_03_tp3</incoming>
+      <outgoing>_Org_Flow_04_tp3</outgoing>
+    </task>
+
+    <!-- O4: Bestellung an Lieferant uebermitteln (Erwerbung) -->
+    <!-- Formelle Bestellung per EDI-Schnittstelle, E-Mail oder -->
+    <!-- Lieferantenportal uebermitteln; Bestellauftrag dokumentieren -->
+    <task name="Bestellung an&#10;Lieferant uebermitteln" id="_Org_Task_O4_tp3" isForCompensation="false">
+      <incoming>_Org_Flow_04_tp3</incoming>
+      <outgoing>_Org_Flow_05_tp3</outgoing>
+    </task>
+
+    <!-- O5: Bestellbestaetigung pruefen (Erwerbung) -->
+    <!-- Eingehende Bestellbestaetigung auf Richtigkeit pruefen -->
+    <!-- (Titel, Menge, Preis, Liefertermin); Status in aDIS/BMS aktualisieren -->
+    <task name="Bestellbestaetigung&#10;pruefen" id="_Org_Task_O5_tp3" isForCompensation="false">
+      <incoming>_Org_Flow_05_tp3</incoming>
+      <outgoing>_Org_Flow_06_tp3</outgoing>
+    </task>
+
+    <!-- O6: Leser:innenwunsch bestaetigen (Erwerbung) -->
+    <!-- Bibliotheksnutzer mit eingereichten Anschaffungsvorschlag -->
+    <!-- ueber die erfolgte Bestellung informieren -->
+    <task name="Leser:innenwunsch&#10;bestaetigen" id="_Org_Task_O6_tp3" isForCompensation="false">
+      <incoming>_Org_Flow_06_tp3</incoming>
+      <outgoing>_Org_Flow_07_tp3</outgoing>
+    </task>
+
+    <!-- End Event: Medium ist bestellt -->
+    <endEvent name="Medium ist&#10;bestellt" id="_Org_End_tp3">
+      <incoming>_Org_Flow_07_tp3</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows Organisation -->
+    <sequenceFlow sourceRef="_Org_Start_tp3"     targetRef="_Org_Task_O1_tp3" id="_Org_Flow_01_tp3"/>
+    <sequenceFlow sourceRef="_Org_Task_O1_tp3"   targetRef="_Org_Task_O2_tp3" id="_Org_Flow_02_tp3"/>
+    <sequenceFlow sourceRef="_Org_Task_O2_tp3"   targetRef="_Org_Task_O3_tp3" id="_Org_Flow_03_tp3"/>
+    <sequenceFlow sourceRef="_Org_Task_O3_tp3"   targetRef="_Org_Task_O4_tp3" id="_Org_Flow_04_tp3"/>
+    <sequenceFlow sourceRef="_Org_Task_O4_tp3"   targetRef="_Org_Task_O5_tp3" id="_Org_Flow_05_tp3"/>
+    <sequenceFlow sourceRef="_Org_Task_O5_tp3"   targetRef="_Org_Task_O6_tp3" id="_Org_Flow_06_tp3"/>
+    <sequenceFlow sourceRef="_Org_Task_O6_tp3"   targetRef="_Org_End_tp3"     id="_Org_Flow_07_tp3"/>
+
+  </process>
+
+  <!-- =====================================================
+       BPMN-DI: Diagramm-Visualisierung
+
+       Koordinatensystem:
+         Kunde:        y=0    – y=380    | Events y=172, Tasks y=152, Center y=190
+         Organisation: y=390  – y=990
+           Lane 1 Lektoratsteam:  y=390 – y=690  | Events y=522, Tasks y=502, Center y=540
+           Lane 2 Erwerbung:      y=690 – y=990  | Events y=822, Tasks y=802, Center y=840
+
+       Task-Dimensionen:  151 x 76 px
+       Event-Dimensionen:  36 x 36 px
+       Horizontaler Abstand: 60 px
+       X-Positionen (Lane 1): Start=120, O1=220
+       X-Positionen (Lane 2): O2=220, O3=431, O4=642, O5=853, O6=1064, End=1275
+
+       Sequence Flow O1 → O2 (Lane 1 → Lane 2): senkrecht nach unten (gleiche x-Achse x=295)
+       Message Flow O6 → K1 (Org → Kunde): aufwaerts (5px Abstand zur Pool-Grenze y=395)
+         (1139,802) → (1139,395) → (295,395) → (295,228)
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_bib_tp3">
+    <bpmndi:BPMNPlane bpmnElement="Collaboration_bib_tp3_medien_erwerben">
+
+      <!-- ===== POOL: Kunde (y=0..380) ===== -->
+      <bpmndi:BPMNShape bpmnElement="_Kunde_Participant_tp3" isHorizontal="true">
+        <omgdc:Bounds x="10" y="0" width="1840" height="380"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_Kunde_Lane_tp3" isHorizontal="true">
+        <omgdc:Bounds x="40" y="0" width="1810" height="380"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Start Event (Anschaffungsvorschlag eingereicht) -->
+      <bpmndi:BPMNShape bpmnElement="_Kunde_Start_tp3">
+        <omgdc:Bounds x="120" y="172" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: K1 - Bestellbestaetigung erhalten -->
+      <bpmndi:BPMNShape bpmnElement="_Kunde_Task_K1_tp3">
+        <omgdc:Bounds x="220" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: End Event (Bestellung in Auftrag gegeben) -->
+      <bpmndi:BPMNShape bpmnElement="_Kunde_End_tp3">
+        <omgdc:Bounds x="440" y="172" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Sequence Flows -->
+      <bpmndi:BPMNEdge bpmnElement="_Kunde_Flow_01_tp3">
+        <omgdi:waypoint x="156" y="190"/>
+        <omgdi:waypoint x="220" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_Kunde_Flow_02_tp3">
+        <omgdi:waypoint x="371" y="190"/>
+        <omgdi:waypoint x="440" y="190"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== POOL: Organisation (y=390..990) ===== -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Participant_tp3" isHorizontal="true">
+        <omgdc:Bounds x="10" y="390" width="1840" height="600"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane 1: Lektoratsteam (y=390..690) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Lane_Lektorat_tp3" isHorizontal="true">
+        <omgdc:Bounds x="40" y="390" width="1810" height="300"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane 2: Erwerbung (y=690..990) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Lane_Erwerbung_tp3" isHorizontal="true">
+        <omgdc:Bounds x="40" y="690" width="1810" height="300"/>
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Lane 1: Lektoratsteam ===== -->
+
+      <!-- Org: Start Event (Kaufentscheidung fuer Bestellung weitergeleitet) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Start_tp3">
+        <omgdc:Bounds x="120" y="522" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O1 - Bestellliste aufbereiten -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O1_tp3">
+        <omgdc:Bounds x="220" y="502" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Lane 2: Erwerbung ===== -->
+
+      <!-- Org: O2 - Lieferant auswaehlen -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O2_tp3">
+        <omgdc:Bounds x="220" y="802" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O3 - Bestellung in aDIS/BMS erfassen -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O3_tp3">
+        <omgdc:Bounds x="431" y="802" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O4 - Bestellung an Lieferant uebermitteln -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O4_tp3">
+        <omgdc:Bounds x="642" y="802" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O5 - Bestellbestaetigung pruefen -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O5_tp3">
+        <omgdc:Bounds x="853" y="802" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O6 - Leser:innenwunsch bestaetigen -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O6_tp3">
+        <omgdc:Bounds x="1064" y="802" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: End Event (Medium ist bestellt) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_End_tp3">
+        <omgdc:Bounds x="1275" y="822" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Sequence Flows Organisation ===== -->
+
+      <!-- O-Start → O1 (Lane 1) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_01_tp3">
+        <omgdi:waypoint x="156" y="540"/>
+        <omgdi:waypoint x="220" y="540"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O1 → O2 (Lane 1 → Lane 2): senkrecht nach unten auf gleicher x-Achse -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_02_tp3">
+        <omgdi:waypoint x="295" y="578"/>
+        <omgdi:waypoint x="295" y="802"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O2 → O3 (Lane 2) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_03_tp3">
+        <omgdi:waypoint x="371" y="840"/>
+        <omgdi:waypoint x="431" y="840"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O3 → O4 (Lane 2) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_04_tp3">
+        <omgdi:waypoint x="582" y="840"/>
+        <omgdi:waypoint x="642" y="840"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O4 → O5 (Lane 2) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_05_tp3">
+        <omgdi:waypoint x="793" y="840"/>
+        <omgdi:waypoint x="853" y="840"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O5 → O6 (Lane 2) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_06_tp3">
+        <omgdi:waypoint x="1004" y="840"/>
+        <omgdi:waypoint x="1064" y="840"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O6 → O-End (Lane 2) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_07_tp3">
+        <omgdi:waypoint x="1215" y="840"/>
+        <omgdi:waypoint x="1275" y="840"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== MESSAGE FLOW: Organisation → Kunde ===== -->
+      <!-- O6 (Leser:innenwunsch bestaetigen) → K1 (Bestellbestaetigung erhalten) -->
+      <!-- Route: oben aus O6, 5px ueber Pool-Grenze (y=395), links zu K1, hoch -->
+      <bpmndi:BPMNEdge bpmnElement="_MF_Org_to_K_tp3">
+        <omgdi:waypoint x="1139" y="802"/>
+        <omgdi:waypoint x="1139" y="395"/>
+        <omgdi:waypoint x="295" y="395"/>
+        <omgdi:waypoint x="295" y="228"/>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</definitions>

@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="utf-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:adonis="http://www.boc-group.com"
+             xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="definition_bib_tp4_medien_einarbeiten"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd"
+             targetNamespace="http://www.boc-group.com">
+
+  <!-- =====================================================
+       COLLABORATION: TP4 Medien einarbeiten
+       Uebergeordneter Prozess: Medien managen
+       Stadtbibliothek Stuttgart
+
+       Struktur: 2-Pool-Kollaboration (Kunde | Organisation)
+         Kunde:        y=0,    Hoehe=380  | Tasks y=152, Events y=172, Center y=190
+         Organisation: y=390,  Hoehe=900  | 3 Lanes (je 300px)
+           Lane 1 Erwerbung:      y=390,  Center y=540
+           Lane 2 Katalogisierung: y=690,  Center y=840
+           Lane 3 Ausleihe:       y=990,  Center y=1140
+
+       Supplier: TP3 Medien erwerben → Medium ist geliefert
+       Happy Path: Medium ist geliefert → Medium ist ausleihfertig
+       Message Flow: Organisation (Ausleihe) → Kunde (Bereitstellungsbenachrichtigung)
+
+       Besonderheit Sequenzfluesse:
+         O2→O3: Lane 1 → Lane 2 (rechts dann runter)
+         O4→O5: Lane 2 → Lane 1 (senkrecht hoch, gleiche x-Achse x=928)
+         O5→O6: Lane 1 → Lane 3 (rechts dann runter, ueberspringt Lane 2)
+       ===================================================== -->
+  <collaboration id="Collaboration_bib_tp4_medien_einarbeiten"
+                 name="TP4 Medien einarbeiten | Medien managen"
+                 isClosed="false">
+
+    <participant processRef="process_Kunde_tp4"
+                 name="Kunde"
+                 id="_Kunde_Participant_tp4"/>
+    <participant processRef="process_Org_tp4"
+                 name="Organisation"
+                 id="_Org_Participant_tp4"/>
+
+    <!-- Message Flow: Organisation → Kunde -->
+    <!-- Ausleihe sendet Bereitstellungsbenachrichtigung an Bibliotheksnutzer mit Vormerkung -->
+    <messageFlow id="_MF_Org_to_K_tp4"
+                 name="Bereitstellungsbenachrichtigung"
+                 sourceRef="_Org_Task_O7_tp4"
+                 targetRef="_Kunde_Task_K1_tp4"/>
+
+  </collaboration>
+
+  <!-- =====================================================
+       PROZESS: Kunde (Bibliotheksnutzer/-in)
+       e2e-Rahmen: Medium vorgemerkt → Medium zur Abholung bereit
+       ===================================================== -->
+  <process name="Kunde"
+           id="process_Kunde_tp4"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_Kunde_tp4">
+      <lane name="Bibliotheksnutzer/-in" id="_Kunde_Lane_tp4">
+        <flowNodeRef>_Kunde_Start_tp4</flowNodeRef>
+        <flowNodeRef>_Kunde_Task_K1_tp4</flowNodeRef>
+        <flowNodeRef>_Kunde_End_tp4</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <!-- Start Event: Medium vorgemerkt -->
+    <startEvent name="Medium&#10;vorgemerkt" id="_Kunde_Start_tp4">
+      <outgoing>_Kunde_Flow_01_tp4</outgoing>
+    </startEvent>
+
+    <!-- K1: Bereitstellungsbenachrichtigung erhalten -->
+    <!-- Bibliotheksnutzer erhaelt Nachricht, dass vorgemerktes Medium abholbereit ist -->
+    <task name="Bereitstellungs-&#10;benachrichtigung erhalten" id="_Kunde_Task_K1_tp4" isForCompensation="false">
+      <incoming>_Kunde_Flow_01_tp4</incoming>
+      <outgoing>_Kunde_Flow_02_tp4</outgoing>
+    </task>
+
+    <!-- End Event: Medium zur Abholung bereit -->
+    <endEvent name="Medium zur&#10;Abholung bereit" id="_Kunde_End_tp4">
+      <incoming>_Kunde_Flow_02_tp4</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows Kunde -->
+    <sequenceFlow sourceRef="_Kunde_Start_tp4"    targetRef="_Kunde_Task_K1_tp4" id="_Kunde_Flow_01_tp4"/>
+    <sequenceFlow sourceRef="_Kunde_Task_K1_tp4"  targetRef="_Kunde_End_tp4"     id="_Kunde_Flow_02_tp4"/>
+
+  </process>
+
+  <!-- =====================================================
+       PROZESS: Organisation (Stadtbibliothek Stuttgart)
+       Lanes: Erwerbung | Katalogisierung | Ausleihe
+
+       Ablauf:
+         O-Start → O1 Lieferung entgegennehmen und pruefen
+                 → O2 Medium inventarisieren (Erwerbung)
+                 → O3 Medium katalogisieren (Katalogisierung)
+                 → O4 Medium physisch bearbeiten (Katalogisierung)
+                 → O5 Rechnung pruefen und bezahlen (Erwerbung)
+                 → O6 Medium fuer Ausleihe freigeben (Ausleihe)
+                 → O7 Bereitstellungsbenachrichtigung versenden (Ausleihe)
+                 → O-End
+       ===================================================== -->
+  <process name="Organisation"
+           id="process_Org_tp4"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_Org_tp4">
+
+      <!-- Lane 1: Erwerbung (y=390, Hoehe=300) -->
+      <!-- Enthaelt: O-Start, O1, O2, O5 -->
+      <lane name="Erwerbung" id="_Org_Lane_Erwerbung_tp4">
+        <flowNodeRef>_Org_Start_tp4</flowNodeRef>
+        <flowNodeRef>_Org_Task_O1_tp4</flowNodeRef>
+        <flowNodeRef>_Org_Task_O2_tp4</flowNodeRef>
+        <flowNodeRef>_Org_Task_O5_tp4</flowNodeRef>
+      </lane>
+
+      <!-- Lane 2: Katalogisierung (y=690, Hoehe=300) -->
+      <!-- Enthaelt: O3, O4 -->
+      <lane name="Katalogisierung" id="_Org_Lane_Katalog_tp4">
+        <flowNodeRef>_Org_Task_O3_tp4</flowNodeRef>
+        <flowNodeRef>_Org_Task_O4_tp4</flowNodeRef>
+      </lane>
+
+      <!-- Lane 3: Ausleihe (y=990, Hoehe=300) -->
+      <!-- Enthaelt: O6, O7, O-End -->
+      <lane name="Ausleihe" id="_Org_Lane_Ausleihe_tp4">
+        <flowNodeRef>_Org_Task_O6_tp4</flowNodeRef>
+        <flowNodeRef>_Org_Task_O7_tp4</flowNodeRef>
+        <flowNodeRef>_Org_End_tp4</flowNodeRef>
+      </lane>
+
+    </laneSet>
+
+    <!-- Start Event: Medium ist geliefert -->
+    <!-- Uebergabepunkt aus TP3: Medien erwerben -->
+    <startEvent name="Medium ist&#10;geliefert" id="_Org_Start_tp4">
+      <outgoing>_Org_Flow_01_tp4</outgoing>
+    </startEvent>
+
+    <!-- O1: Lieferung entgegennehmen und pruefen (Erwerbung) -->
+    <!-- Vollstaendigkeit und Unversehrtheit gegen Bestelldaten in aDIS/BMS pruefen -->
+    <task name="Lieferung entgegennehmen&#10;und pruefen" id="_Org_Task_O1_tp4" isForCompensation="false">
+      <incoming>_Org_Flow_01_tp4</incoming>
+      <outgoing>_Org_Flow_02_tp4</outgoing>
+    </task>
+
+    <!-- O2: Medium inventarisieren (Erwerbung) -->
+    <!-- Exemplardatensatz in aDIS/BMS anlegen; Signatur und Standort zuweisen; -->
+    <!-- Inventarnummer zuordnen -->
+    <task name="Medium&#10;inventarisieren" id="_Org_Task_O2_tp4" isForCompensation="false">
+      <incoming>_Org_Flow_02_tp4</incoming>
+      <outgoing>_Org_Flow_03_tp4</outgoing>
+    </task>
+
+    <!-- O3: Medium katalogisieren (Katalogisierung) -->
+    <!-- Titelaufnahme und Sacherschliessung in aDIS/BMS; -->
+    <!-- Schlagwortvergabe, Systematik; Titeldaten fuer OPAC aufbereiten -->
+    <task name="Medium&#10;katalogisieren" id="_Org_Task_O3_tp4" isForCompensation="false">
+      <incoming>_Org_Flow_03_tp4</incoming>
+      <outgoing>_Org_Flow_04_tp4</outgoing>
+    </task>
+
+    <!-- O4: Medium physisch bearbeiten (Katalogisierung) -->
+    <!-- Signaturschild, Institutionsstempel, RFID-Chip/Sicherungsstreifen; -->
+    <!-- Schutzumschlag anbringen; medientypspezifische Bearbeitung -->
+    <task name="Medium physisch&#10;bearbeiten" id="_Org_Task_O4_tp4" isForCompensation="false">
+      <incoming>_Org_Flow_04_tp4</incoming>
+      <outgoing>_Org_Flow_05_tp4</outgoing>
+    </task>
+
+    <!-- O5: Rechnung pruefen und bezahlen (Erwerbung) -->
+    <!-- Lieferantenrechnung sachlich und rechnerisch pruefen; Abgleich mit -->
+    <!-- Bestelldaten in aDIS/BMS; Rechnungsbetrag anweisen; Erwerbungsbudget buchen -->
+    <task name="Rechnung pruefen&#10;und bezahlen" id="_Org_Task_O5_tp4" isForCompensation="false">
+      <incoming>_Org_Flow_05_tp4</incoming>
+      <outgoing>_Org_Flow_06_tp4</outgoing>
+    </task>
+
+    <!-- O6: Medium fuer Ausleihe freigeben (Ausleihe) -->
+    <!-- Exemplardatensatz in aDIS/BMS auf "verfuegbar" setzen; -->
+    <!-- Medium am Standort aufstellen; bei Vormerkung: Abholbereitschaft herstellen -->
+    <task name="Medium fuer&#10;Ausleihe freigeben" id="_Org_Task_O6_tp4" isForCompensation="false">
+      <incoming>_Org_Flow_06_tp4</incoming>
+      <outgoing>_Org_Flow_07_tp4</outgoing>
+    </task>
+
+    <!-- O7: Bereitstellungsbenachrichtigung versenden (Ausleihe) -->
+    <!-- Bibliotheksnutzer mit Vormerkung per E-Mail oder aDIS/WebOPAC -->
+    <!-- ueber Abholbereitschaft informieren; Abholungsfrist setzen -->
+    <task name="Bereitstellungs-&#10;benachrichtigung versenden" id="_Org_Task_O7_tp4" isForCompensation="false">
+      <incoming>_Org_Flow_07_tp4</incoming>
+      <outgoing>_Org_Flow_08_tp4</outgoing>
+    </task>
+
+    <!-- End Event: Medium ist ausleihfertig -->
+    <endEvent name="Medium ist&#10;ausleihfertig" id="_Org_End_tp4">
+      <incoming>_Org_Flow_08_tp4</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows Organisation -->
+    <sequenceFlow sourceRef="_Org_Start_tp4"     targetRef="_Org_Task_O1_tp4" id="_Org_Flow_01_tp4"/>
+    <sequenceFlow sourceRef="_Org_Task_O1_tp4"   targetRef="_Org_Task_O2_tp4" id="_Org_Flow_02_tp4"/>
+    <sequenceFlow sourceRef="_Org_Task_O2_tp4"   targetRef="_Org_Task_O3_tp4" id="_Org_Flow_03_tp4"/>
+    <sequenceFlow sourceRef="_Org_Task_O3_tp4"   targetRef="_Org_Task_O4_tp4" id="_Org_Flow_04_tp4"/>
+    <sequenceFlow sourceRef="_Org_Task_O4_tp4"   targetRef="_Org_Task_O5_tp4" id="_Org_Flow_05_tp4"/>
+    <sequenceFlow sourceRef="_Org_Task_O5_tp4"   targetRef="_Org_Task_O6_tp4" id="_Org_Flow_06_tp4"/>
+    <sequenceFlow sourceRef="_Org_Task_O6_tp4"   targetRef="_Org_Task_O7_tp4" id="_Org_Flow_07_tp4"/>
+    <sequenceFlow sourceRef="_Org_Task_O7_tp4"   targetRef="_Org_End_tp4"     id="_Org_Flow_08_tp4"/>
+
+  </process>
+
+  <!-- =====================================================
+       BPMN-DI: Diagramm-Visualisierung
+
+       Koordinatensystem:
+         Kunde:        y=0    – y=380    | Events y=172, Tasks y=152, Center y=190
+         Organisation: y=390  – y=1290
+           Lane 1 Erwerbung:       y=390  – y=690  | Events y=522, Tasks y=502, Center y=540
+           Lane 2 Katalogisierung: y=690  – y=990  | Events y=822, Tasks y=802, Center y=840
+           Lane 3 Ausleihe:        y=990  – y=1290 | Events y=1122, Tasks y=1102, Center y=1140
+
+       Task-Dimensionen:  151 x 76 px
+       Event-Dimensionen:  36 x 36 px
+       Horizontaler Abstand: 60 px
+
+       X-Positionen:
+         Lane 1: Start=120, O1=220, O2=431, O5=853
+         Lane 2: O3=642, O4=853 (gleiche x-Achse wie O5 fuer senkrechten Fluss)
+         Lane 3: O6=1064, O7=1275, End=1486
+
+       Sequenzfluss-Besonderheiten:
+         O2→O3 (Lane1→Lane2): rechts nach x=717, dann runter nach y=802
+         O4→O5 (Lane2→Lane1): senkrecht hoch auf x=928 von y=802 nach y=502
+         O5→O6 (Lane1→Lane3): rechts nach x=1139, dann runter nach y=1102
+
+       Message Flow (5px Abstand zur Pool-Grenze y=395):
+         O7 (1350,1102) → (1350,395) → (295,395) → (295,228)
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_bib_tp4">
+    <bpmndi:BPMNPlane bpmnElement="Collaboration_bib_tp4_medien_einarbeiten">
+
+      <!-- ===== POOL: Kunde (y=0..380) ===== -->
+      <bpmndi:BPMNShape bpmnElement="_Kunde_Participant_tp4" isHorizontal="true">
+        <omgdc:Bounds x="10" y="0" width="1840" height="380"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_Kunde_Lane_tp4" isHorizontal="true">
+        <omgdc:Bounds x="40" y="0" width="1810" height="380"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Start Event (Medium vorgemerkt) -->
+      <bpmndi:BPMNShape bpmnElement="_Kunde_Start_tp4">
+        <omgdc:Bounds x="120" y="172" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: K1 - Bereitstellungsbenachrichtigung erhalten -->
+      <bpmndi:BPMNShape bpmnElement="_Kunde_Task_K1_tp4">
+        <omgdc:Bounds x="220" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: End Event (Medium zur Abholung bereit) -->
+      <bpmndi:BPMNShape bpmnElement="_Kunde_End_tp4">
+        <omgdc:Bounds x="440" y="172" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Sequence Flows -->
+      <bpmndi:BPMNEdge bpmnElement="_Kunde_Flow_01_tp4">
+        <omgdi:waypoint x="156" y="190"/>
+        <omgdi:waypoint x="220" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_Kunde_Flow_02_tp4">
+        <omgdi:waypoint x="371" y="190"/>
+        <omgdi:waypoint x="440" y="190"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== POOL: Organisation (y=390..1290) ===== -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Participant_tp4" isHorizontal="true">
+        <omgdc:Bounds x="10" y="390" width="1840" height="900"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane 1: Erwerbung (y=390..690) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Lane_Erwerbung_tp4" isHorizontal="true">
+        <omgdc:Bounds x="40" y="390" width="1810" height="300"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane 2: Katalogisierung (y=690..990) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Lane_Katalog_tp4" isHorizontal="true">
+        <omgdc:Bounds x="40" y="690" width="1810" height="300"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane 3: Ausleihe (y=990..1290) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Lane_Ausleihe_tp4" isHorizontal="true">
+        <omgdc:Bounds x="40" y="990" width="1810" height="300"/>
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Lane 1: Erwerbung ===== -->
+
+      <!-- Org: Start Event (Medium ist geliefert) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Start_tp4">
+        <omgdc:Bounds x="120" y="522" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O1 - Lieferung entgegennehmen und pruefen -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O1_tp4">
+        <omgdc:Bounds x="220" y="502" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O2 - Medium inventarisieren -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O2_tp4">
+        <omgdc:Bounds x="431" y="502" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O5 - Rechnung pruefen und bezahlen (nach Rueckkehr aus Lane 2) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O5_tp4">
+        <omgdc:Bounds x="853" y="502" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Lane 2: Katalogisierung ===== -->
+
+      <!-- Org: O3 - Medium katalogisieren -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O3_tp4">
+        <omgdc:Bounds x="642" y="802" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O4 - Medium physisch bearbeiten -->
+      <!-- Gleiche x-Achse wie O5 (x=853) fuer senkrechten Aufwaertsfluss O4→O5 -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O4_tp4">
+        <omgdc:Bounds x="853" y="802" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Lane 3: Ausleihe ===== -->
+
+      <!-- Org: O6 - Medium fuer Ausleihe freigeben -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O6_tp4">
+        <omgdc:Bounds x="1064" y="1102" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O7 - Bereitstellungsbenachrichtigung versenden -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O7_tp4">
+        <omgdc:Bounds x="1275" y="1102" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: End Event (Medium ist ausleihfertig) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_End_tp4">
+        <omgdc:Bounds x="1486" y="1122" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Sequence Flows Organisation ===== -->
+
+      <!-- O-Start → O1 (Lane 1) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_01_tp4">
+        <omgdi:waypoint x="156" y="540"/>
+        <omgdi:waypoint x="220" y="540"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O1 → O2 (Lane 1) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_02_tp4">
+        <omgdi:waypoint x="371" y="540"/>
+        <omgdi:waypoint x="431" y="540"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O2 → O3 (Lane 1 → Lane 2): rechts dann runter -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_03_tp4">
+        <omgdi:waypoint x="582" y="540"/>
+        <omgdi:waypoint x="717" y="540"/>
+        <omgdi:waypoint x="717" y="802"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O3 → O4 (Lane 2) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_04_tp4">
+        <omgdi:waypoint x="793" y="840"/>
+        <omgdi:waypoint x="853" y="840"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O4 → O5 (Lane 2 → Lane 1): senkrecht hoch auf gleicher x-Achse x=928 -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_05_tp4">
+        <omgdi:waypoint x="928" y="802"/>
+        <omgdi:waypoint x="928" y="578"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O5 → O6 (Lane 1 → Lane 3): rechts dann runter, ueberspringt Lane 2 -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_06_tp4">
+        <omgdi:waypoint x="1004" y="540"/>
+        <omgdi:waypoint x="1139" y="540"/>
+        <omgdi:waypoint x="1139" y="1102"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O6 → O7 (Lane 3) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_07_tp4">
+        <omgdi:waypoint x="1215" y="1140"/>
+        <omgdi:waypoint x="1275" y="1140"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O7 → O-End (Lane 3) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_08_tp4">
+        <omgdi:waypoint x="1426" y="1140"/>
+        <omgdi:waypoint x="1486" y="1140"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== MESSAGE FLOW: Organisation → Kunde ===== -->
+      <!-- O7 (Bereitstellungsbenachrichtigung versenden) → K1 (Benachrichtigung erhalten) -->
+      <!-- Route: oben aus O7, 5px ueber Pool-Grenze (y=395), links zu K1, hoch -->
+      <bpmndi:BPMNEdge bpmnElement="_MF_Org_to_K_tp4">
+        <omgdi:waypoint x="1350" y="1102"/>
+        <omgdi:waypoint x="1350" y="395"/>
+        <omgdi:waypoint x="295" y="395"/>
+        <omgdi:waypoint x="295" y="228"/>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</definitions>

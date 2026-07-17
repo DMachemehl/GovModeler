@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="utf-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:adonis="http://www.boc-group.com"
+             xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="definition_bib_tp1_umfeldanalyse"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd"
+             targetNamespace="http://www.boc-group.com">
+
+  <!-- =====================================================
+       COLLABORATION: TP1 Umfeldanalyse durchfuehren
+       Uebergeordneter Prozess: Medien managen
+       Stadtbibliothek Stuttgart
+       
+       Struktur: 2-Pool-Kollaboration (Kunde | Organisation)
+         Kunde:        y=0,    Hoehe=380  | Tasks y=152, Events y=172, Center y=190
+         Organisation: y=390,  Hoehe=900  | 3 Lanes (je 300px)
+           Lane 1 Lektoratsteam:          y=390,  Center y=540
+           Lane 2 Ebenen-/Stadtteilltg.:  y=690,  Center y=840
+           Lane 3 Direktionsteam:         y=990,  Center y=1140
+
+       Happy Path: Kundenbeduernis → Bestandsprofil erstellt
+       ===================================================== -->
+  <collaboration id="Collaboration_bib_tp1_umfeldanalyse"
+                 name="TP1 Umfeldanalyse durchfuehren | Medien managen"
+                 isClosed="false">
+
+    <participant processRef="process_Kunde_tp1"
+                 name="Kunde"
+                 id="_Kunde_Participant_tp1"/>
+    <participant processRef="process_Org_tp1"
+                 name="Organisation"
+                 id="_Org_Participant_tp1"/>
+
+    <!-- Message Flow: Kunde → Organisation -->
+    <!-- Bibliotheksnutzer teilt Benutzerinteressen und -bedarfe mit -->
+    <messageFlow id="_MF_K_to_Org"
+                 name="Benutzerbedarfe und Interessen"
+                 sourceRef="_Kunde_Task_K1"
+                 targetRef="_Org_Start"/>
+
+  </collaboration>
+
+  <!-- =====================================================
+       PROZESS: Kunde (Bibliotheksnutzer/-in)
+       e2e-Rahmen: Medienbedarf festgestellt → Benutzerbedarfe beruecksichtigt
+       ===================================================== -->
+  <process name="Kunde"
+           id="process_Kunde_tp1"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_Kunde_tp1">
+      <lane name="Bibliotheksnutzer/-in" id="_Kunde_Lane_tp1">
+        <flowNodeRef>_Kunde_Start</flowNodeRef>
+        <flowNodeRef>_Kunde_Task_K1</flowNodeRef>
+        <flowNodeRef>_Kunde_End</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <!-- Start Event: Medienbedarf festgestellt -->
+    <startEvent name="Medienbedarf&#10;festgestellt" id="_Kunde_Start">
+      <outgoing>_Kunde_Flow_01</outgoing>
+    </startEvent>
+
+    <!-- K1: Benutzerinteressen mitteilen -->
+    <task name="Benutzerinteressen&#10;mitteilen" id="_Kunde_Task_K1" isForCompensation="false">
+      <incoming>_Kunde_Flow_01</incoming>
+      <outgoing>_Kunde_Flow_02</outgoing>
+    </task>
+
+    <!-- End Event: Benutzerbedarfe beruecksichtigt -->
+    <endEvent name="Benutzerbedarfe&#10;beruecksichtigt" id="_Kunde_End">
+      <incoming>_Kunde_Flow_02</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows Kunde -->
+    <sequenceFlow sourceRef="_Kunde_Start"    targetRef="_Kunde_Task_K1" id="_Kunde_Flow_01"/>
+    <sequenceFlow sourceRef="_Kunde_Task_K1"  targetRef="_Kunde_End"     id="_Kunde_Flow_02"/>
+
+  </process>
+
+  <!-- =====================================================
+       PROZESS: Organisation (Stadtbibliothek Stuttgart)
+       Lanes: Lektoratsteam | Ebenen-/Stadtteilleitung | Direktionsteam
+       
+       Ablauf:
+         O-Start → O1 Trendscouting → O2 Partnerbeduerfe → O3 Benutzerinteressen auswerten
+                 → O4 Daten erfassen → O5 Daten priorisieren → O6 Schwerpunkte setzen
+                 → O7 Ressourcenplanung → O8 Bestandsprofil erstellen → O-End
+       ===================================================== -->
+  <process name="Organisation"
+           id="process_Org_tp1"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_Org_tp1">
+
+      <!-- Lane 1: Lektoratsteam (y=390, Hoehe=300) -->
+      <lane name="Lektoratsteam" id="_Org_Lane_Lektorat">
+        <flowNodeRef>_Org_Start</flowNodeRef>
+        <flowNodeRef>_Org_Task_O1</flowNodeRef>
+        <flowNodeRef>_Org_Task_O2</flowNodeRef>
+        <flowNodeRef>_Org_Task_O3</flowNodeRef>
+      </lane>
+
+      <!-- Lane 2: Ebenen-/Stadtteilleitung (y=690, Hoehe=300) -->
+      <lane name="Ebenen-/Stadtteilleitung" id="_Org_Lane_Ebene">
+        <flowNodeRef>_Org_Task_O4</flowNodeRef>
+        <flowNodeRef>_Org_Task_O5</flowNodeRef>
+        <flowNodeRef>_Org_Task_O6</flowNodeRef>
+      </lane>
+
+      <!-- Lane 3: Direktionsteam (y=990, Hoehe=300) -->
+      <lane name="Direktionsteam" id="_Org_Lane_Direktion">
+        <flowNodeRef>_Org_Task_O7</flowNodeRef>
+        <flowNodeRef>_Org_Task_O8</flowNodeRef>
+        <flowNodeRef>_Org_End</flowNodeRef>
+      </lane>
+
+    </laneSet>
+
+    <!-- Message Start Event: Benutzerbedarfe eingegangen -->
+    <startEvent name="Benutzerbedarfe&#10;eingegangen" id="_Org_Start">
+      <outgoing>_Org_Flow_01</outgoing>
+      <messageEventDefinition id="msgEvtDef_Org_Start"/>
+    </startEvent>
+
+    <!-- O1: Trendscouting durchfuehren (Lektoratsteam) -->
+    <!-- Analyse medialer, gesellschaftlicher und kultureller Entwicklungen -->
+    <!-- Einbeziehung nationaler und internationaler fachlicher Netzwerke -->
+    <task name="Trendscouting&#10;durchfuehren" id="_Org_Task_O1" isForCompensation="false">
+      <incoming>_Org_Flow_01</incoming>
+      <outgoing>_Org_Flow_02</outgoing>
+    </task>
+
+    <!-- O2: Partnerbeduerfe erheben (Lektoratsteam) -->
+    <!-- Zweigstellen, andere Aemter, VHS, Stadtteilprojekte, Arbeitskreise -->
+    <task name="Partnerbeduerfe&#10;erheben" id="_Org_Task_O2" isForCompensation="false">
+      <incoming>_Org_Flow_02</incoming>
+      <outgoing>_Org_Flow_03</outgoing>
+    </task>
+
+    <!-- O3: Benutzerinteressen und -bedarfe auswerten (Lektoratsteam) -->
+    <!-- Leser:innenwuensche, Nutzungsstatistiken und zivilgesellschaftliche Bedarfsmeldungen -->
+    <task name="Benutzerinteressen und&#10;-bedarfe auswerten" id="_Org_Task_O3" isForCompensation="false">
+      <incoming>_Org_Flow_03</incoming>
+      <outgoing>_Org_Flow_04</outgoing>
+    </task>
+
+    <!-- O4: Daten erfassen und auswerten (Ebenen-/Stadtteilleitung) -->
+    <!-- Alle Umfeldinformationen zusammenfuehren, strukturieren, nach Relevanz auswerten -->
+    <task name="Daten erfassen&#10;und auswerten" id="_Org_Task_O4" isForCompensation="false">
+      <incoming>_Org_Flow_04</incoming>
+      <outgoing>_Org_Flow_05</outgoing>
+    </task>
+
+    <!-- O5: Daten priorisieren (Ebenen-/Stadtteilleitung) -->
+    <!-- Bewertung im Hinblick auf oeffentlichen Bibliotheksauftrag -->
+    <task name="Daten&#10;priorisieren" id="_Org_Task_O5" isForCompensation="false">
+      <incoming>_Org_Flow_05</incoming>
+      <outgoing>_Org_Flow_06</outgoing>
+    </task>
+
+    <!-- O6: Schwerpunkte setzen (Ebenen-/Stadtteilleitung) -->
+    <!-- Inhaltliche und mediale Entwicklungsschwerpunkte; Ausrichtung an Bibliothekskonzeption -->
+    <task name="Schwerpunkte&#10;setzen" id="_Org_Task_O6" isForCompensation="false">
+      <incoming>_Org_Flow_06</incoming>
+      <outgoing>_Org_Flow_07</outgoing>
+    </task>
+
+    <!-- O7: Ressourcenplanung durchfuehren (Direktionsteam) -->
+    <!-- Personelle, finanzielle, raeumliche Ressourcen planen; Abgleich mit Gesamtkonzeption -->
+    <task name="Ressourcenplanung&#10;durchfuehren" id="_Org_Task_O7" isForCompensation="false">
+      <incoming>_Org_Flow_07</incoming>
+      <outgoing>_Org_Flow_08</outgoing>
+    </task>
+
+    <!-- O8: Bestandsprofil erstellen (Direktionsteam) -->
+    <!-- Bestandsprofil dokumentieren und formal freigeben -->
+    <!-- Output: Grundlage fuer TP2, TP5, TP6, TP7 -->
+    <task name="Bestandsprofil&#10;erstellen" id="_Org_Task_O8" isForCompensation="false">
+      <incoming>_Org_Flow_08</incoming>
+      <outgoing>_Org_Flow_09</outgoing>
+    </task>
+
+    <!-- End Event: Bestandsprofil erstellt und freigegeben -->
+    <endEvent name="Bestandsprofil erstellt&#10;und freigegeben" id="_Org_End">
+      <incoming>_Org_Flow_09</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows Organisation -->
+    <sequenceFlow sourceRef="_Org_Start"     targetRef="_Org_Task_O1" id="_Org_Flow_01"/>
+    <sequenceFlow sourceRef="_Org_Task_O1"   targetRef="_Org_Task_O2" id="_Org_Flow_02"/>
+    <sequenceFlow sourceRef="_Org_Task_O2"   targetRef="_Org_Task_O3" id="_Org_Flow_03"/>
+    <sequenceFlow sourceRef="_Org_Task_O3"   targetRef="_Org_Task_O4" id="_Org_Flow_04"/>
+    <sequenceFlow sourceRef="_Org_Task_O4"   targetRef="_Org_Task_O5" id="_Org_Flow_05"/>
+    <sequenceFlow sourceRef="_Org_Task_O5"   targetRef="_Org_Task_O6" id="_Org_Flow_06"/>
+    <sequenceFlow sourceRef="_Org_Task_O6"   targetRef="_Org_Task_O7" id="_Org_Flow_07"/>
+    <sequenceFlow sourceRef="_Org_Task_O7"   targetRef="_Org_Task_O8" id="_Org_Flow_08"/>
+    <sequenceFlow sourceRef="_Org_Task_O8"   targetRef="_Org_End"     id="_Org_Flow_09"/>
+
+  </process>
+
+  <!-- =====================================================
+       BPMN-DI: Diagramm-Visualisierung
+
+       Koordinatensystem:
+         Kunde:        y=0    – y=380    | Events y=172, Tasks y=152, Center y=190
+         Organisation: y=390  – y=1290
+           Lane 1 Lektoratsteam:         y=390  – y=690  | Events y=522, Tasks y=502, Center y=540
+           Lane 2 Ebenen-/Stadtteilltg.: y=690  – y=990  | Events y=822, Tasks y=802, Center y=840
+           Lane 3 Direktionsteam:        y=990  – y=1290 | Events y=1122, Tasks y=1102, Center y=1140
+
+       Task-Dimensionen:  151 x 76 px
+       Event-Dimensionen:  36 x 36 px
+       Horizontaler Abstand: 60 px (Task-Ende zu naechstem Task-Beginn)
+       X-Positionen (Lane 1+2): Start=120, T1=220, T2=431, T3=642, T4=853, T5=1064, T6=1275
+       X-Positionen (Lane 3):   T7=1064, T8=1275, End=1486
+
+       Message Flow Waypoints (5px Abstand zur Pool-Grenze):
+         K-Task1 (295,228) → (295,385) → (138,385) → (138,522)
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_bib_tp1">
+    <bpmndi:BPMNPlane bpmnElement="Collaboration_bib_tp1_umfeldanalyse">
+
+      <!-- ===== POOL: Kunde (y=0..380) ===== -->
+      <bpmndi:BPMNShape bpmnElement="_Kunde_Participant_tp1" isHorizontal="true">
+        <omgdc:Bounds x="10" y="0" width="1840" height="380"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_Kunde_Lane_tp1" isHorizontal="true">
+        <omgdc:Bounds x="40" y="0" width="1810" height="380"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Start Event (Medienbedarf festgestellt) -->
+      <bpmndi:BPMNShape bpmnElement="_Kunde_Start">
+        <omgdc:Bounds x="120" y="172" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: K1 - Benutzerinteressen mitteilen -->
+      <bpmndi:BPMNShape bpmnElement="_Kunde_Task_K1">
+        <omgdc:Bounds x="220" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: End Event (Benutzerbedarfe beruecksichtigt) -->
+      <bpmndi:BPMNShape bpmnElement="_Kunde_End">
+        <omgdc:Bounds x="440" y="172" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Sequence Flows -->
+      <bpmndi:BPMNEdge bpmnElement="_Kunde_Flow_01">
+        <omgdi:waypoint x="156" y="190"/>
+        <omgdi:waypoint x="220" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_Kunde_Flow_02">
+        <omgdi:waypoint x="371" y="190"/>
+        <omgdi:waypoint x="440" y="190"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== POOL: Organisation (y=390..1290) ===== -->
+      <!-- 3 Lanes: Lektoratsteam | Ebenen-/Stadtteilleitung | Direktionsteam -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Participant_tp1" isHorizontal="true">
+        <omgdc:Bounds x="10" y="390" width="1840" height="900"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane 1: Lektoratsteam (y=390..690) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Lane_Lektorat" isHorizontal="true">
+        <omgdc:Bounds x="40" y="390" width="1810" height="300"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane 2: Ebenen-/Stadtteilleitung (y=690..990) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Lane_Ebene" isHorizontal="true">
+        <omgdc:Bounds x="40" y="690" width="1810" height="300"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane 3: Direktionsteam (y=990..1290) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Lane_Direktion" isHorizontal="true">
+        <omgdc:Bounds x="40" y="990" width="1810" height="300"/>
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Lane 1: Lektoratsteam ===== -->
+
+      <!-- Org: Message Start Event (Benutzerbedarfe eingegangen) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Start">
+        <omgdc:Bounds x="120" y="522" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O1 - Trendscouting durchfuehren -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O1">
+        <omgdc:Bounds x="220" y="502" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O2 - Partnerbeduerfe erheben -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O2">
+        <omgdc:Bounds x="431" y="502" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O3 - Benutzerinteressen und -bedarfe auswerten -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O3">
+        <omgdc:Bounds x="642" y="502" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Lane 2: Ebenen-/Stadtteilleitung ===== -->
+
+      <!-- Org: O4 - Daten erfassen und auswerten -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O4">
+        <omgdc:Bounds x="853" y="802" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O5 - Daten priorisieren -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O5">
+        <omgdc:Bounds x="1064" y="802" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O6 - Schwerpunkte setzen -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O6">
+        <omgdc:Bounds x="1275" y="802" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Lane 3: Direktionsteam ===== -->
+
+      <!-- Org: O7 - Ressourcenplanung durchfuehren -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O7">
+        <omgdc:Bounds x="1064" y="1102" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O8 - Bestandsprofil erstellen -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O8">
+        <omgdc:Bounds x="1275" y="1102" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: End Event (Bestandsprofil erstellt und freigegeben) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_End">
+        <omgdc:Bounds x="1486" y="1122" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Sequence Flows Organisation ===== -->
+
+      <!-- O-Start → O1 (Lane 1) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_01">
+        <omgdi:waypoint x="156" y="540"/>
+        <omgdi:waypoint x="220" y="540"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O1 → O2 (Lane 1) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_02">
+        <omgdi:waypoint x="371" y="540"/>
+        <omgdi:waypoint x="431" y="540"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O2 → O3 (Lane 1) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_03">
+        <omgdi:waypoint x="582" y="540"/>
+        <omgdi:waypoint x="642" y="540"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O3 → O4 (Lane 1 → Lane 2): rechts dann runter -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_04">
+        <omgdi:waypoint x="793" y="540"/>
+        <omgdi:waypoint x="928" y="540"/>
+        <omgdi:waypoint x="928" y="802"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O4 → O5 (Lane 2) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_05">
+        <omgdi:waypoint x="1004" y="840"/>
+        <omgdi:waypoint x="1064" y="840"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O5 → O6 (Lane 2) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_06">
+        <omgdi:waypoint x="1215" y="840"/>
+        <omgdi:waypoint x="1275" y="840"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O6 → O7 (Lane 2 → Lane 3): runter dann links dann runter -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_07">
+        <omgdi:waypoint x="1426" y="840"/>
+        <omgdi:waypoint x="1426" y="995"/>
+        <omgdi:waypoint x="1139" y="995"/>
+        <omgdi:waypoint x="1139" y="1102"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O7 → O8 (Lane 3) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_08">
+        <omgdi:waypoint x="1215" y="1140"/>
+        <omgdi:waypoint x="1275" y="1140"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O8 → O-End (Lane 3) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_09">
+        <omgdi:waypoint x="1426" y="1140"/>
+        <omgdi:waypoint x="1486" y="1140"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== MESSAGE FLOW: Kunde → Organisation ===== -->
+      <!-- K-Task1 (Benutzerinteressen mitteilen) → Org-Start (Benutzerbedarfe eingegangen) -->
+      <!-- Route: unten aus K1 heraus, 5px vor Pool-Grenze (y=385), links zu Org-Start, runter -->
+      <bpmndi:BPMNEdge bpmnElement="_MF_K_to_Org">
+        <omgdi:waypoint x="295" y="228"/>
+        <omgdi:waypoint x="295" y="385"/>
+        <omgdi:waypoint x="138" y="385"/>
+        <omgdi:waypoint x="138" y="522"/>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</definitions>

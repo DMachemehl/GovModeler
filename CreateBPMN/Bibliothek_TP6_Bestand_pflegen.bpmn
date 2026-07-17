@@ -1,0 +1,499 @@
+<?xml version="1.0" encoding="utf-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:adonis="http://www.boc-group.com"
+             xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="definition_bib_tp6_bestand_pflegen"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd"
+             targetNamespace="http://www.boc-group.com">
+
+  <!-- =====================================================
+       COLLABORATION: TP6 Bestand pflegen inkl. Ausleihe und Rueckgabe
+       Uebergeordneter Prozess: Medien managen
+       Stadtbibliothek Stuttgart
+
+       Struktur: 2-Pool-Kollaboration (Kunde | Organisation)
+         Kunde:        y=0,   Hoehe=380  | Tasks y=152, Events y=172, Center y=190
+         Organisation: y=390, Hoehe=600  | 2 Lanes (je 300px)
+           Lane 1 Ausleihe - Ausleihvorgang:           y=390, Center y=540
+           Lane 2 Ausleihe - Rueckgabe/Bestandspflege: y=690, Center y=840
+
+       Supplier: TP1 Umfeldanalyse → Bestandsprofil als Pflegeentscheidungsgrundlage
+       Happy Path: Ausleihwunsch eingegangen → Medium ist ueberprueft
+
+       Message Flows (3 Wege):
+         K1  → Org-Start: Ausleihwunsch mit Leserausweis
+         O4  → K2:        Ausgeliehenes Medium
+         K3  → O5:        Zurueckgegebenes Medium
+
+       Sequence Flow O4→O5 (Lane1→Lane2): senkrecht nach unten (x=928)
+       ===================================================== -->
+  <collaboration id="Collaboration_bib_tp6_bestand_pflegen"
+                 name="TP6 Bestand pflegen inkl. Ausleihe und Rueckgabe | Medien managen"
+                 isClosed="false">
+
+    <participant processRef="process_Kunde_tp6"
+                 name="Kunde"
+                 id="_Kunde_Participant_tp6"/>
+    <participant processRef="process_Org_tp6"
+                 name="Organisation"
+                 id="_Org_Participant_tp6"/>
+
+    <!-- Message Flow 1: Kunde → Organisation -->
+    <!-- Bibliotheksnutzer stellt Ausleihwunsch mit Leserausweis -->
+    <messageFlow id="_MF_K1_to_Org_tp6"
+                 name="Ausleihwunsch mit Leserausweis"
+                 sourceRef="_Kunde_Task_K1_tp6"
+                 targetRef="_Org_Start_tp6"/>
+
+    <!-- Message Flow 2: Organisation → Kunde -->
+    <!-- Ausleihe haendigt gebuchtes Medium aus -->
+    <messageFlow id="_MF_O4_to_K2_tp6"
+                 name="Ausgeliehenes Medium"
+                 sourceRef="_Org_Task_O4_tp6"
+                 targetRef="_Kunde_Task_K2_tp6"/>
+
+    <!-- Message Flow 3: Kunde → Organisation -->
+    <!-- Bibliotheksnutzer gibt Medium nach Ablauf der Leihfrist zurueck -->
+    <messageFlow id="_MF_K3_to_O5_tp6"
+                 name="Zurueckgegebenes Medium"
+                 sourceRef="_Kunde_Task_K3_tp6"
+                 targetRef="_Org_Task_O5_tp6"/>
+
+  </collaboration>
+
+  <!-- =====================================================
+       PROZESS: Kunde (Bibliotheksnutzer/-in)
+       e2e-Rahmen: Ausleihwunsch geaeussert → Leihvorgang abgeschlossen
+       ===================================================== -->
+  <process name="Kunde"
+           id="process_Kunde_tp6"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_Kunde_tp6">
+      <lane name="Bibliotheksnutzer/-in" id="_Kunde_Lane_tp6">
+        <flowNodeRef>_Kunde_Start_tp6</flowNodeRef>
+        <flowNodeRef>_Kunde_Task_K1_tp6</flowNodeRef>
+        <flowNodeRef>_Kunde_Task_K2_tp6</flowNodeRef>
+        <flowNodeRef>_Kunde_Task_K3_tp6</flowNodeRef>
+        <flowNodeRef>_Kunde_End_tp6</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <!-- Start Event: Ausleihwunsch geaeussert -->
+    <startEvent name="Ausleihwunsch&#10;geaeussert" id="_Kunde_Start_tp6">
+      <outgoing>_Kunde_Flow_01_tp6</outgoing>
+    </startEvent>
+
+    <!-- K1: Ausleihwunsch stellen -->
+    <!-- Bibliotheksnutzer praesentiert Leserausweis und gewuenschtes Medium -->
+    <!-- an der Ausleihtheke oder am Selbstverbuchungsautomaten -->
+    <task name="Ausleihwunsch&#10;stellen" id="_Kunde_Task_K1_tp6" isForCompensation="false">
+      <incoming>_Kunde_Flow_01_tp6</incoming>
+      <outgoing>_Kunde_Flow_02_tp6</outgoing>
+    </task>
+
+    <!-- K2: Medium entgegennehmen -->
+    <!-- Bibliotheksnutzer empfaengt das ausgeliehene Medium -->
+    <!-- mit Leihfristbeleg oder digitaler Buchungsbestaetigung -->
+    <task name="Medium&#10;entgegennehmen" id="_Kunde_Task_K2_tp6" isForCompensation="false">
+      <incoming>_Kunde_Flow_02_tp6</incoming>
+      <outgoing>_Kunde_Flow_03_tp6</outgoing>
+    </task>
+
+    <!-- K3: Medium zurueckgeben -->
+    <!-- Bibliotheksnutzer gibt Medium nach Ablauf der Leihfrist -->
+    <!-- an der Ausleihtheke oder am Rueckgabeautomaten zurueck -->
+    <task name="Medium&#10;zurueckgeben" id="_Kunde_Task_K3_tp6" isForCompensation="false">
+      <incoming>_Kunde_Flow_03_tp6</incoming>
+      <outgoing>_Kunde_Flow_04_tp6</outgoing>
+    </task>
+
+    <!-- End Event: Leihvorgang abgeschlossen -->
+    <endEvent name="Leihvorgang&#10;abgeschlossen" id="_Kunde_End_tp6">
+      <incoming>_Kunde_Flow_04_tp6</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows Kunde -->
+    <sequenceFlow sourceRef="_Kunde_Start_tp6"    targetRef="_Kunde_Task_K1_tp6" id="_Kunde_Flow_01_tp6"/>
+    <sequenceFlow sourceRef="_Kunde_Task_K1_tp6"  targetRef="_Kunde_Task_K2_tp6" id="_Kunde_Flow_02_tp6"/>
+    <sequenceFlow sourceRef="_Kunde_Task_K2_tp6"  targetRef="_Kunde_Task_K3_tp6" id="_Kunde_Flow_03_tp6"/>
+    <sequenceFlow sourceRef="_Kunde_Task_K3_tp6"  targetRef="_Kunde_End_tp6"     id="_Kunde_Flow_04_tp6"/>
+
+  </process>
+
+  <!-- =====================================================
+       PROZESS: Organisation (Stadtbibliothek Stuttgart)
+       Lanes: Ausleihe - Ausleihvorgang | Ausleihe - Rueckgabe und Bestandspflege
+
+       Ablauf:
+         O-Start → O1 Benutzerkonto pruefen → O2 Verfuegbarkeit pruefen
+                 → O3 Ausleihe buchen → O4 Medium aushaendigen
+                 → O5 Medium entgegennehmen → O6 Saeumnisgebuehren pruefen
+                 → O7 Zustand des Mediums pruefen
+                 → O8 Medium fuer erneute Ausleihe bereitstellen → O-End
+       ===================================================== -->
+  <process name="Organisation"
+           id="process_Org_tp6"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_Org_tp6">
+
+      <!-- Lane 1: Ausleihe - Ausleihvorgang (y=390, Hoehe=300) -->
+      <lane name="Ausleihe - Ausleihvorgang" id="_Org_Lane_Ausleihe_tp6">
+        <flowNodeRef>_Org_Start_tp6</flowNodeRef>
+        <flowNodeRef>_Org_Task_O1_tp6</flowNodeRef>
+        <flowNodeRef>_Org_Task_O2_tp6</flowNodeRef>
+        <flowNodeRef>_Org_Task_O3_tp6</flowNodeRef>
+        <flowNodeRef>_Org_Task_O4_tp6</flowNodeRef>
+      </lane>
+
+      <!-- Lane 2: Ausleihe - Rueckgabe und Bestandspflege (y=690, Hoehe=300) -->
+      <lane name="Ausleihe - Rueckgabe und Bestandspflege" id="_Org_Lane_Bestandspflege_tp6">
+        <flowNodeRef>_Org_Task_O5_tp6</flowNodeRef>
+        <flowNodeRef>_Org_Task_O6_tp6</flowNodeRef>
+        <flowNodeRef>_Org_Task_O7_tp6</flowNodeRef>
+        <flowNodeRef>_Org_Task_O8_tp6</flowNodeRef>
+        <flowNodeRef>_Org_End_tp6</flowNodeRef>
+      </lane>
+
+    </laneSet>
+
+    <!-- Message Start Event: Ausleihwunsch eingegangen -->
+    <startEvent name="Ausleihwunsch&#10;eingegangen" id="_Org_Start_tp6">
+      <outgoing>_Org_Flow_01_tp6</outgoing>
+      <messageEventDefinition id="msgEvtDef_Org_Start_tp6"/>
+    </startEvent>
+
+    <!-- O1: Benutzerkonto pruefen (Ausleihe) -->
+    <!-- Gueltigkeit des Leserausweises und Kontostatus in aDIS/BMS pruefen; -->
+    <!-- offene Saeumnisgebuehren, Sperrvermerke oder abgelaufene Ausweise feststellen -->
+    <task name="Benutzerkonto&#10;pruefen" id="_Org_Task_O1_tp6" isForCompensation="false">
+      <incoming>_Org_Flow_01_tp6</incoming>
+      <outgoing>_Org_Flow_02_tp6</outgoing>
+    </task>
+
+    <!-- O2: Verfuegbarkeit pruefen (Ausleihe) -->
+    <!-- Verfuegbarkeitsstatus des Mediums im aDIS/BMS pruefen; -->
+    <!-- Vormerkungsstatus beachten -->
+    <task name="Verfuegbarkeit&#10;pruefen" id="_Org_Task_O2_tp6" isForCompensation="false">
+      <incoming>_Org_Flow_02_tp6</incoming>
+      <outgoing>_Org_Flow_03_tp6</outgoing>
+    </task>
+
+    <!-- O3: Ausleihe in aDIS/BMS buchen (Ausleihe) -->
+    <!-- Ausleihvorgang im Modul Ausleihe/Benutzung erfassen; -->
+    <!-- Leihfrist setzen; Exemplar auf "ausgeliehen" setzen -->
+    <task name="Ausleihe in&#10;aDIS/BMS buchen" id="_Org_Task_O3_tp6" isForCompensation="false">
+      <incoming>_Org_Flow_03_tp6</incoming>
+      <outgoing>_Org_Flow_04_tp6</outgoing>
+    </task>
+
+    <!-- O4: Medium aushaendigen (Ausleihe) -->
+    <!-- Gebuchtes Medium an Bibliotheksnutzer aushaendigen; -->
+    <!-- Leihfristbeleg oder digitale Buchungsbestaetigung mitgeben -->
+    <task name="Medium&#10;aushaendigen" id="_Org_Task_O4_tp6" isForCompensation="false">
+      <incoming>_Org_Flow_04_tp6</incoming>
+      <outgoing>_Org_Flow_05_tp6</outgoing>
+    </task>
+
+    <!-- O5: Medium entgegennehmen (Ausleihe - Rueckgabe) -->
+    <!-- Zurueckgegebenes Medium entgegennehmen; Rueckgabe in aDIS/BMS buchen; -->
+    <!-- Exemplar auf "verfuegbar" oder "vorgemerkt" setzen; -->
+    <!-- bei aktiver Vormerkung: Bereitstellungsbenachrichtigung ausloesen -->
+    <task name="Medium&#10;entgegennehmen" id="_Org_Task_O5_tp6" isForCompensation="false">
+      <incoming>_Org_Flow_05_tp6</incoming>
+      <outgoing>_Org_Flow_06_tp6</outgoing>
+    </task>
+
+    <!-- O6: Saeumnisgebuehren pruefen und erheben (Ausleihe) -->
+    <!-- Leihfrist pruefen; bei Fristueberschreitung Saeumnisgebuehr berechnen; -->
+    <!-- im Kassensystem erfassen; Quittung ausstellen -->
+    <task name="Saeumnisgebuehren pruefen&#10;und erheben" id="_Org_Task_O6_tp6" isForCompensation="false">
+      <incoming>_Org_Flow_06_tp6</incoming>
+      <outgoing>_Org_Flow_07_tp6</outgoing>
+    </task>
+
+    <!-- O7: Zustand des Mediums pruefen (Ausleihe - Bestandspflege) -->
+    <!-- Physischen Zustand begutachten; Beschaedigungen, fehlende Teile oder -->
+    <!-- starken Verschleiss feststellen; Entscheidung: Weiterbetrieb oder Ausscheidung -->
+    <!-- Grundlage: Bestandsprofil aus TP1 Umfeldanalyse -->
+    <task name="Zustand des Mediums&#10;pruefen" id="_Org_Task_O7_tp6" isForCompensation="false">
+      <incoming>_Org_Flow_07_tp6</incoming>
+      <outgoing>_Org_Flow_08_tp6</outgoing>
+    </task>
+
+    <!-- O8: Medium fuer erneute Ausleihe bereitstellen (Ausleihe) -->
+    <!-- Medium am Standort einstellen; Exemplardatensatz als verfuegbar bestaetigen; -->
+    <!-- bei starkem Verschleiss oder Veralterung: Weiterleitung an TP7 veranlassen -->
+    <task name="Medium fuer erneute&#10;Ausleihe bereitstellen" id="_Org_Task_O8_tp6" isForCompensation="false">
+      <incoming>_Org_Flow_08_tp6</incoming>
+      <outgoing>_Org_Flow_09_tp6</outgoing>
+    </task>
+
+    <!-- End Event: Medium ist ueberprueft -->
+    <endEvent name="Medium ist&#10;ueberprueft" id="_Org_End_tp6">
+      <incoming>_Org_Flow_09_tp6</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows Organisation -->
+    <sequenceFlow sourceRef="_Org_Start_tp6"     targetRef="_Org_Task_O1_tp6" id="_Org_Flow_01_tp6"/>
+    <sequenceFlow sourceRef="_Org_Task_O1_tp6"   targetRef="_Org_Task_O2_tp6" id="_Org_Flow_02_tp6"/>
+    <sequenceFlow sourceRef="_Org_Task_O2_tp6"   targetRef="_Org_Task_O3_tp6" id="_Org_Flow_03_tp6"/>
+    <sequenceFlow sourceRef="_Org_Task_O3_tp6"   targetRef="_Org_Task_O4_tp6" id="_Org_Flow_04_tp6"/>
+    <sequenceFlow sourceRef="_Org_Task_O4_tp6"   targetRef="_Org_Task_O5_tp6" id="_Org_Flow_05_tp6"/>
+    <sequenceFlow sourceRef="_Org_Task_O5_tp6"   targetRef="_Org_Task_O6_tp6" id="_Org_Flow_06_tp6"/>
+    <sequenceFlow sourceRef="_Org_Task_O6_tp6"   targetRef="_Org_Task_O7_tp6" id="_Org_Flow_07_tp6"/>
+    <sequenceFlow sourceRef="_Org_Task_O7_tp6"   targetRef="_Org_Task_O8_tp6" id="_Org_Flow_08_tp6"/>
+    <sequenceFlow sourceRef="_Org_Task_O8_tp6"   targetRef="_Org_End_tp6"     id="_Org_Flow_09_tp6"/>
+
+  </process>
+
+  <!-- =====================================================
+       BPMN-DI: Diagramm-Visualisierung
+
+       Koordinatensystem:
+         Kunde:        y=0    – y=380    | Events y=172, Tasks y=152, Center y=190
+         Organisation: y=390  – y=990
+           Lane 1 Ausleihvorgang:   y=390 – y=690 | Tasks y=502, Center y=540
+           Lane 2 Rueckgabe/Pflege: y=690 – y=990 | Tasks y=802, Center y=840
+
+       Task-Dimensionen:  151 x 76 px
+       Event-Dimensionen:  36 x 36 px
+       Horizontaler Abstand: 60 px
+
+       X-Positionen:
+         Kunde:  Start=120, K1=220, K2=431, K3=642, End=853
+         Lane 1: Start=120, O1=220, O2=431, O3=642, O4=853
+         Lane 2: O5=853 (gleiche x-Achse wie O4), O6=1064, O7=1275, O8=1486, End=1697
+
+       Sequence Flow O4→O5 (Lane1→Lane2): senkrecht nach unten (x=928)
+
+       Message Flow 1 K1→Org-Start (5px vor Pool-Grenze y=385):
+         (295,228) → (295,385) → (138,385) → (138,522)
+       Message Flow 2 O4→K2 (5px ueber Pool-Grenze y=395):
+         (928,502) → (928,395) → (506,395) → (506,228)
+       Message Flow 3 K3→O5 (5px vor Pool-Grenze y=385):
+         (717,228) → (717,385) → (928,385) → (928,802)
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_bib_tp6">
+    <bpmndi:BPMNPlane bpmnElement="Collaboration_bib_tp6_bestand_pflegen">
+
+      <!-- ===== POOL: Kunde (y=0..380) ===== -->
+      <bpmndi:BPMNShape bpmnElement="_Kunde_Participant_tp6" isHorizontal="true">
+        <omgdc:Bounds x="10" y="0" width="1840" height="380"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_Kunde_Lane_tp6" isHorizontal="true">
+        <omgdc:Bounds x="40" y="0" width="1810" height="380"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Start Event (Ausleihwunsch geaeussert) -->
+      <bpmndi:BPMNShape bpmnElement="_Kunde_Start_tp6">
+        <omgdc:Bounds x="120" y="172" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: K1 - Ausleihwunsch stellen -->
+      <bpmndi:BPMNShape bpmnElement="_Kunde_Task_K1_tp6">
+        <omgdc:Bounds x="220" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: K2 - Medium entgegennehmen -->
+      <bpmndi:BPMNShape bpmnElement="_Kunde_Task_K2_tp6">
+        <omgdc:Bounds x="431" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: K3 - Medium zurueckgeben -->
+      <bpmndi:BPMNShape bpmnElement="_Kunde_Task_K3_tp6">
+        <omgdc:Bounds x="642" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: End Event (Leihvorgang abgeschlossen) -->
+      <bpmndi:BPMNShape bpmnElement="_Kunde_End_tp6">
+        <omgdc:Bounds x="853" y="172" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Sequence Flows -->
+      <bpmndi:BPMNEdge bpmnElement="_Kunde_Flow_01_tp6">
+        <omgdi:waypoint x="156" y="190"/>
+        <omgdi:waypoint x="220" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_Kunde_Flow_02_tp6">
+        <omgdi:waypoint x="371" y="190"/>
+        <omgdi:waypoint x="431" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_Kunde_Flow_03_tp6">
+        <omgdi:waypoint x="582" y="190"/>
+        <omgdi:waypoint x="642" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_Kunde_Flow_04_tp6">
+        <omgdi:waypoint x="793" y="190"/>
+        <omgdi:waypoint x="853" y="190"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== POOL: Organisation (y=390..990) ===== -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Participant_tp6" isHorizontal="true">
+        <omgdc:Bounds x="10" y="390" width="1840" height="600"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane 1: Ausleihe - Ausleihvorgang (y=390..690) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Lane_Ausleihe_tp6" isHorizontal="true">
+        <omgdc:Bounds x="40" y="390" width="1810" height="300"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane 2: Ausleihe - Rueckgabe und Bestandspflege (y=690..990) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Lane_Bestandspflege_tp6" isHorizontal="true">
+        <omgdc:Bounds x="40" y="690" width="1810" height="300"/>
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Lane 1: Ausleihe - Ausleihvorgang ===== -->
+
+      <!-- Org: Message Start Event (Ausleihwunsch eingegangen) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Start_tp6">
+        <omgdc:Bounds x="120" y="522" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O1 - Benutzerkonto pruefen -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O1_tp6">
+        <omgdc:Bounds x="220" y="502" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O2 - Verfuegbarkeit pruefen -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O2_tp6">
+        <omgdc:Bounds x="431" y="502" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O3 - Ausleihe in aDIS/BMS buchen -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O3_tp6">
+        <omgdc:Bounds x="642" y="502" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O4 - Medium aushaendigen -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O4_tp6">
+        <omgdc:Bounds x="853" y="502" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Lane 2: Ausleihe - Rueckgabe und Bestandspflege ===== -->
+
+      <!-- Org: O5 - Medium entgegennehmen (Rueckgabe) -->
+      <!-- Gleiche x-Achse wie O4 (x=853) fuer senkrechten Fluss O4→O5 -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O5_tp6">
+        <omgdc:Bounds x="853" y="802" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O6 - Saeumnisgebuehren pruefen und erheben -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O6_tp6">
+        <omgdc:Bounds x="1064" y="802" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O7 - Zustand des Mediums pruefen -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O7_tp6">
+        <omgdc:Bounds x="1275" y="802" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: O8 - Medium fuer erneute Ausleihe bereitstellen -->
+      <bpmndi:BPMNShape bpmnElement="_Org_Task_O8_tp6">
+        <omgdc:Bounds x="1486" y="802" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: End Event (Medium ist ueberprueft) -->
+      <bpmndi:BPMNShape bpmnElement="_Org_End_tp6">
+        <omgdc:Bounds x="1697" y="822" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Sequence Flows Organisation ===== -->
+
+      <!-- O-Start → O1 (Lane 1) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_01_tp6">
+        <omgdi:waypoint x="156" y="540"/>
+        <omgdi:waypoint x="220" y="540"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O1 → O2 (Lane 1) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_02_tp6">
+        <omgdi:waypoint x="371" y="540"/>
+        <omgdi:waypoint x="431" y="540"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O2 → O3 (Lane 1) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_03_tp6">
+        <omgdi:waypoint x="582" y="540"/>
+        <omgdi:waypoint x="642" y="540"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O3 → O4 (Lane 1) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_04_tp6">
+        <omgdi:waypoint x="793" y="540"/>
+        <omgdi:waypoint x="853" y="540"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O4 → O5 (Lane 1 → Lane 2): senkrecht nach unten auf gleicher x-Achse x=928 -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_05_tp6">
+        <omgdi:waypoint x="928" y="578"/>
+        <omgdi:waypoint x="928" y="802"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O5 → O6 (Lane 2) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_06_tp6">
+        <omgdi:waypoint x="1004" y="840"/>
+        <omgdi:waypoint x="1064" y="840"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O6 → O7 (Lane 2) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_07_tp6">
+        <omgdi:waypoint x="1215" y="840"/>
+        <omgdi:waypoint x="1275" y="840"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O7 → O8 (Lane 2) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_08_tp6">
+        <omgdi:waypoint x="1426" y="840"/>
+        <omgdi:waypoint x="1486" y="840"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O8 → O-End (Lane 2) -->
+      <bpmndi:BPMNEdge bpmnElement="_Org_Flow_09_tp6">
+        <omgdi:waypoint x="1637" y="840"/>
+        <omgdi:waypoint x="1697" y="840"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== MESSAGE FLOWS ===== -->
+
+      <!-- Message Flow 1: K1 → Org-Start (Ausleihwunsch mit Leserausweis) -->
+      <!-- Route: unten aus K1, 5px vor Org-Pool (y=385), links zu Org-Start, runter -->
+      <bpmndi:BPMNEdge bpmnElement="_MF_K1_to_Org_tp6">
+        <omgdi:waypoint x="295" y="228"/>
+        <omgdi:waypoint x="295" y="385"/>
+        <omgdi:waypoint x="138" y="385"/>
+        <omgdi:waypoint x="138" y="522"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- Message Flow 2: O4 → K2 (Ausgeliehenes Medium) -->
+      <!-- Route: oben aus O4, 5px ueber Pool-Grenze (y=395), links zu K2, hoch -->
+      <bpmndi:BPMNEdge bpmnElement="_MF_O4_to_K2_tp6">
+        <omgdi:waypoint x="928" y="502"/>
+        <omgdi:waypoint x="928" y="395"/>
+        <omgdi:waypoint x="506" y="395"/>
+        <omgdi:waypoint x="506" y="228"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- Message Flow 3: K3 → O5 (Zurueckgegebenes Medium) -->
+      <!-- Route: unten aus K3, 5px vor Org-Pool (y=385), rechts zu O5-x, runter in Lane 2 -->
+      <bpmndi:BPMNEdge bpmnElement="_MF_K3_to_O5_tp6">
+        <omgdi:waypoint x="717" y="228"/>
+        <omgdi:waypoint x="717" y="385"/>
+        <omgdi:waypoint x="928" y="385"/>
+        <omgdi:waypoint x="928" y="802"/>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</definitions>
