@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:modeler="http://camunda.org/schema/modeler/1.0"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0"
+  modeler:executionPlatform="Camunda Platform"
+  modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collab_Fuehrungszeugnis_entgegennehmen">
+    <bpmn:participant id="Participant_Buerger" name="Buerger" processRef="Process_Buerger" />
+    <bpmn:participant id="Participant_IT" name="IT" processRef="Process_IT" />
+    <bpmn:participant id="Participant_Behoerde" name="Meldebehoerde" processRef="Process_Behoerde" />
+    <bpmn:messageFlow id="MsgFlow_Antrag" name="Fuehrungszeugnis-Antrag" sourceRef="Task_Antrag_absenden" targetRef="StartEvent_Antrag_eingegangen" />
+    <bpmn:messageFlow id="MsgFlow_Weiterleitungsauftrag" name="Weiterleitungsauftrag" sourceRef="Task_Weiterleitung_veranlassen" targetRef="StartEvent_Antragsdaten_erhalten" />
+    <bpmn:messageFlow id="MsgFlow_Weiterleitungsbestaetigung" name="Weiterleitungsbestaetigung" sourceRef="Task_Weiterleitung_protokollieren" targetRef="Event_Weiterleitungsbestaetigung_erhalten" />
+    <bpmn:messageFlow id="MsgFlow_Eingangsbestaetigung" name="Eingangsbestaetigung" sourceRef="Task_Bestaetigung_versenden" targetRef="Event_Eingangsbestaetigung_erhalten" />
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_Buerger" name="Fuehrungszeugnis_entgegennehmen_Buerger" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Buerger" name="Bedarf an Fuehrungszeugnis festgestellt">
+      <bpmn:outgoing>Flow_Buerger_Start_Ausfuellen</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_Antrag_ausfuellen" name="Antrag ausfuellen">
+      <bpmn:incoming>Flow_Buerger_Start_Ausfuellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Ausfuellen_Nachweis</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Identitaet_nachweisen" name="Identitaet nachweisen">
+      <bpmn:incoming>Flow_Buerger_Ausfuellen_Nachweis</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Nachweis_Gebuehr</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Gebuehr_entrichten" name="Gebuehr entrichten">
+      <bpmn:incoming>Flow_Buerger_Nachweis_Gebuehr</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Gebuehr_Absenden</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Antrag_absenden" name="Antrag absenden">
+      <bpmn:incoming>Flow_Buerger_Gebuehr_Absenden</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Absenden_Bestaetigung</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:intermediateCatchEvent id="Event_Eingangsbestaetigung_erhalten" name="Eingangsbestaetigung erhalten">
+      <bpmn:incoming>Flow_Buerger_Absenden_Bestaetigung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Bestaetigung_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Eingangsbestaetigung" messageRef="Message_Eingangsbestaetigung" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="EndEvent_Buerger" name="Antrag weitergeleitet">
+      <bpmn:incoming>Flow_Buerger_Bestaetigung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Buerger_Start_Ausfuellen" sourceRef="StartEvent_Buerger" targetRef="Task_Antrag_ausfuellen" />
+    <bpmn:sequenceFlow id="Flow_Buerger_Ausfuellen_Nachweis" sourceRef="Task_Antrag_ausfuellen" targetRef="Task_Identitaet_nachweisen" />
+    <bpmn:sequenceFlow id="Flow_Buerger_Nachweis_Gebuehr" sourceRef="Task_Identitaet_nachweisen" targetRef="Task_Gebuehr_entrichten" />
+    <bpmn:sequenceFlow id="Flow_Buerger_Gebuehr_Absenden" sourceRef="Task_Gebuehr_entrichten" targetRef="Task_Antrag_absenden" />
+    <bpmn:sequenceFlow id="Flow_Buerger_Absenden_Bestaetigung" sourceRef="Task_Antrag_absenden" targetRef="Event_Eingangsbestaetigung_erhalten" />
+    <bpmn:sequenceFlow id="Flow_Buerger_Bestaetigung_Ende" sourceRef="Event_Eingangsbestaetigung_erhalten" targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+
+  <bpmn:process id="Process_IT" name="Fuehrungszeugnis_entgegennehmen_IT" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Antragsdaten_erhalten" name="Antragsdaten erhalten">
+      <bpmn:outgoing>Flow_IT_Start_Erfassen</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_Antragsdaten_erfassen" name="Antragsdaten erfassen">
+      <bpmn:incoming>Flow_IT_Start_Erfassen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Erfassen_Abgleichen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Identitaet_abgleichen" name="Identitaet abgleichen">
+      <bpmn:incoming>Flow_IT_Erfassen_Abgleichen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Abgleichen_Weiterleiten</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Antrag_weiterleiten" name="Antrag weiterleiten">
+      <bpmn:incoming>Flow_IT_Abgleichen_Weiterleiten</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Weiterleiten_Protokollieren</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Weiterleitung_protokollieren" name="Weiterleitung protokollieren">
+      <bpmn:incoming>Flow_IT_Weiterleiten_Protokollieren</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Protokollieren_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent_IT" name="Weiterleitung abgeschlossen">
+      <bpmn:incoming>Flow_IT_Protokollieren_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_IT_Start_Erfassen" sourceRef="StartEvent_Antragsdaten_erhalten" targetRef="Task_Antragsdaten_erfassen" />
+    <bpmn:sequenceFlow id="Flow_IT_Erfassen_Abgleichen" sourceRef="Task_Antragsdaten_erfassen" targetRef="Task_Identitaet_abgleichen" />
+    <bpmn:sequenceFlow id="Flow_IT_Abgleichen_Weiterleiten" sourceRef="Task_Identitaet_abgleichen" targetRef="Task_Antrag_weiterleiten" />
+    <bpmn:sequenceFlow id="Flow_IT_Weiterleiten_Protokollieren" sourceRef="Task_Antrag_weiterleiten" targetRef="Task_Weiterleitung_protokollieren" />
+    <bpmn:sequenceFlow id="Flow_IT_Protokollieren_Ende" sourceRef="Task_Weiterleitung_protokollieren" targetRef="EndEvent_IT" />
+  </bpmn:process>
+
+  <bpmn:process id="Process_Behoerde" name="Fuehrungszeugnis_entgegennehmen_Behoerde" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Antrag_eingegangen" name="Antrag eingegangen">
+      <bpmn:outgoing>Flow_Behoerde_Start_Zustaendigkeit</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_Zustaendigkeit_pruefen" name="Zustaendigkeit pruefen">
+      <bpmn:incoming>Flow_Behoerde_Start_Zustaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Zustaendigkeit_Entgegennehmen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_Antrag_entgegennehmen" name="Antrag entgegennehmen">
+      <bpmn:incoming>Flow_Behoerde_Zustaendigkeit_Entgegennehmen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Entgegennehmen_Vollstaendigkeit</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_Vollstaendigkeit_pruefen" name="Vollstaendigkeit pruefen">
+      <bpmn:incoming>Flow_Behoerde_Entgegennehmen_Vollstaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Vollstaendigkeit_Veranlassen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_Weiterleitung_veranlassen" name="Weiterleitung veranlassen">
+      <bpmn:incoming>Flow_Behoerde_Vollstaendigkeit_Veranlassen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Veranlassen_Bestaetigung</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:intermediateCatchEvent id="Event_Weiterleitungsbestaetigung_erhalten" name="Weiterleitungsbestaetigung erhalten">
+      <bpmn:incoming>Flow_Behoerde_Veranlassen_Bestaetigung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Bestaetigung_Versenden</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Weiterleitungsbestaetigung" messageRef="Message_Weiterleitungsbestaetigung" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:userTask id="Task_Bestaetigung_versenden" name="Bestaetigung versenden">
+      <bpmn:incoming>Flow_Behoerde_Bestaetigung_Versenden</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Versenden_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_Behoerde" name="Antrag an Bundesamt fuer Justiz weitergeleitet">
+      <bpmn:incoming>Flow_Behoerde_Versenden_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Behoerde_Start_Zustaendigkeit" sourceRef="StartEvent_Antrag_eingegangen" targetRef="Task_Zustaendigkeit_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Zustaendigkeit_Entgegennehmen" sourceRef="Task_Zustaendigkeit_pruefen" targetRef="Task_Antrag_entgegennehmen" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Entgegennehmen_Vollstaendigkeit" sourceRef="Task_Antrag_entgegennehmen" targetRef="Task_Vollstaendigkeit_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Vollstaendigkeit_Veranlassen" sourceRef="Task_Vollstaendigkeit_pruefen" targetRef="Task_Weiterleitung_veranlassen" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Veranlassen_Bestaetigung" sourceRef="Task_Weiterleitung_veranlassen" targetRef="Event_Weiterleitungsbestaetigung_erhalten" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Bestaetigung_Versenden" sourceRef="Event_Weiterleitungsbestaetigung_erhalten" targetRef="Task_Bestaetigung_versenden" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Versenden_Ende" sourceRef="Task_Bestaetigung_versenden" targetRef="EndEvent_Behoerde" />
+  </bpmn:process>
+
+  <bpmn:message id="Message_Antrag" name="Fuehrungszeugnis-Antrag" />
+  <bpmn:message id="Message_Weiterleitungsauftrag" name="Weiterleitungsauftrag" />
+  <bpmn:message id="Message_Weiterleitungsbestaetigung" name="Weiterleitungsbestaetigung" />
+  <bpmn:message id="Message_Eingangsbestaetigung" name="Eingangsbestaetigung" />
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Fuehrungszeugnis_entgegennehmen">
+    <bpmndi:BPMNPlane id="BPMNPlane_Fuehrungszeugnis_entgegennehmen" bpmnElement="Collab_Fuehrungszeugnis_entgegennehmen">
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="260" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="225" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antrag_ausfuellen_di" bpmnElement="Task_Antrag_ausfuellen">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Identitaet_nachweisen_di" bpmnElement="Task_Identitaet_nachweisen">
+        <dc:Bounds x="470" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Gebuehr_entrichten_di" bpmnElement="Task_Gebuehr_entrichten">
+        <dc:Bounds x="630" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antrag_absenden_di" bpmnElement="Task_Antrag_absenden">
+        <dc:Bounds x="790" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Eingangsbestaetigung_erhalten_di" bpmnElement="Event_Eingangsbestaetigung_erhalten">
+        <dc:Bounds x="952" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="930" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="1112" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1090" y="225" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Start_Ausfuellen_di" bpmnElement="Flow_Buerger_Start_Ausfuellen">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Ausfuellen_Nachweis_di" bpmnElement="Flow_Buerger_Ausfuellen_Nachweis">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="470" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Nachweis_Gebuehr_di" bpmnElement="Flow_Buerger_Nachweis_Gebuehr">
+        <di:waypoint x="570" y="200" />
+        <di:waypoint x="630" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Gebuehr_Absenden_di" bpmnElement="Flow_Buerger_Gebuehr_Absenden">
+        <di:waypoint x="730" y="200" />
+        <di:waypoint x="790" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Absenden_Bestaetigung_di" bpmnElement="Flow_Buerger_Absenden_Bestaetigung">
+        <di:waypoint x="890" y="200" />
+        <di:waypoint x="952" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Bestaetigung_Ende_di" bpmnElement="Flow_Buerger_Bestaetigung_Ende">
+        <di:waypoint x="988" y="200" />
+        <di:waypoint x="1112" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="1200" height="260" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Antragsdaten_erhalten_di" bpmnElement="StartEvent_Antragsdaten_erhalten">
+        <dc:Bounds x="222" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="520" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antragsdaten_erfassen_di" bpmnElement="Task_Antragsdaten_erfassen">
+        <dc:Bounds x="310" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Identitaet_abgleichen_di" bpmnElement="Task_Identitaet_abgleichen">
+        <dc:Bounds x="470" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antrag_weiterleiten_di" bpmnElement="Task_Antrag_weiterleiten">
+        <dc:Bounds x="630" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Weiterleitung_protokollieren_di" bpmnElement="Task_Weiterleitung_protokollieren">
+        <dc:Bounds x="790" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_IT_di" bpmnElement="EndEvent_IT">
+        <dc:Bounds x="952" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="930" y="520" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_IT_Start_Erfassen_di" bpmnElement="Flow_IT_Start_Erfassen">
+        <di:waypoint x="258" y="495" />
+        <di:waypoint x="310" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Erfassen_Abgleichen_di" bpmnElement="Flow_IT_Erfassen_Abgleichen">
+        <di:waypoint x="410" y="495" />
+        <di:waypoint x="470" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Abgleichen_Weiterleiten_di" bpmnElement="Flow_IT_Abgleichen_Weiterleiten">
+        <di:waypoint x="570" y="495" />
+        <di:waypoint x="630" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Weiterleiten_Protokollieren_di" bpmnElement="Flow_IT_Weiterleiten_Protokollieren">
+        <di:waypoint x="730" y="495" />
+        <di:waypoint x="790" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Protokollieren_Ende_di" bpmnElement="Flow_IT_Protokollieren_Ende">
+        <di:waypoint x="890" y="495" />
+        <di:waypoint x="952" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNShape id="Participant_Behoerde_di" bpmnElement="Participant_Behoerde" isHorizontal="true">
+        <dc:Bounds x="160" y="660" width="1200" height="260" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Antrag_eingegangen_di" bpmnElement="StartEvent_Antrag_eingegangen">
+        <dc:Bounds x="222" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="825" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Zustaendigkeit_pruefen_di" bpmnElement="Task_Zustaendigkeit_pruefen">
+        <dc:Bounds x="310" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Antrag_entgegennehmen_di" bpmnElement="Task_Antrag_entgegennehmen">
+        <dc:Bounds x="470" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Vollstaendigkeit_pruefen_di" bpmnElement="Task_Vollstaendigkeit_pruefen">
+        <dc:Bounds x="630" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Weiterleitung_veranlassen_di" bpmnElement="Task_Weiterleitung_veranlassen">
+        <dc:Bounds x="790" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Weiterleitungsbestaetigung_erhalten_di" bpmnElement="Event_Weiterleitungsbestaetigung_erhalten">
+        <dc:Bounds x="952" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="925" y="825" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Bestaetigung_versenden_di" bpmnElement="Task_Bestaetigung_versenden">
+        <dc:Bounds x="1110" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Behoerde_di" bpmnElement="EndEvent_Behoerde">
+        <dc:Bounds x="1272" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1250" y="825" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Start_Zustaendigkeit_di" bpmnElement="Flow_Behoerde_Start_Zustaendigkeit">
+        <di:waypoint x="258" y="800" />
+        <di:waypoint x="310" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Zustaendigkeit_Entgegennehmen_di" bpmnElement="Flow_Behoerde_Zustaendigkeit_Entgegennehmen">
+        <di:waypoint x="410" y="800" />
+        <di:waypoint x="470" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Entgegennehmen_Vollstaendigkeit_di" bpmnElement="Flow_Behoerde_Entgegennehmen_Vollstaendigkeit">
+        <di:waypoint x="570" y="800" />
+        <di:waypoint x="630" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Vollstaendigkeit_Veranlassen_di" bpmnElement="Flow_Behoerde_Vollstaendigkeit_Veranlassen">
+        <di:waypoint x="730" y="800" />
+        <di:waypoint x="790" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Veranlassen_Bestaetigung_di" bpmnElement="Flow_Behoerde_Veranlassen_Bestaetigung">
+        <di:waypoint x="890" y="800" />
+        <di:waypoint x="952" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Bestaetigung_Versenden_di" bpmnElement="Flow_Behoerde_Bestaetigung_Versenden">
+        <di:waypoint x="988" y="800" />
+        <di:waypoint x="1110" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Versenden_Ende_di" bpmnElement="Flow_Behoerde_Versenden_Ende">
+        <di:waypoint x="1210" y="800" />
+        <di:waypoint x="1272" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="MsgFlow_Antrag_di" bpmnElement="MsgFlow_Antrag">
+        <di:waypoint x="840" y="240" />
+        <di:waypoint x="840" y="645" />
+        <di:waypoint x="240" y="645" />
+        <di:waypoint x="240" y="782" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Weiterleitungsauftrag_di" bpmnElement="MsgFlow_Weiterleitungsauftrag">
+        <di:waypoint x="840" y="760" />
+        <di:waypoint x="840" y="645" />
+        <di:waypoint x="240" y="645" />
+        <di:waypoint x="240" y="513" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Weiterleitungsbestaetigung_di" bpmnElement="MsgFlow_Weiterleitungsbestaetigung">
+        <di:waypoint x="840" y="535" />
+        <di:waypoint x="840" y="645" />
+        <di:waypoint x="970" y="645" />
+        <di:waypoint x="970" y="782" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Eingangsbestaetigung_di" bpmnElement="MsgFlow_Eingangsbestaetigung">
+        <di:waypoint x="1160" y="760" />
+        <di:waypoint x="1160" y="345" />
+        <di:waypoint x="970" y="345" />
+        <di:waypoint x="970" y="218" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

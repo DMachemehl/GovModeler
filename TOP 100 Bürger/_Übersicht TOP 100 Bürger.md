@@ -1,14 +1,14 @@
 | Prozessname                                                            | Modell |
 | ---------------------------------------------------------------------- | ------ |
 | Anwohnerparkausweis                                                    |   X    |
-| Parkausweis für Schwerbehinderte                                       |        |
-| Fahrerlaubnis (erstmalig) erteilen                                     |        |
+| Parkausweis für Schwerbehinderte                                       |   X    |
+| Fahrerlaubnis (erstmalig) erteilen                                     |   X    |
 | KFZ-Zulassung erteilen                                                 |   x    |
 | Wohnsitz anmelden                                                      |   X    |
 | Meldebestätigung ausstellen                                            |   X    |
 | Einfache Auskunft aus dem Melderegister erteilen                       |   X    |
 | Personalausweis ausstellen                                             |   X    |
-| Antrag auf einfaches Führungszeugnis entgegennehmen und weiterleiten   |        |
+| Antrag auf einfaches Führungszeugnis entgegennehmen und weiterleiten   |   X    |
 | Einbürgerungstest durchführen                                          |   X    |
 | Einbürgerung von Ausländern genehmigen                                 |        |
 | Miteinbürgerung genehmigen                                             |   x    |
@@ -16,7 +16,7 @@
 | Niederlassungserlaubnis erteilen                                       |        |
 | Aufenthaltserlaubnis bei Asylantrag erteilen                           |    x   |
 | Erlaubnis zur Aufnahme einer Erwerbstätigkeit erteilen                 |        |
-| Geburt beurkunden                                                      |        |
+| Geburt beurkunden                                                      |    X   |
 | Totgeburt beurkunden                                                   |    x   |
 | Eheschließung vornehmen und beurkunden                                 |        |
 | Wählerverzeichnis aufstellen und führen                                |        |
