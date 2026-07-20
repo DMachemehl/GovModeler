@@ -1,0 +1,404 @@
+{
+  "components": [
+    {
+      "text": "## Anmeldung zum Einbürgerungstest\n\nBitte füllen Sie das folgende Formular aus, um sich zum Einbürgerungstest anzumelden. Der Test umfasst 33 Fragen zu den Themenbereichen Leben in der Demokratie, Geschichte und Verantwortung sowie Mensch und Gesellschaft.",
+      "label": "Text view",
+      "type": "text",
+      "layout": {
+        "row": "Row_0"
+      },
+      "id": "Field_Text_Titel"
+    },
+    {
+      "label": "Persönliche Angaben",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Persoenlich",
+      "layout": {
+        "row": "Row_1"
+      }
+    },
+    {
+      "label": "Vorname",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_2",
+        "columns": 8
+      },
+      "id": "Field_Vorname",
+      "key": "vorname",
+      "validate": {
+        "required": true,
+        "minLength": 2
+      }
+    },
+    {
+      "label": "Nachname",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_2",
+        "columns": 8
+      },
+      "id": "Field_Nachname",
+      "key": "nachname",
+      "validate": {
+        "required": true,
+        "minLength": 2
+      }
+    },
+    {
+      "label": "Geburtsdatum",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_3",
+        "columns": 8
+      },
+      "id": "Field_Geburtsdatum",
+      "key": "geburtsdatum",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[0-2])\\.(19|20)\\d{2}$"
+      }
+    },
+    {
+      "label": "Geburtsort",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_3",
+        "columns": 8
+      },
+      "id": "Field_Geburtsort",
+      "key": "geburtsort",
+      "validate": {
+        "required": true,
+        "minLength": 2
+      }
+    },
+    {
+      "label": "Staatsangehörigkeit",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_4",
+        "columns": 8
+      },
+      "id": "Field_Staatsangehoerigkeit",
+      "key": "staatsangehoerigkeit",
+      "validate": {
+        "required": true,
+        "minLength": 2
+      },
+      "description": "Ihre derzeitige Staatsangehörigkeit"
+    },
+    {
+      "label": "Anschrift",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Adresse",
+      "layout": {
+        "row": "Row_5"
+      }
+    },
+    {
+      "label": "Straße",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_6",
+        "columns": 10
+      },
+      "id": "Field_Strasse",
+      "key": "strasse",
+      "validate": {
+        "required": true,
+        "minLength": 3
+      }
+    },
+    {
+      "label": "Hausnummer",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_6",
+        "columns": 6
+      },
+      "id": "Field_Hausnummer",
+      "key": "hausnummer",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Postleitzahl",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_7",
+        "columns": 6
+      },
+      "id": "Field_PLZ",
+      "key": "plz",
+      "validate": {
+        "required": true,
+        "pattern": "^[0-9]{5}$"
+      },
+      "description": "5-stellige PLZ"
+    },
+    {
+      "label": "Ort",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_7",
+        "columns": 10
+      },
+      "id": "Field_Ort",
+      "key": "ort",
+      "validate": {
+        "required": true,
+        "minLength": 2
+      }
+    },
+    {
+      "label": "Kontaktdaten",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Kontakt",
+      "layout": {
+        "row": "Row_8"
+      }
+    },
+    {
+      "label": "E-Mail-Adresse",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_9",
+        "columns": 8
+      },
+      "id": "Field_Email",
+      "key": "email",
+      "validate": {
+        "required": true,
+        "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+      },
+      "description": "Für die Zusendung der Terminbestätigung"
+    },
+    {
+      "label": "Telefonnummer",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_9",
+        "columns": 8
+      },
+      "id": "Field_Telefon",
+      "key": "telefon",
+      "validate": {
+        "required": true,
+        "pattern": "^[0-9\\s\\-\\/\\+\\(\\)]{7,20}$"
+      },
+      "description": "Für Rückfragen und kurzfristige Terminänderungen"
+    },
+    {
+      "label": "Terminwunsch",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Termin",
+      "layout": {
+        "row": "Row_10"
+      }
+    },
+    {
+      "label": "Bevorzugter Testzeitraum",
+      "values": [
+        {
+          "label": "Nächste 4 Wochen",
+          "value": "4wochen"
+        },
+        {
+          "label": "In 1-2 Monaten",
+          "value": "1bis2monate"
+        },
+        {
+          "label": "In 2-3 Monaten",
+          "value": "2bis3monate"
+        },
+        {
+          "label": "Später als 3 Monate",
+          "value": "spaeter"
+        }
+      ],
+      "type": "select",
+      "layout": {
+        "row": "Row_11"
+      },
+      "id": "Field_Testzeitraum",
+      "key": "testzeitraum",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Bevorzugte Tageszeit",
+      "values": [
+        {
+          "label": "Vormittags (8-12 Uhr)",
+          "value": "vormittags"
+        },
+        {
+          "label": "Nachmittags (12-16 Uhr)",
+          "value": "nachmittags"
+        },
+        {
+          "label": "Keine Präferenz",
+          "value": "egal"
+        }
+      ],
+      "type": "select",
+      "layout": {
+        "row": "Row_12"
+      },
+      "id": "Field_Tageszeit",
+      "key": "tageszeit",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Barrierefreiheit und besondere Bedürfnisse",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Barrierefreiheit",
+      "layout": {
+        "row": "Row_13"
+      }
+    },
+    {
+      "text": "### Hinweis zur Barrierefreiheit\n\nTeilen Sie uns bitte mit, wenn Sie besondere Unterstützung benötigen (z.B. Gebärdensprachdolmetscher, verlängerte Bearbeitungszeit, barrierefreier Zugang).",
+      "label": "Text view",
+      "type": "text",
+      "layout": {
+        "row": "Row_14"
+      },
+      "id": "Field_Text_Barrierefreiheit"
+    },
+    {
+      "label": "Ich benötige besondere Unterstützung",
+      "type": "checkbox",
+      "layout": {
+        "row": "Row_15"
+      },
+      "id": "Field_Besonderen_Bedarf",
+      "key": "besondererBedarf",
+      "validate": {
+        "required": false
+      }
+    },
+    {
+      "label": "Beschreibung des Unterstützungsbedarfs",
+      "type": "textarea",
+      "layout": {
+        "row": "Row_16"
+      },
+      "id": "Field_Bedarfsbeschreibung",
+      "key": "bedarfsbeschreibung",
+      "validate": {
+        "required": false
+      },
+      "description": "Bitte beschreiben Sie, welche Unterstützung Sie benötigen"
+    },
+    {
+      "label": "Voraussetzungen und Hinweise",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Voraussetzungen",
+      "layout": {
+        "row": "Row_17"
+      }
+    },
+    {
+      "text": "### Voraussetzungen für die Teilnahme\n\n- Sie müssen seit mindestens 8 Jahren rechtmäßig in Deutschland leben\n- Sie müssen einen gültigen Aufenthaltstitel besitzen\n- Sie müssen ausreichende Deutschkenntnisse (mindestens B1-Niveau) nachweisen\n\n### Wichtige Hinweise zum Test\n\n- Der Test dauert 60 Minuten\n- Es werden 33 Fragen gestellt (30 bundesweite + 3 länderspezifische Fragen)\n- Mindestens 17 Fragen müssen richtig beantwortet werden\n- Die Testgebühr beträgt 25 Euro\n- Bitte bringen Sie zum Test einen gültigen Ausweis mit",
+      "label": "Text view",
+      "type": "text",
+      "layout": {
+        "row": "Row_18"
+      },
+      "id": "Field_Text_Voraussetzungen"
+    },
+    {
+      "label": "Ich bestätige, dass ich die Voraussetzungen erfülle",
+      "type": "checkbox",
+      "layout": {
+        "row": "Row_19"
+      },
+      "id": "Field_Voraussetzungen_Bestaetigt",
+      "key": "voraussetzungenBestaetigt",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Datenschutz und Einwilligung",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Datenschutz",
+      "layout": {
+        "row": "Row_20"
+      }
+    },
+    {
+      "text": "### Hinweis zum Datenschutz\n\nIhre personenbezogenen Daten werden ausschließlich zur Bearbeitung Ihrer Anmeldung zum Einbürgerungstest und zur Durchführung des Tests verwendet. Die Daten werden gemäß der Datenschutz-Grundverordnung (DSGVO) und des Staatsangehörigkeitsgesetzes (StAG) verarbeitet und nach gesetzlichen Aufbewahrungsfristen gelöscht.",
+      "label": "Text view",
+      "type": "text",
+      "layout": {
+        "row": "Row_21"
+      },
+      "id": "Field_Text_Datenschutz"
+    },
+    {
+      "label": "Ich habe die Datenschutzhinweise zur Kenntnis genommen und willige in die Verarbeitung meiner Daten ein.",
+      "type": "checkbox",
+      "layout": {
+        "row": "Row_22"
+      },
+      "id": "Field_Datenschutz_Akzeptiert",
+      "key": "datenschutzAkzeptiert",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Zusätzliche Bemerkungen",
+      "type": "textarea",
+      "layout": {
+        "row": "Row_23"
+      },
+      "id": "Field_Bemerkungen",
+      "key": "bemerkungen",
+      "validate": {
+        "required": false
+      },
+      "description": "Optional: Weitere Informationen oder Anmerkungen"
+    },
+    {
+      "label": "Anmeldung absenden",
+      "action": "submit",
+      "type": "button",
+      "layout": {
+        "row": "Row_24"
+      },
+      "id": "Field_Submit"
+    }
+  ],
+  "type": "default",
+  "id": "Form_Einbuergerungstest_Testanmeldung",
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0",
+  "exporter": {
+    "name": "GitHub-Copilot-GovModeler",
+    "version": "2.0"
+  },
+  "schemaVersion": 17
+}

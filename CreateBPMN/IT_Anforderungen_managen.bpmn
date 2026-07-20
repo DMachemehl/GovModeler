@@ -1,0 +1,512 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  xmlns:modeler="http://camunda.org/schema/modeler/1.0"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0"
+  modeler:executionPlatform="Camunda Platform"
+  modeler:executionPlatformVersion="7.20.0">
+
+  <!-- =====================================================
+       NACHRICHTEN-DEFINITIONEN
+       ===================================================== -->
+  <bpmn:message id="Message_Anforderung"   name="IT-Anforderung" />
+  <bpmn:message id="Message_Weiterleitung" name="Anforderung zur Bewertung" />
+  <bpmn:message id="Message_Rueckmeldung"  name="Rückmeldung" />
+
+  <!-- =====================================================
+       KOLLABORATION
+       3 Pools: Kunde / Fachbereich | IT dezentral | IT zentral
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_IT_Anforderungen_managen">
+
+    <bpmn:participant id="Participant_Kunde"
+                      name="Kunde / Fachbereich"
+                      processRef="Process_Kunde" />
+
+    <bpmn:participant id="Participant_ITdez"
+                      name="IT dezentral"
+                      processRef="Process_ITdez" />
+
+    <bpmn:participant id="Participant_ITzent"
+                      name="IT zentral"
+                      processRef="Process_ITzent" />
+
+    <!-- Message Flow 1: Kunde → IT dezentral -->
+    <bpmn:messageFlow id="MsgFlow_Anforderung"
+                      name="IT-Anforderung"
+                      sourceRef="Task_Anforderung_einreichen"
+                      targetRef="StartEvent_ITdez_Msg" />
+
+    <!-- Message Flow 2: IT dezentral → IT zentral -->
+    <bpmn:messageFlow id="MsgFlow_Weiterleitung"
+                      name="Anforderung zur Bewertung"
+                      sourceRef="Task_Anforderung_weiterleiten"
+                      targetRef="StartEvent_ITzent_Msg" />
+
+    <!-- Message Flow 3: IT zentral → Kunde (Rückmeldung) -->
+    <bpmn:messageFlow id="MsgFlow_Rueckmeldung"
+                      name="Rückmeldung"
+                      sourceRef="Task_Rueckmeldung_uebermitteln"
+                      targetRef="Catch_Rueckmeldung_erhalten" />
+
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       PROZESS: Kunde / Fachbereich
+       ===================================================== -->
+  <bpmn:process id="Process_Kunde"
+                name="Kunde_Fachbereich"
+                isExecutable="true">
+
+    <!-- Startereignis -->
+    <bpmn:startEvent id="StartEvent_Kunde" name="IT-Anforderung entstanden">
+      <bpmn:outgoing>Flow_K1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <!-- Schritt 1: Anforderung erfassen -->
+    <bpmn:userTask id="Task_Anforderung_erfassen" name="Anforderung erfassen">
+      <bpmn:incoming>Flow_K1</bpmn:incoming>
+      <bpmn:outgoing>Flow_K2</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Schritt 2: Anforderung einreichen (sendet Nachricht an IT dezentral) -->
+    <bpmn:userTask id="Task_Anforderung_einreichen" name="Anforderung einreichen">
+      <bpmn:incoming>Flow_K2</bpmn:incoming>
+      <bpmn:outgoing>Flow_K3</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Zwischenereignis: Rückmeldung erhalten (von IT zentral) -->
+    <bpmn:intermediateCatchEvent id="Catch_Rueckmeldung_erhalten" name="Rückmeldung erhalten">
+      <bpmn:incoming>Flow_K3</bpmn:incoming>
+      <bpmn:outgoing>Flow_K4</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Rueckmeldung" messageRef="Message_Rueckmeldung" />
+    </bpmn:intermediateCatchEvent>
+
+    <!-- Endereignis -->
+    <bpmn:endEvent id="EndEvent_Kunde" name="Anforderung zur Kenntnis genommen">
+      <bpmn:incoming>Flow_K4</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequenzflüsse -->
+    <bpmn:sequenceFlow id="Flow_K1" sourceRef="StartEvent_Kunde"            targetRef="Task_Anforderung_erfassen" />
+    <bpmn:sequenceFlow id="Flow_K2" sourceRef="Task_Anforderung_erfassen"   targetRef="Task_Anforderung_einreichen" />
+    <bpmn:sequenceFlow id="Flow_K3" sourceRef="Task_Anforderung_einreichen" targetRef="Catch_Rueckmeldung_erhalten" />
+    <bpmn:sequenceFlow id="Flow_K4" sourceRef="Catch_Rueckmeldung_erhalten" targetRef="EndEvent_Kunde" />
+
+  </bpmn:process>
+
+  <!-- =====================================================
+       PROZESS: IT dezentral
+       Betrieb dezentral, Steuerung zentral
+       ===================================================== -->
+  <bpmn:process id="Process_ITdez"
+                name="IT_dezentral"
+                isExecutable="true">
+
+    <!-- Startereignis (Nachricht von Kunde) -->
+    <bpmn:startEvent id="StartEvent_ITdez_Msg" name="Anforderung eingegangen">
+      <bpmn:outgoing>Flow_D1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Anforderung" messageRef="Message_Anforderung" />
+    </bpmn:startEvent>
+
+    <!-- Schritt 3: Anforderung strukturieren -->
+    <bpmn:userTask id="Task_Anforderung_strukturieren" name="Anforderung strukturieren">
+      <bpmn:incoming>Flow_D1</bpmn:incoming>
+      <bpmn:outgoing>Flow_D2</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Schritt 4: Anforderung vorklassifizieren -->
+    <bpmn:userTask id="Task_Anforderung_vorklassifizieren" name="Anforderung vorklassifizieren">
+      <bpmn:incoming>Flow_D2</bpmn:incoming>
+      <bpmn:outgoing>Flow_D3</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Schritt 5: Anforderung weiterleiten (sendet Nachricht an IT zentral) -->
+    <bpmn:userTask id="Task_Anforderung_weiterleiten" name="Anforderung weiterleiten">
+      <bpmn:incoming>Flow_D3</bpmn:incoming>
+      <bpmn:outgoing>Flow_D4</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Endereignis -->
+    <bpmn:endEvent id="EndEvent_ITdez" name="Weiterleitung abgeschlossen">
+      <bpmn:incoming>Flow_D4</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequenzflüsse -->
+    <bpmn:sequenceFlow id="Flow_D1" sourceRef="StartEvent_ITdez_Msg"           targetRef="Task_Anforderung_strukturieren" />
+    <bpmn:sequenceFlow id="Flow_D2" sourceRef="Task_Anforderung_strukturieren"  targetRef="Task_Anforderung_vorklassifizieren" />
+    <bpmn:sequenceFlow id="Flow_D3" sourceRef="Task_Anforderung_vorklassifizieren" targetRef="Task_Anforderung_weiterleiten" />
+    <bpmn:sequenceFlow id="Flow_D4" sourceRef="Task_Anforderung_weiterleiten"   targetRef="EndEvent_ITdez" />
+
+  </bpmn:process>
+
+  <!-- =====================================================
+       PROZESS: IT zentral
+       Betrieb zentral, Steuerung zentral
+       ===================================================== -->
+  <bpmn:process id="Process_ITzent"
+                name="IT_zentral"
+                isExecutable="true">
+
+    <!-- Startereignis (Nachricht von IT dezentral) -->
+    <bpmn:startEvent id="StartEvent_ITzent_Msg" name="Anforderung erhalten">
+      <bpmn:outgoing>Flow_Z1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Weiterleitung" messageRef="Message_Weiterleitung" />
+    </bpmn:startEvent>
+
+    <!-- Schritt 6: Anforderung klassifizieren -->
+    <bpmn:userTask id="Task_Anforderung_klassifizieren" name="Anforderung klassifizieren">
+      <bpmn:incoming>Flow_Z1</bpmn:incoming>
+      <bpmn:outgoing>Flow_Z2</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Schritt 7: Anforderung bewerten (Business Value / Aufwand) -->
+    <bpmn:serviceTask id="Task_Anforderung_bewerten" name="Anforderung bewerten">
+      <bpmn:incoming>Flow_Z2</bpmn:incoming>
+      <bpmn:outgoing>Flow_Z3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Schritt 8: Anforderung priorisieren -->
+    <bpmn:userTask id="Task_Anforderung_priorisieren" name="Anforderung priorisieren">
+      <bpmn:incoming>Flow_Z3</bpmn:incoming>
+      <bpmn:outgoing>Flow_Z4</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Schritt 9: Anforderung genehmigen -->
+    <bpmn:userTask id="Task_Anforderung_genehmigen" name="Anforderung genehmigen">
+      <bpmn:incoming>Flow_Z4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Z5</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Schritt 10: Rückmeldung übermitteln (sendet Nachricht an Kunde) -->
+    <bpmn:userTask id="Task_Rueckmeldung_uebermitteln" name="Rückmeldung übermitteln">
+      <bpmn:incoming>Flow_Z5</bpmn:incoming>
+      <bpmn:outgoing>Flow_Z6</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Schritt 11: An Portfolio Management übergeben -->
+    <bpmn:serviceTask id="Task_Portfolio_uebergeben" name="An Portfolio Management übergeben">
+      <bpmn:incoming>Flow_Z6</bpmn:incoming>
+      <bpmn:outgoing>Flow_Z7</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Endereignis -->
+    <bpmn:endEvent id="EndEvent_ITzent" name="Anforderung an Portfolio Management übergeben">
+      <bpmn:incoming>Flow_Z7</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequenzflüsse -->
+    <bpmn:sequenceFlow id="Flow_Z1" sourceRef="StartEvent_ITzent_Msg"          targetRef="Task_Anforderung_klassifizieren" />
+    <bpmn:sequenceFlow id="Flow_Z2" sourceRef="Task_Anforderung_klassifizieren" targetRef="Task_Anforderung_bewerten" />
+    <bpmn:sequenceFlow id="Flow_Z3" sourceRef="Task_Anforderung_bewerten"       targetRef="Task_Anforderung_priorisieren" />
+    <bpmn:sequenceFlow id="Flow_Z4" sourceRef="Task_Anforderung_priorisieren"   targetRef="Task_Anforderung_genehmigen" />
+    <bpmn:sequenceFlow id="Flow_Z5" sourceRef="Task_Anforderung_genehmigen"     targetRef="Task_Rueckmeldung_uebermitteln" />
+    <bpmn:sequenceFlow id="Flow_Z6" sourceRef="Task_Rueckmeldung_uebermitteln"  targetRef="Task_Portfolio_uebergeben" />
+    <bpmn:sequenceFlow id="Flow_Z7" sourceRef="Task_Portfolio_uebergeben"       targetRef="EndEvent_ITzent" />
+
+  </bpmn:process>
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG
+       Layout gemäß BPMN-DI_Guidelines.md
+       Pool-Reihenfolge: Kunde (oben) | IT dezentral (Mitte) | IT zentral (unten)
+       Alle Tasks horizontal auf identischer Y-Koordinate pro Pool (OBLIGATORISCH)
+       Horizontaler Abstand zwischen Tasks: 160px (100px Breite + 60px Abstand)
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_IT_Anforderungen_managen">
+    <bpmndi:BPMNPlane id="BPMNPlane_IT_Anforderungen_managen"
+                      bpmnElement="Collab_IT_Anforderungen_managen">
+
+      <!-- ==============================================
+           POOL 1: Kunde / Fachbereich
+           y=80, height=300 | Tasks y=160 | Events y=182
+           ============================================== -->
+      <bpmndi:BPMNShape id="Participant_Kunde_di"
+                        bpmnElement="Participant_Kunde"
+                        isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1400" height="300" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="200" width="20" height="80" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- StartEvent: IT-Anforderung entstanden -->
+      <bpmndi:BPMNShape id="StartEvent_Kunde_di" bpmnElement="StartEvent_Kunde">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="225" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- UserTask: Anforderung erfassen -->
+      <bpmndi:BPMNShape id="Task_Anforderung_erfassen_di"
+                        bpmnElement="Task_Anforderung_erfassen">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- UserTask: Anforderung einreichen -->
+      <bpmndi:BPMNShape id="Task_Anforderung_einreichen_di"
+                        bpmnElement="Task_Anforderung_einreichen">
+        <dc:Bounds x="470" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- IntermediateCatchEvent: Rückmeldung erhalten -->
+      <bpmndi:BPMNShape id="Catch_Rueckmeldung_erhalten_di"
+                        bpmnElement="Catch_Rueckmeldung_erhalten">
+        <dc:Bounds x="624" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="601" y="225" width="82" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- EndEvent: Anforderung zur Kenntnis genommen -->
+      <bpmndi:BPMNShape id="EndEvent_Kunde_di" bpmnElement="EndEvent_Kunde">
+        <dc:Bounds x="714" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="686" y="225" width="92" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Sequenzfluss-Kanten: Kunde (horizontale Linie y=200) -->
+      <bpmndi:BPMNEdge id="Flow_K1_di" bpmnElement="Flow_K1">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_K2_di" bpmnElement="Flow_K2">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="470" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_K3_di" bpmnElement="Flow_K3">
+        <di:waypoint x="570" y="200" />
+        <di:waypoint x="624" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_K4_di" bpmnElement="Flow_K4">
+        <di:waypoint x="660" y="200" />
+        <di:waypoint x="714" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ==============================================
+           POOL 2: IT dezentral
+           y=380, height=300 | Tasks y=455 | Events y=477
+           ============================================== -->
+      <bpmndi:BPMNShape id="Participant_ITdez_di"
+                        bpmnElement="Participant_ITdez"
+                        isHorizontal="true">
+        <dc:Bounds x="160" y="380" width="1400" height="300" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="505" width="20" height="60" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- StartEvent (Message): Anforderung eingegangen -->
+      <bpmndi:BPMNShape id="StartEvent_ITdez_Msg_di"
+                        bpmnElement="StartEvent_ITdez_Msg">
+        <dc:Bounds x="222" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="195" y="520" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- UserTask: Anforderung strukturieren -->
+      <bpmndi:BPMNShape id="Task_Anforderung_strukturieren_di"
+                        bpmnElement="Task_Anforderung_strukturieren">
+        <dc:Bounds x="310" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- UserTask: Anforderung vorklassifizieren -->
+      <bpmndi:BPMNShape id="Task_Anforderung_vorklassifizieren_di"
+                        bpmnElement="Task_Anforderung_vorklassifizieren">
+        <dc:Bounds x="470" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- UserTask: Anforderung weiterleiten -->
+      <bpmndi:BPMNShape id="Task_Anforderung_weiterleiten_di"
+                        bpmnElement="Task_Anforderung_weiterleiten">
+        <dc:Bounds x="630" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- EndEvent: Weiterleitung abgeschlossen -->
+      <bpmndi:BPMNShape id="EndEvent_ITdez_di" bpmnElement="EndEvent_ITdez">
+        <dc:Bounds x="790" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="763" y="520" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Sequenzfluss-Kanten: IT dezentral (horizontale Linie y=495) -->
+      <bpmndi:BPMNEdge id="Flow_D1_di" bpmnElement="Flow_D1">
+        <di:waypoint x="258" y="495" />
+        <di:waypoint x="310" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_D2_di" bpmnElement="Flow_D2">
+        <di:waypoint x="410" y="495" />
+        <di:waypoint x="470" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_D3_di" bpmnElement="Flow_D3">
+        <di:waypoint x="570" y="495" />
+        <di:waypoint x="630" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_D4_di" bpmnElement="Flow_D4">
+        <di:waypoint x="730" y="495" />
+        <di:waypoint x="790" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ==============================================
+           POOL 3: IT zentral
+           y=680, height=300 | Tasks y=760 | Events y=782
+           ============================================== -->
+      <bpmndi:BPMNShape id="Participant_ITzent_di"
+                        bpmnElement="Participant_ITzent"
+                        isHorizontal="true">
+        <dc:Bounds x="160" y="680" width="1400" height="300" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="805" width="20" height="60" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- StartEvent (Message): Anforderung erhalten -->
+      <bpmndi:BPMNShape id="StartEvent_ITzent_Msg_di"
+                        bpmnElement="StartEvent_ITzent_Msg">
+        <dc:Bounds x="222" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="825" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- UserTask: Anforderung klassifizieren -->
+      <bpmndi:BPMNShape id="Task_Anforderung_klassifizieren_di"
+                        bpmnElement="Task_Anforderung_klassifizieren">
+        <dc:Bounds x="310" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- ServiceTask: Anforderung bewerten -->
+      <bpmndi:BPMNShape id="Task_Anforderung_bewerten_di"
+                        bpmnElement="Task_Anforderung_bewerten">
+        <dc:Bounds x="470" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- UserTask: Anforderung priorisieren -->
+      <bpmndi:BPMNShape id="Task_Anforderung_priorisieren_di"
+                        bpmnElement="Task_Anforderung_priorisieren">
+        <dc:Bounds x="630" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- UserTask: Anforderung genehmigen -->
+      <bpmndi:BPMNShape id="Task_Anforderung_genehmigen_di"
+                        bpmnElement="Task_Anforderung_genehmigen">
+        <dc:Bounds x="790" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- UserTask: Rückmeldung übermitteln -->
+      <bpmndi:BPMNShape id="Task_Rueckmeldung_uebermitteln_di"
+                        bpmnElement="Task_Rueckmeldung_uebermitteln">
+        <dc:Bounds x="950" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- ServiceTask: An Portfolio Management übergeben -->
+      <bpmndi:BPMNShape id="Task_Portfolio_uebergeben_di"
+                        bpmnElement="Task_Portfolio_uebergeben">
+        <dc:Bounds x="1110" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- EndEvent: Anforderung an Portfolio Management übergeben -->
+      <bpmndi:BPMNShape id="EndEvent_ITzent_di" bpmnElement="EndEvent_ITzent">
+        <dc:Bounds x="1264" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1237" y="825" width="90" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Sequenzfluss-Kanten: IT zentral (horizontale Linie y=800) -->
+      <bpmndi:BPMNEdge id="Flow_Z1_di" bpmnElement="Flow_Z1">
+        <di:waypoint x="258" y="800" />
+        <di:waypoint x="310" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Z2_di" bpmnElement="Flow_Z2">
+        <di:waypoint x="410" y="800" />
+        <di:waypoint x="470" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Z3_di" bpmnElement="Flow_Z3">
+        <di:waypoint x="570" y="800" />
+        <di:waypoint x="630" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Z4_di" bpmnElement="Flow_Z4">
+        <di:waypoint x="730" y="800" />
+        <di:waypoint x="790" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Z5_di" bpmnElement="Flow_Z5">
+        <di:waypoint x="890" y="800" />
+        <di:waypoint x="950" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Z6_di" bpmnElement="Flow_Z6">
+        <di:waypoint x="1050" y="800" />
+        <di:waypoint x="1110" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Z7_di" bpmnElement="Flow_Z7">
+        <di:waypoint x="1210" y="800" />
+        <di:waypoint x="1264" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ==============================================
+           NACHRICHTENFLUSS-KANTEN (gestrichelt)
+           ============================================== -->
+
+      <!-- MsgFlow 1: Task_Anforderung_einreichen (Kunde) → StartEvent_ITdez_Msg
+           Route: Unterkante Task (520,240) → Pool-Grenze (520,380) → horizontal zu StartEvent-X → Oberkante StartEvent (240,477) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Anforderung_di" bpmnElement="MsgFlow_Anforderung">
+        <di:waypoint x="520" y="240" />
+        <di:waypoint x="520" y="380" />
+        <di:waypoint x="240" y="380" />
+        <di:waypoint x="240" y="477" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="348" y="362" width="76" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- MsgFlow 2: Task_Anforderung_weiterleiten (IT dez) → StartEvent_ITzent_Msg
+           Route: Unterkante Task (680,535) → Pool-Grenze (680,680) → horizontal zu StartEvent-X → Oberkante StartEvent (240,782) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Weiterleitung_di" bpmnElement="MsgFlow_Weiterleitung">
+        <di:waypoint x="680" y="535" />
+        <di:waypoint x="680" y="680" />
+        <di:waypoint x="240" y="680" />
+        <di:waypoint x="240" y="782" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="420" y="662" width="120" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- MsgFlow 3: Task_Rueckmeldung_uebermitteln (IT zent) → Catch_Rueckmeldung_erhalten (Kunde)
+           Route: Oberkante Task (1000,760) → Pool-Grenze (1000,680) → horizontal zu Catch-X → Unterkante Catch (642,218) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Rueckmeldung_di" bpmnElement="MsgFlow_Rueckmeldung">
+        <di:waypoint x="1000" y="760" />
+        <di:waypoint x="1000" y="680" />
+        <di:waypoint x="642" y="680" />
+        <di:waypoint x="642" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="812" y="662" width="60" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0">
+
+  <!-- =====================================================
+       COLLABORATION
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_Anwendung_betreiben">
+
+    <bpmn:participant id="Participant_Kunde"
+                      name="Kunde / Fachbereich"
+                      processRef="Process_Kunde" />
+
+    <bpmn:participant id="Participant_IT_Dez"
+                      name="IT dezentral"
+                      processRef="Process_IT_Dez" />
+
+    <bpmn:participant id="Participant_IT_Zen"
+                      name="IT zentral"
+                      processRef="Process_IT_Zen" />
+
+    <!-- Message Flows -->
+    <bpmn:messageFlow id="MsgFlow_Anforderung"
+                      name="Betriebsanforderung"
+                      sourceRef="Task_Anforderung_Melden"
+                      targetRef="StartEvent_Anforderung" />
+
+    <bpmn:messageFlow id="MsgFlow_Betriebsauftrag"
+                      name="Betriebsauftrag"
+                      sourceRef="Task_Betriebsauftrag_Uebergeben"
+                      targetRef="StartEvent_Betriebsauftrag" />
+
+    <bpmn:messageFlow id="MsgFlow_Wartungsreport"
+                      name="Wartungsreport"
+                      sourceRef="Task_Wartungsreport_Erstellen"
+                      targetRef="CatchEvent_Wartungsreport" />
+
+    <bpmn:messageFlow id="MsgFlow_Betriebsstatus"
+                      name="Betriebsstatus"
+                      sourceRef="Task_Fachbereich_Informieren"
+                      targetRef="CatchEvent_Betriebsstatus" />
+
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       PROZESS: Kunde / Fachbereich
+       ===================================================== -->
+  <bpmn:process id="Process_Kunde"
+                name="Anwendung betreiben – Kunde/Fachbereich"
+                isExecutable="false">
+
+    <bpmn:startEvent id="StartEvent_Kunde" name="Betriebsanforderung eingegangen">
+      <bpmn:outgoing>Flow_K1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="Task_Anforderung_Melden" name="Betriebsanforderung melden">
+      <bpmn:incoming>Flow_K1</bpmn:incoming>
+      <bpmn:outgoing>Flow_K2</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:intermediateCatchEvent id="CatchEvent_Betriebsstatus" name="Betriebsstatus erhalten">
+      <bpmn:incoming>Flow_K2</bpmn:incoming>
+      <bpmn:outgoing>Flow_K3</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Status" />
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:endEvent id="EndEvent_Kunde" name="Stabiler Betrieb bestätigt">
+      <bpmn:incoming>Flow_K3</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_K1" sourceRef="StartEvent_Kunde" targetRef="Task_Anforderung_Melden" />
+    <bpmn:sequenceFlow id="Flow_K2" sourceRef="Task_Anforderung_Melden" targetRef="CatchEvent_Betriebsstatus" />
+    <bpmn:sequenceFlow id="Flow_K3" sourceRef="CatchEvent_Betriebsstatus" targetRef="EndEvent_Kunde" />
+
+  </bpmn:process>
+
+  <!-- =====================================================
+       PROZESS: IT dezentral
+       ===================================================== -->
+  <bpmn:process id="Process_IT_Dez"
+                name="Anwendung betreiben – IT dezentral"
+                isExecutable="false">
+
+    <bpmn:startEvent id="StartEvent_Anforderung" name="Anforderung erhalten">
+      <bpmn:outgoing>Flow_D1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Anforderung" />
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="Task_Anforderung_Aufnehmen" name="Anforderung aufnehmen und klassifizieren">
+      <bpmn:incoming>Flow_D1</bpmn:incoming>
+      <bpmn:outgoing>Flow_D2</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:serviceTask id="Task_Betriebsauftrag_Uebergeben" name="Betriebsauftrag an IT zentral übergeben">
+      <bpmn:incoming>Flow_D2</bpmn:incoming>
+      <bpmn:outgoing>Flow_D3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:intermediateCatchEvent id="CatchEvent_Wartungsreport" name="Wartungsreport erhalten">
+      <bpmn:incoming>Flow_D3</bpmn:incoming>
+      <bpmn:outgoing>Flow_D4</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Wartungsreport" />
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:userTask id="Task_Fachbereich_Informieren" name="Fachbereich über Betriebsstatus informieren">
+      <bpmn:incoming>Flow_D4</bpmn:incoming>
+      <bpmn:outgoing>Flow_D5</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:endEvent id="EndEvent_IT_Dez" name="Koordination abgeschlossen">
+      <bpmn:incoming>Flow_D5</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_D1" sourceRef="StartEvent_Anforderung" targetRef="Task_Anforderung_Aufnehmen" />
+    <bpmn:sequenceFlow id="Flow_D2" sourceRef="Task_Anforderung_Aufnehmen" targetRef="Task_Betriebsauftrag_Uebergeben" />
+    <bpmn:sequenceFlow id="Flow_D3" sourceRef="Task_Betriebsauftrag_Uebergeben" targetRef="CatchEvent_Wartungsreport" />
+    <bpmn:sequenceFlow id="Flow_D4" sourceRef="CatchEvent_Wartungsreport" targetRef="Task_Fachbereich_Informieren" />
+    <bpmn:sequenceFlow id="Flow_D5" sourceRef="Task_Fachbereich_Informieren" targetRef="EndEvent_IT_Dez" />
+
+  </bpmn:process>
+
+  <!-- =====================================================
+       PROZESS: IT zentral
+       ===================================================== -->
+  <bpmn:process id="Process_IT_Zen"
+                name="Anwendung betreiben – IT zentral"
+                isExecutable="false">
+
+    <bpmn:startEvent id="StartEvent_Betriebsauftrag" name="Betriebsauftrag erhalten">
+      <bpmn:outgoing>Flow_Z1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Betriebsauftrag" />
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_Betrieb_Ueberwachen" name="Anwendungsbetrieb überwachen">
+      <bpmn:incoming>Flow_Z1</bpmn:incoming>
+      <bpmn:outgoing>Flow_Z2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Patches_Einspielen" name="Patches und Updates einspielen">
+      <bpmn:incoming>Flow_Z2</bpmn:incoming>
+      <bpmn:outgoing>Flow_Z3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Performance_Optimieren" name="Performance und Kapazität optimieren">
+      <bpmn:incoming>Flow_Z3</bpmn:incoming>
+      <bpmn:outgoing>Flow_Z4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Wartungsreport_Erstellen" name="Wartungsreport erstellen und übermitteln">
+      <bpmn:incoming>Flow_Z4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Z5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_IT_Zen" name="Wartung abgeschlossen">
+      <bpmn:incoming>Flow_Z5</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_Z1" sourceRef="StartEvent_Betriebsauftrag" targetRef="Task_Betrieb_Ueberwachen" />
+    <bpmn:sequenceFlow id="Flow_Z2" sourceRef="Task_Betrieb_Ueberwachen" targetRef="Task_Patches_Einspielen" />
+    <bpmn:sequenceFlow id="Flow_Z3" sourceRef="Task_Patches_Einspielen" targetRef="Task_Performance_Optimieren" />
+    <bpmn:sequenceFlow id="Flow_Z4" sourceRef="Task_Performance_Optimieren" targetRef="Task_Wartungsreport_Erstellen" />
+    <bpmn:sequenceFlow id="Flow_Z5" sourceRef="Task_Wartungsreport_Erstellen" targetRef="EndEvent_IT_Zen" />
+
+  </bpmn:process>
+
+  <!-- =====================================================
+       BPMN-DI – Diagramm-Layout
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collab_Anwendung_betreiben">
+
+      <!-- ======= POOL-SHAPES ======= -->
+
+      <!-- Pool: Kunde / Fachbereich (oben, y=80) -->
+      <bpmndi:BPMNShape id="Participant_Kunde_di" bpmnElement="Participant_Kunde" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1400" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- Pool: IT dezentral (Mitte, y=350) -->
+      <bpmndi:BPMNShape id="Participant_IT_Dez_di" bpmnElement="Participant_IT_Dez" isHorizontal="true">
+        <dc:Bounds x="160" y="350" width="1400" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- Pool: IT zentral (unten, y=620) -->
+      <bpmndi:BPMNShape id="Participant_IT_Zen_di" bpmnElement="Participant_IT_Zen" isHorizontal="true">
+        <dc:Bounds x="160" y="620" width="1400" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- ======= POOL 1: Kunde / Fachbereich (task_y=165, event_y=187, center_y=205) ======= -->
+
+      <bpmndi:BPMNShape id="StartEvent_Kunde_di" bpmnElement="StartEvent_Kunde">
+        <dc:Bounds x="222" y="187" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="230" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Anforderung_Melden_di" bpmnElement="Task_Anforderung_Melden">
+        <dc:Bounds x="310" y="165" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="CatchEvent_Betriebsstatus_di" bpmnElement="CatchEvent_Betriebsstatus">
+        <dc:Bounds x="1072" y="187" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1048" y="230" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_Kunde_di" bpmnElement="EndEvent_Kunde">
+        <dc:Bounds x="1152" y="187" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1128" y="230" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Sequence Flows Pool 1 -->
+      <bpmndi:BPMNEdge id="Flow_K1_di" bpmnElement="Flow_K1">
+        <di:waypoint x="258" y="205" />
+        <di:waypoint x="310" y="205" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_K2_di" bpmnElement="Flow_K2">
+        <di:waypoint x="410" y="205" />
+        <di:waypoint x="1072" y="205" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_K3_di" bpmnElement="Flow_K3">
+        <di:waypoint x="1108" y="205" />
+        <di:waypoint x="1152" y="205" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ======= POOL 2: IT dezentral (task_y=435, event_y=457, center_y=475) ======= -->
+
+      <bpmndi:BPMNShape id="StartEvent_Anforderung_di" bpmnElement="StartEvent_Anforderung">
+        <dc:Bounds x="310" y="457" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="284" y="500" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Anforderung_Aufnehmen_di" bpmnElement="Task_Anforderung_Aufnehmen">
+        <dc:Bounds x="400" y="435" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Betriebsauftrag_Uebergeben_di" bpmnElement="Task_Betriebsauftrag_Uebergeben">
+        <dc:Bounds x="560" y="435" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="CatchEvent_Wartungsreport_di" bpmnElement="CatchEvent_Wartungsreport">
+        <dc:Bounds x="870" y="457" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="844" y="500" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Fachbereich_Informieren_di" bpmnElement="Task_Fachbereich_Informieren">
+        <dc:Bounds x="960" y="435" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_IT_Dez_di" bpmnElement="EndEvent_IT_Dez">
+        <dc:Bounds x="1120" y="457" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1094" y="500" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Sequence Flows Pool 2 -->
+      <bpmndi:BPMNEdge id="Flow_D1_di" bpmnElement="Flow_D1">
+        <di:waypoint x="346" y="475" />
+        <di:waypoint x="400" y="475" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_D2_di" bpmnElement="Flow_D2">
+        <di:waypoint x="500" y="475" />
+        <di:waypoint x="560" y="475" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_D3_di" bpmnElement="Flow_D3">
+        <di:waypoint x="660" y="475" />
+        <di:waypoint x="870" y="475" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_D4_di" bpmnElement="Flow_D4">
+        <di:waypoint x="906" y="475" />
+        <di:waypoint x="960" y="475" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_D5_di" bpmnElement="Flow_D5">
+        <di:waypoint x="1060" y="475" />
+        <di:waypoint x="1120" y="475" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ======= POOL 3: IT zentral (task_y=705, event_y=727, center_y=745) ======= -->
+
+      <bpmndi:BPMNShape id="StartEvent_Betriebsauftrag_di" bpmnElement="StartEvent_Betriebsauftrag">
+        <dc:Bounds x="592" y="727" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="566" y="770" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Betrieb_Ueberwachen_di" bpmnElement="Task_Betrieb_Ueberwachen">
+        <dc:Bounds x="680" y="705" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Patches_Einspielen_di" bpmnElement="Task_Patches_Einspielen">
+        <dc:Bounds x="840" y="705" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Performance_Optimieren_di" bpmnElement="Task_Performance_Optimieren">
+        <dc:Bounds x="1000" y="705" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Wartungsreport_Erstellen_di" bpmnElement="Task_Wartungsreport_Erstellen">
+        <dc:Bounds x="1160" y="705" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_IT_Zen_di" bpmnElement="EndEvent_IT_Zen">
+        <dc:Bounds x="1322" y="727" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1296" y="770" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Sequence Flows Pool 3 -->
+      <bpmndi:BPMNEdge id="Flow_Z1_di" bpmnElement="Flow_Z1">
+        <di:waypoint x="628" y="745" />
+        <di:waypoint x="680" y="745" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Z2_di" bpmnElement="Flow_Z2">
+        <di:waypoint x="780" y="745" />
+        <di:waypoint x="840" y="745" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Z3_di" bpmnElement="Flow_Z3">
+        <di:waypoint x="940" y="745" />
+        <di:waypoint x="1000" y="745" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Z4_di" bpmnElement="Flow_Z4">
+        <di:waypoint x="1100" y="745" />
+        <di:waypoint x="1160" y="745" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Z5_di" bpmnElement="Flow_Z5">
+        <di:waypoint x="1260" y="745" />
+        <di:waypoint x="1322" y="745" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ======= MESSAGE FLOWS ======= -->
+
+      <!-- MsgFlow 1: Kunde → IT dezentral (Betriebsanforderung melden → Anforderung erhalten) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Anforderung_di" bpmnElement="MsgFlow_Anforderung">
+        <di:waypoint x="360" y="245" />
+        <di:waypoint x="328" y="457" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="298" y="335" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- MsgFlow 2: IT dezentral → IT zentral (Betriebsauftrag übergeben → Betriebsauftrag erhalten) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Betriebsauftrag_di" bpmnElement="MsgFlow_Betriebsauftrag">
+        <di:waypoint x="610" y="515" />
+        <di:waypoint x="610" y="727" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="616" y="608" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- MsgFlow 3: IT zentral → IT dezentral (Wartungsreport erstellen → Wartungsreport erhalten) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Wartungsreport_di" bpmnElement="MsgFlow_Wartungsreport">
+        <di:waypoint x="1210" y="705" />
+        <di:waypoint x="1210" y="600" />
+        <di:waypoint x="888" y="600" />
+        <di:waypoint x="888" y="493" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1022" y="582" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- MsgFlow 4: IT dezentral → Kunde (Fachbereich informieren → Betriebsstatus erhalten) -->
+      <bpmndi:BPMNEdge id="MsgFlow_Betriebsstatus_di" bpmnElement="MsgFlow_Betriebsstatus">
+        <di:waypoint x="1010" y="435" />
+        <di:waypoint x="1010" y="350" />
+        <di:waypoint x="1090" y="350" />
+        <di:waypoint x="1090" y="223" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1020" y="332" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

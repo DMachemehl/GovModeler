@@ -1,0 +1,592 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  targetNamespace="http://example.com/bpmn"
+                  exporter="GitHub-Copilot-GovModeler"
+                  exporterVersion="2.0" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.4.0">
+
+  <!-- =====================================================
+       COLLABORATION - Einbürgerungstest durchführen
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_Einbuergerungstest_durchfuehren">
+
+    <!-- Participant: Buerger -->
+    <bpmn:participant id="Participant_Buerger"
+                      name="Buerger"
+                      processRef="Process_Buerger" />
+
+    <!-- Participant: IT -->
+    <bpmn:participant id="Participant_IT"
+                      name="IT"
+                      processRef="Process_IT" />
+
+    <!-- Participant: Behoerde -->
+    <bpmn:participant id="Participant_Behoerde"
+                      name="Behoerde"
+                      processRef="Process_Behoerde" />
+
+    <!-- Message Flows -->
+    <!-- Buerger -> Behoerde: Testanmeldung -->
+    <bpmn:messageFlow id="MsgFlow_Testanmeldung"
+                      name="Testanmeldung"
+                      sourceRef="Task_Buerger_Testanmeldung_einreichen"
+                      targetRef="StartEvent_Behoerde" />
+
+    <!-- Behoerde -> Buerger: Testtermin -->
+    <bpmn:messageFlow id="MsgFlow_Testtermin"
+                      name="Termininformation"
+                      sourceRef="Task_Behoerde_Testtermin_vergeben"
+                      targetRef="Event_Buerger_Termin_erhalten" />
+
+    <!-- Behoerde -> IT: Testabruf -->
+    <bpmn:messageFlow id="MsgFlow_Testabruf"
+                      name="Testabruf"
+                      sourceRef="Task_Behoerde_Testdurchfuehrung_beaufsichtigen"
+                      targetRef="StartEvent_IT" />
+
+    <!-- Behoerde -> IT: Testbogen erfassen -->
+    <bpmn:messageFlow id="MsgFlow_Testbogen_erfassen"
+                      name="Testbogen"
+                      sourceRef="Task_Behoerde_Testbogen_erfassen"
+                      targetRef="Event_IT_Testbogen_erhalten" />
+
+    <!-- IT -> Behoerde: Testergebnis -->
+    <bpmn:messageFlow id="MsgFlow_Testergebnis"
+                      name="Testergebnis"
+                      sourceRef="Task_IT_Testergebnis_auswerten"
+                      targetRef="Event_Behoerde_Ergebnis_erhalten" />
+
+    <!-- Behoerde -> Buerger: Testbescheinigung -->
+    <bpmn:messageFlow id="MsgFlow_Testbescheinigung"
+                      name="Testbescheinigung"
+                      sourceRef="Task_Behoerde_Bescheinigung_ausstellen"
+                      targetRef="Event_Buerger_Bescheinigung_erhalten" />
+
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       BUERGER PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Buerger"
+                name="Einbuergerungstest_durchfuehren_Buerger"
+                isExecutable="true">
+
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Buerger" name="Anmeldung zum Einbuergerungstest eingegangen">
+      <bpmn:outgoing>Flow_Buerger_Start_Testanmeldung</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <!-- Task 1: Testanmeldung einreichen -->
+    <bpmn:userTask id="Task_Buerger_Testanmeldung_einreichen" name="Testanmeldung einreichen" camunda:formKey="embedded:app:forms/Einbuergerungstest_Testanmeldung.form">
+      <bpmn:incoming>Flow_Buerger_Start_Testanmeldung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Testanmeldung_Termin</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Intermediate Catch Event: Testtermin erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Buerger_Termin_erhalten" name="Termininformation erhalten">
+      <bpmn:incoming>Flow_Buerger_Testanmeldung_Termin</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Termin_Wahrnehmen</bpmn:outgoing>
+      <bpmn:messageEventDefinition />
+    </bpmn:intermediateCatchEvent>
+
+    <!-- Task 2: Testtermin wahrnehmen -->
+    <bpmn:userTask id="Task_Buerger_Testtermin_wahrnehmen" name="Testtermin wahrnehmen">
+      <bpmn:incoming>Flow_Buerger_Termin_Wahrnehmen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Wahrnehmen_Bescheinigung</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Intermediate Catch Event: Testbescheinigung erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Buerger_Bescheinigung_erhalten" name="Testbescheinigung erhalten">
+      <bpmn:incoming>Flow_Buerger_Wahrnehmen_Bescheinigung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Bescheinigung_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition />
+    </bpmn:intermediateCatchEvent>
+
+    <!-- Task 3: Testbescheinigung erhalten -->
+    <bpmn:userTask id="Task_Buerger_Testbescheinigung_erhalten" name="Testbescheinigung erhalten">
+      <bpmn:incoming>Flow_Buerger_Bescheinigung_Ende</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Buerger" name="Einbuergerungstest abgeschlossen">
+      <bpmn:incoming>Flow_Buerger_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequence Flows -->
+    <bpmn:sequenceFlow id="Flow_Buerger_Start_Testanmeldung"
+                       sourceRef="StartEvent_Buerger"
+                       targetRef="Task_Buerger_Testanmeldung_einreichen" />
+
+    <bpmn:sequenceFlow id="Flow_Buerger_Testanmeldung_Termin"
+                       sourceRef="Task_Buerger_Testanmeldung_einreichen"
+                       targetRef="Event_Buerger_Termin_erhalten" />
+
+    <bpmn:sequenceFlow id="Flow_Buerger_Termin_Wahrnehmen"
+                       sourceRef="Event_Buerger_Termin_erhalten"
+                       targetRef="Task_Buerger_Testtermin_wahrnehmen" />
+
+    <bpmn:sequenceFlow id="Flow_Buerger_Wahrnehmen_Bescheinigung"
+                       sourceRef="Task_Buerger_Testtermin_wahrnehmen"
+                       targetRef="Event_Buerger_Bescheinigung_erhalten" />
+
+    <bpmn:sequenceFlow id="Flow_Buerger_Bescheinigung_Ende"
+                       sourceRef="Event_Buerger_Bescheinigung_erhalten"
+                       targetRef="Task_Buerger_Testbescheinigung_erhalten" />
+
+    <bpmn:sequenceFlow id="Flow_Buerger_Ende"
+                       sourceRef="Task_Buerger_Testbescheinigung_erhalten"
+                       targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       IT PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_IT"
+                name="Einbuergerungstest_durchfuehren_IT"
+                isExecutable="true">
+
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_IT" name="Testabruf erhalten">
+      <bpmn:outgoing>Flow_IT_Start_Testfragen</bpmn:outgoing>
+      <bpmn:messageEventDefinition />
+    </bpmn:startEvent>
+
+    <!-- Task 1: Testfragen generieren -->
+    <bpmn:serviceTask id="Task_IT_Testfragen_generieren" name="Testfragen generieren">
+      <bpmn:incoming>Flow_IT_Start_Testfragen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Testfragen_Testbogen</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Intermediate Catch Event: Testbogen erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_IT_Testbogen_erhalten" name="Testbogen erhalten">
+      <bpmn:incoming>Flow_IT_Testfragen_Testbogen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Testbogen_Auswertung</bpmn:outgoing>
+      <bpmn:messageEventDefinition />
+    </bpmn:intermediateCatchEvent>
+
+    <!-- Task 2: Testergebnis auswerten -->
+    <bpmn:serviceTask id="Task_IT_Testergebnis_auswerten" name="Testergebnis auswerten">
+      <bpmn:incoming>Flow_IT_Testbogen_Auswertung</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Auswertung_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_IT" name="IT Prozess beendet">
+      <bpmn:incoming>Flow_IT_Auswertung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequence Flows -->
+    <bpmn:sequenceFlow id="Flow_IT_Start_Testfragen"
+                       sourceRef="StartEvent_IT"
+                       targetRef="Task_IT_Testfragen_generieren" />
+
+    <bpmn:sequenceFlow id="Flow_IT_Testfragen_Testbogen"
+                       sourceRef="Task_IT_Testfragen_generieren"
+                       targetRef="Event_IT_Testbogen_erhalten" />
+
+    <bpmn:sequenceFlow id="Flow_IT_Testbogen_Auswertung"
+                       sourceRef="Event_IT_Testbogen_erhalten"
+                       targetRef="Task_IT_Testergebnis_auswerten" />
+
+    <bpmn:sequenceFlow id="Flow_IT_Auswertung_Ende"
+                       sourceRef="Task_IT_Testergebnis_auswerten"
+                       targetRef="EndEvent_IT" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       BEHOERDE PROZESS
+       ===================================================== -->
+  <bpmn:process id="Process_Behoerde"
+                name="Einbuergerungstest_durchfuehren_Behoerde"
+                isExecutable="true">
+
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Behoerde" name="Testanmeldung eingegangen">
+      <bpmn:outgoing>Flow_Behoerde_Start_Pruefen</bpmn:outgoing>
+      <bpmn:messageEventDefinition />
+    </bpmn:startEvent>
+
+    <!-- Task 1: Anmeldung pruefen -->
+    <bpmn:userTask id="Task_Behoerde_Anmeldung_pruefen" name="Anmeldung pruefen">
+      <bpmn:incoming>Flow_Behoerde_Start_Pruefen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Pruefen_Testtermin</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Task 2: Testtermin vergeben -->
+    <bpmn:userTask id="Task_Behoerde_Testtermin_vergeben" name="Testtermin vergeben">
+      <bpmn:incoming>Flow_Behoerde_Pruefen_Testtermin</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Testtermin_Beaufsichtigen</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Task 3: Testdurchfuehrung beaufsichtigen -->
+    <bpmn:userTask id="Task_Behoerde_Testdurchfuehrung_beaufsichtigen" name="Testdurchfuehrung beaufsichtigen">
+      <bpmn:incoming>Flow_Behoerde_Testtermin_Beaufsichtigen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Beaufsichtigen_Erfassen</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Task 4: Testbogen erfassen -->
+    <bpmn:userTask id="Task_Behoerde_Testbogen_erfassen" name="Testbogen erfassen">
+      <bpmn:incoming>Flow_Behoerde_Beaufsichtigen_Erfassen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Erfassen_Ergebnis</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Intermediate Catch Event: Testergebnis erhalten -->
+    <bpmn:intermediateCatchEvent id="Event_Behoerde_Ergebnis_erhalten" name="Testergebnis erhalten">
+      <bpmn:incoming>Flow_Behoerde_Erfassen_Ergebnis</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Ergebnis_Bescheinigung</bpmn:outgoing>
+      <bpmn:messageEventDefinition />
+    </bpmn:intermediateCatchEvent>
+
+    <!-- Task 5: Bescheinigung ausstellen -->
+    <bpmn:userTask id="Task_Behoerde_Bescheinigung_ausstellen" name="Bescheinigung ausstellen">
+      <bpmn:incoming>Flow_Behoerde_Ergebnis_Bescheinigung</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Bescheinigung_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent_Behoerde" name="Einbuergerungstest abgeschlossen">
+      <bpmn:incoming>Flow_Behoerde_Bescheinigung_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequence Flows -->
+    <bpmn:sequenceFlow id="Flow_Behoerde_Start_Pruefen"
+                       sourceRef="StartEvent_Behoerde"
+                       targetRef="Task_Behoerde_Anmeldung_pruefen" />
+
+    <bpmn:sequenceFlow id="Flow_Behoerde_Pruefen_Testtermin"
+                       sourceRef="Task_Behoerde_Anmeldung_pruefen"
+                       targetRef="Task_Behoerde_Testtermin_vergeben" />
+
+    <bpmn:sequenceFlow id="Flow_Behoerde_Testtermin_Beaufsichtigen"
+                       sourceRef="Task_Behoerde_Testtermin_vergeben"
+                       targetRef="Task_Behoerde_Testdurchfuehrung_beaufsichtigen" />
+
+    <bpmn:sequenceFlow id="Flow_Behoerde_Beaufsichtigen_Erfassen"
+                       sourceRef="Task_Behoerde_Testdurchfuehrung_beaufsichtigen"
+                       targetRef="Task_Behoerde_Testbogen_erfassen" />
+
+    <bpmn:sequenceFlow id="Flow_Behoerde_Erfassen_Ergebnis"
+                       sourceRef="Task_Behoerde_Testbogen_erfassen"
+                       targetRef="Event_Behoerde_Ergebnis_erhalten" />
+
+    <bpmn:sequenceFlow id="Flow_Behoerde_Ergebnis_Bescheinigung"
+                       sourceRef="Event_Behoerde_Ergebnis_erhalten"
+                       targetRef="Task_Behoerde_Bescheinigung_ausstellen" />
+
+    <bpmn:sequenceFlow id="Flow_Behoerde_Bescheinigung_Ende"
+                       sourceRef="Task_Behoerde_Bescheinigung_ausstellen"
+                       targetRef="EndEvent_Behoerde" />
+  </bpmn:process>
+
+  <!-- =====================================================
+       MESSAGE DEFINITIONEN
+       ===================================================== -->
+  <bpmn:message id="Message_Testanmeldung" name="Testanmeldung" />
+  <bpmn:message id="Message_Termininformation" name="Termininformation" />
+  <bpmn:message id="Message_Testabruf" name="Testabruf" />
+  <bpmn:message id="Message_Testbogen" name="Testbogen" />
+  <bpmn:message id="Message_Testergebnis" name="Testergebnis" />
+  <bpmn:message id="Message_Testbescheinigung" name="Testbescheinigung" />
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Einbuergerungstest">
+    <bpmndi:BPMNPlane id="BPMNPlane_Einbuergerungstest" bpmnElement="Collab_Einbuergerungstest_durchfuehren">
+
+      <!-- ===============================
+           POOL: BUERGER (oben)
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1360" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="190" width="20" height="50" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Buerger Process Elements - Horizontal auf Y=160 -->
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="225" width="88" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Buerger_Testanmeldung_einreichen_di" bpmnElement="Task_Buerger_Testanmeldung_einreichen">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Event_Buerger_Termin_erhalten_di" bpmnElement="Event_Buerger_Termin_erhalten">
+        <dc:Bounds x="472" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="446" y="225" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Buerger_Testtermin_wahrnehmen_di" bpmnElement="Task_Buerger_Testtermin_wahrnehmen">
+        <dc:Bounds x="560" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Event_Buerger_Bescheinigung_erhalten_di" bpmnElement="Event_Buerger_Bescheinigung_erhalten">
+        <dc:Bounds x="722" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="696" y="225" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Buerger_Testbescheinigung_erhalten_di" bpmnElement="Task_Buerger_Testbescheinigung_erhalten">
+        <dc:Bounds x="810" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="962" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="936" y="225" width="88" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Buerger Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_Buerger_Start_Testanmeldung_di" bpmnElement="Flow_Buerger_Start_Testanmeldung">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Buerger_Testanmeldung_Termin_di" bpmnElement="Flow_Buerger_Testanmeldung_Termin">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="472" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Buerger_Termin_Wahrnehmen_di" bpmnElement="Flow_Buerger_Termin_Wahrnehmen">
+        <di:waypoint x="508" y="200" />
+        <di:waypoint x="560" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Buerger_Wahrnehmen_Bescheinigung_di" bpmnElement="Flow_Buerger_Wahrnehmen_Bescheinigung">
+        <di:waypoint x="660" y="200" />
+        <di:waypoint x="722" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Buerger_Bescheinigung_Ende_di" bpmnElement="Flow_Buerger_Bescheinigung_Ende">
+        <di:waypoint x="758" y="200" />
+        <di:waypoint x="810" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Buerger_Ende_di" bpmnElement="Flow_Buerger_Ende">
+        <di:waypoint x="910" y="200" />
+        <di:waypoint x="962" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===============================
+           POOL: IT (mitte)
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="1360" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="480" width="20" height="30" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- IT Process Elements - Horizontal auf Y=455 -->
+      <bpmndi:BPMNShape id="StartEvent_IT_di" bpmnElement="StartEvent_IT">
+        <dc:Bounds x="592" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="569" y="520" width="82" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_IT_Testfragen_generieren_di" bpmnElement="Task_IT_Testfragen_generieren">
+        <dc:Bounds x="680" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Event_IT_Testbogen_erhalten_di" bpmnElement="Event_IT_Testbogen_erhalten">
+        <dc:Bounds x="842" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="825" y="520" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_IT_Testergebnis_auswerten_di" bpmnElement="Task_IT_Testergebnis_auswerten">
+        <dc:Bounds x="930" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_IT_di" bpmnElement="EndEvent_IT">
+        <dc:Bounds x="1082" y="477" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1056" y="520" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- IT Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_IT_Start_Testfragen_di" bpmnElement="Flow_IT_Start_Testfragen">
+        <di:waypoint x="628" y="495" />
+        <di:waypoint x="680" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_IT_Testfragen_Testbogen_di" bpmnElement="Flow_IT_Testfragen_Testbogen">
+        <di:waypoint x="780" y="495" />
+        <di:waypoint x="842" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_IT_Testbogen_Auswertung_di" bpmnElement="Flow_IT_Testbogen_Auswertung">
+        <di:waypoint x="878" y="495" />
+        <di:waypoint x="930" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_IT_Auswertung_Ende_di" bpmnElement="Flow_IT_Auswertung_Ende">
+        <di:waypoint x="1030" y="495" />
+        <di:waypoint x="1082" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===============================
+           POOL: BEHOERDE (unten)
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Behoerde_di" bpmnElement="Participant_Behoerde" isHorizontal="true">
+        <dc:Bounds x="160" y="660" width="1360" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="770" width="20" height="60" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Behoerde Process Elements - Horizontal auf Y=760 -->
+      <bpmndi:BPMNShape id="StartEvent_Behoerde_di" bpmnElement="StartEvent_Behoerde">
+        <dc:Bounds x="342" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="316" y="825" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Behoerde_Anmeldung_pruefen_di" bpmnElement="Task_Behoerde_Anmeldung_pruefen">
+        <dc:Bounds x="430" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Behoerde_Testtermin_vergeben_di" bpmnElement="Task_Behoerde_Testtermin_vergeben">
+        <dc:Bounds x="580" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Behoerde_Testdurchfuehrung_beaufsichtigen_di" bpmnElement="Task_Behoerde_Testdurchfuehrung_beaufsichtigen">
+        <dc:Bounds x="730" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Behoerde_Testbogen_erfassen_di" bpmnElement="Task_Behoerde_Testbogen_erfassen">
+        <dc:Bounds x="880" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Event_Behoerde_Ergebnis_erhalten_di" bpmnElement="Event_Behoerde_Ergebnis_erhalten">
+        <dc:Bounds x="1042" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1025" y="825" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Behoerde_Bescheinigung_ausstellen_di" bpmnElement="Task_Behoerde_Bescheinigung_ausstellen">
+        <dc:Bounds x="1130" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_Behoerde_di" bpmnElement="EndEvent_Behoerde">
+        <dc:Bounds x="1282" y="782" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1256" y="825" width="88" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Behoerde Sequence Flows -->
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Start_Pruefen_di" bpmnElement="Flow_Behoerde_Start_Pruefen">
+        <di:waypoint x="378" y="800" />
+        <di:waypoint x="430" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Pruefen_Testtermin_di" bpmnElement="Flow_Behoerde_Pruefen_Testtermin">
+        <di:waypoint x="530" y="800" />
+        <di:waypoint x="580" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Testtermin_Beaufsichtigen_di" bpmnElement="Flow_Behoerde_Testtermin_Beaufsichtigen">
+        <di:waypoint x="680" y="800" />
+        <di:waypoint x="730" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Beaufsichtigen_Erfassen_di" bpmnElement="Flow_Behoerde_Beaufsichtigen_Erfassen">
+        <di:waypoint x="830" y="800" />
+        <di:waypoint x="880" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Erfassen_Ergebnis_di" bpmnElement="Flow_Behoerde_Erfassen_Ergebnis">
+        <di:waypoint x="980" y="800" />
+        <di:waypoint x="1042" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Ergebnis_Bescheinigung_di" bpmnElement="Flow_Behoerde_Ergebnis_Bescheinigung">
+        <di:waypoint x="1078" y="800" />
+        <di:waypoint x="1130" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Bescheinigung_Ende_di" bpmnElement="Flow_Behoerde_Bescheinigung_Ende">
+        <di:waypoint x="1230" y="800" />
+        <di:waypoint x="1282" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===============================
+           MESSAGE FLOWS
+           =============================== -->
+      <!-- Buerger -> Behoerde: Testanmeldung -->
+      <bpmndi:BPMNEdge id="MsgFlow_Testanmeldung_di" bpmnElement="MsgFlow_Testanmeldung">
+        <di:waypoint x="360" y="240" />
+        <di:waypoint x="360" y="782" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="362" y="500" width="76" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- Behoerde -> Buerger: Testtermin -->
+      <bpmndi:BPMNEdge id="MsgFlow_Testtermin_di" bpmnElement="MsgFlow_Testtermin">
+        <di:waypoint x="630" y="760" />
+        <di:waypoint x="490" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="515" y="475" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- Behoerde -> IT: Testabruf -->
+      <bpmndi:BPMNEdge id="MsgFlow_Testabruf_di" bpmnElement="MsgFlow_Testabruf">
+        <di:waypoint x="730" y="760" />
+        <di:waypoint x="610" y="513" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="645" y="625" width="50" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- Behoerde -> IT: Testbogen erfassen -->
+      <bpmndi:BPMNEdge id="MsgFlow_Testbogen_erfassen_di" bpmnElement="MsgFlow_Testbogen_erfassen">
+        <di:waypoint x="910" y="760" />
+        <di:waypoint x="860" y="513" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="865" y="625" width="56" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- IT -> Behoerde: Testergebnis -->
+      <bpmndi:BPMNEdge id="MsgFlow_Testergebnis_di" bpmnElement="MsgFlow_Testergebnis">
+        <di:waypoint x="1000" y="535" />
+        <di:waypoint x="1060" y="782" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1006" y="645" width="68" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- Behoerde -> Buerger: Testbescheinigung -->
+      <bpmndi:BPMNEdge id="MsgFlow_Testbescheinigung_di" bpmnElement="MsgFlow_Testbescheinigung">
+        <di:waypoint x="1160" y="760" />
+        <di:waypoint x="740" y="218" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="915" y="475" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>
