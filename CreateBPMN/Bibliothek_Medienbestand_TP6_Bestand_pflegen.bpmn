@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  BPMN 2.0 Prozessmodell - Stadtbibliothek Stuttgart
+  ====================================================
+  Prozess:    TP6 Bestand pflegen inkl. Ausleihe und Rueckgabe
+  Kontext:    Teilprozess aus uebergeordnetem Prozess "Medienbestand managen"
+  Struktur:   2-Pool-Kollaboration (Kunde, Organisation)
+  Erstellt:   2026-07-21
+  Happy Path: Ja (ohne Alternativpfade)
+
+  e2e-Rahmen:
+  - Kundenbeduernis: Buergerinnen und Buerger erwarten einen fachlich
+    hochwertigen, aktuellen und attraktiven Medienbestand.
+  - Startereignis:  Bestandsstatistik und Nutzungsdaten eingegangen
+  - Endereignis:    Bestand ist gepflegt und auf qualitativ hochwertigem
+                    Niveau bereitgestellt
+
+  Supplier:   TP01 Umfeldanalyse durchfuehren (Bestandsprofil)
+  Input:      Bestandsstatistik, Ausleihstatistik, Regalplatz, Team (alle MA)
+  Output:     Medium ueberprueft, Medium ausgeschieden, Nachbestellungen getaetigt
+  Nachfolger: TP02 Markt sichten (Nachbestellungen), TP05 Medien vermitteln
+
+  Pools:
+    - Kunde        | Lane: Bibliotheksnutzer
+    - Organisation | Lane: Lektoratsteam
+
+  Hinweis: VPB = Verfahrensbeschreibung (interne Prozessdokumentation
+           der Stadtbibliothek Stuttgart fuer regelmaessige Bestandsarbeiten)
+-->
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:adonis="http://www.boc-group.com"
+             xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="definition__bibl-bp-tp6-2026"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd"
+             targetNamespace="http://www.boc-group.com">
+
+  <!-- =====================================================
+       COLLABORATION - TP6 Bestand pflegen inkl. Ausleihe und Rueckgabe
+       2-Pool-Kollaboration: Kunde, Organisation
+       ===================================================== -->
+  <collaboration id="Collaboration_bp_tp6"
+                 name="TP6 Bestand pflegen inkl. Ausleihe und Rueckgabe"
+                 isClosed="false">
+
+    <!-- Participants (Pools) -->
+    <participant processRef="process_kunde_bp"
+                 name="Kunde"
+                 id="_kunde_participant_bp"/>
+    <participant processRef="process_org_bp"
+                 name="Organisation"
+                 id="_org_participant_bp"/>
+
+    <!-- Message Flows zwischen den Pools -->
+    <!-- Kunde → Organisation: Ausleihverhalten und Nutzungsstatistik -->
+    <messageFlow id="_msgflow_k_o_bp"
+                 name="Ausleihverhalten und Nutzungsstatistik"
+                 sourceRef="_kunde_task1_bp"
+                 targetRef="_org_start_bp"/>
+
+    <!-- Organisation → Kunde: Qualitaetsgeprüfter, aktueller Bestand verfuegbar -->
+    <messageFlow id="_msgflow_o_k_bp"
+                 name="Qualitaetsgeprüfter, aktueller Bestand verfuegbar"
+                 sourceRef="_org_task7_bp"
+                 targetRef="_kunde_task2_bp"/>
+
+  </collaboration>
+
+  <!-- =====================================================
+       PROZESS: Kunde
+       Lane: Bibliotheksnutzer
+       ===================================================== -->
+  <process name="Kunde"
+           id="process_kunde_bp"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_kunde_bp">
+      <lane name="Bibliotheksnutzer" id="_kunde_lane_bp">
+        <flowNodeRef>_kunde_start_bp</flowNodeRef>
+        <flowNodeRef>_kunde_task1_bp</flowNodeRef>
+        <flowNodeRef>_kunde_task2_bp</flowNodeRef>
+        <flowNodeRef>_kunde_end_bp</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <!-- Start Event: Bestandsstatistik und Nutzungsdaten eingegangen -->
+    <startEvent name="Bestandsstatistik und Nutzungsdaten eingegangen"
+                id="_kunde_start_bp">
+      <outgoing>_kunde_flow1_bp</outgoing>
+    </startEvent>
+
+    <!-- Task K1: Medien nutzen und zurueckgeben -->
+    <task name="Medien nutzen und zurueckgeben"
+          id="_kunde_task1_bp"
+          isForCompensation="false">
+      <incoming>_kunde_flow1_bp</incoming>
+      <outgoing>_kunde_flow2_bp</outgoing>
+    </task>
+
+    <!-- Task K2: Hochwertigen und attraktiven Bestand erleben -->
+    <task name="Hochwertigen und attraktiven Bestand erleben"
+          id="_kunde_task2_bp"
+          isForCompensation="false">
+      <incoming>_kunde_flow2_bp</incoming>
+      <outgoing>_kunde_flow3_bp</outgoing>
+    </task>
+
+    <!-- End Event: Fachlich hochwertiger Bestand genutzt -->
+    <endEvent name="Fachlich hochwertiger Bestand genutzt"
+              id="_kunde_end_bp">
+      <incoming>_kunde_flow3_bp</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows Kunde -->
+    <sequenceFlow sourceRef="_kunde_start_bp" targetRef="_kunde_task1_bp" id="_kunde_flow1_bp"/>
+    <sequenceFlow sourceRef="_kunde_task1_bp" targetRef="_kunde_task2_bp" id="_kunde_flow2_bp"/>
+    <sequenceFlow sourceRef="_kunde_task2_bp" targetRef="_kunde_end_bp"   id="_kunde_flow3_bp"/>
+
+  </process>
+
+  <!-- =====================================================
+       PROZESS: Organisation
+       Lane: Lektoratsteam
+       ===================================================== -->
+  <process name="Organisation"
+           id="process_org_bp"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_org_bp">
+      <lane name="Lektoratsteam" id="_org_lane_lektorat_bp">
+        <flowNodeRef>_org_start_bp</flowNodeRef>
+        <flowNodeRef>_org_task1_bp</flowNodeRef>
+        <flowNodeRef>_org_task2_bp</flowNodeRef>
+        <flowNodeRef>_org_task3_bp</flowNodeRef>
+        <flowNodeRef>_org_task4_bp</flowNodeRef>
+        <flowNodeRef>_org_task5_bp</flowNodeRef>
+        <flowNodeRef>_org_task6_bp</flowNodeRef>
+        <flowNodeRef>_org_task7_bp</flowNodeRef>
+        <flowNodeRef>_org_end_bp</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <!-- Start Event (Message Start): Bestandspflege beauftragt -->
+    <startEvent name="Bestandspflege beauftragt"
+                id="_org_start_bp">
+      <outgoing>_org_flow1_bp</outgoing>
+      <messageEventDefinition id="msgEvtDef_org_start_bp"/>
+    </startEvent>
+
+    <!-- Task O1: Zahlen aus Statistik erfassen -->
+    <task name="Zahlen aus Statistik erfassen"
+          id="_org_task1_bp"
+          isForCompensation="false">
+      <incoming>_org_flow1_bp</incoming>
+      <outgoing>_org_flow2_bp</outgoing>
+    </task>
+
+    <!-- Task O2: Zustand des Mediums erfassen und Massnahmen einleiten -->
+    <task name="Zustand des Mediums erfassen und Massnahmen einleiten"
+          id="_org_task2_bp"
+          isForCompensation="false">
+      <incoming>_org_flow2_bp</incoming>
+      <outgoing>_org_flow3_bp</outgoing>
+    </task>
+
+    <!-- Task O3: Laufende Kontrolle im Hinblick auf Gesamtbestand und Nutzung durchfuehren -->
+    <task name="Laufende Kontrolle im Hinblick auf Gesamtbestand und Nutzung durchfuehren"
+          id="_org_task3_bp"
+          isForCompensation="false">
+      <incoming>_org_flow3_bp</incoming>
+      <outgoing>_org_flow4_bp</outgoing>
+    </task>
+
+    <!-- Task O4: Auf regelmaessige Arbeiten im Medienbestand verweisen (VPB) -->
+    <task name="Auf regelmaessige Arbeiten im Medienbestand verweisen (VPB)"
+          id="_org_task4_bp"
+          isForCompensation="false">
+      <incoming>_org_flow4_bp</incoming>
+      <outgoing>_org_flow5_bp</outgoing>
+    </task>
+
+    <!-- Task O5: Medien einsammeln -->
+    <task name="Medien einsammeln"
+          id="_org_task5_bp"
+          isForCompensation="false">
+      <incoming>_org_flow5_bp</incoming>
+      <outgoing>_org_flow6_bp</outgoing>
+    </task>
+
+    <!-- Task O6: Regelung fuer Letztexemplare beruecksichtigen (VPB) -->
+    <task name="Regelung fuer Letztexemplare beruecksichtigen (VPB)"
+          id="_org_task6_bp"
+          isForCompensation="false">
+      <incoming>_org_flow6_bp</incoming>
+      <outgoing>_org_flow7_bp</outgoing>
+    </task>
+
+    <!-- Task O7: Medien loeschen und Bestandsentscheidung treffen (VPB) -->
+    <task name="Medien loeschen und Bestandsentscheidung treffen (VPB)"
+          id="_org_task7_bp"
+          isForCompensation="false">
+      <incoming>_org_flow7_bp</incoming>
+      <outgoing>_org_flow8_bp</outgoing>
+    </task>
+
+    <!-- End Event: Bestand ist gepflegt und bereitgestellt -->
+    <endEvent name="Bestand ist gepflegt und bereitgestellt"
+              id="_org_end_bp">
+      <incoming>_org_flow8_bp</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows Organisation (alle horizontal, eine Lane) -->
+    <sequenceFlow sourceRef="_org_start_bp"  targetRef="_org_task1_bp" id="_org_flow1_bp"/>
+    <sequenceFlow sourceRef="_org_task1_bp"  targetRef="_org_task2_bp" id="_org_flow2_bp"/>
+    <sequenceFlow sourceRef="_org_task2_bp"  targetRef="_org_task3_bp" id="_org_flow3_bp"/>
+    <sequenceFlow sourceRef="_org_task3_bp"  targetRef="_org_task4_bp" id="_org_flow4_bp"/>
+    <sequenceFlow sourceRef="_org_task4_bp"  targetRef="_org_task5_bp" id="_org_flow5_bp"/>
+    <sequenceFlow sourceRef="_org_task5_bp"  targetRef="_org_task6_bp" id="_org_flow6_bp"/>
+    <sequenceFlow sourceRef="_org_task6_bp"  targetRef="_org_task7_bp" id="_org_flow7_bp"/>
+    <sequenceFlow sourceRef="_org_task7_bp"  targetRef="_org_end_bp"   id="_org_flow8_bp"/>
+
+  </process>
+
+  <!-- =====================================================
+       BPMN-DI: Diagramm-Visualisierung
+
+       Koordinatensystem (2-Pool-Layout):
+         Kunde:        y=0,    Hoehe=380
+         Organisation: y=390,  Hoehe=380  (1 Lane: Lektoratsteam)
+
+       Tasks Kunde:        y=152, h=76 → Mitte y=190
+       Events Kunde:       y=172, h=36 → Mitte y=190
+       Tasks Organisation: y=542, h=76 → Mitte y=580
+       Events Organisation:y=562, h=36 → Mitte y=580
+
+       Task-Dimensionen: 151 x 76 px
+       Event-Dimensionen: 36 x 36 px
+       Horizontaler Schritt: 220px (151px Breite + 69px Luecke)
+       Pool-Breite: 2040px
+
+       X-Positionen (Linke Kante Tasks / Mitte Events, Schritt 220px):
+         Start:      x=120  → Mitte x=138
+         O1/K1:      x=220  → Mitte x=295   (K1 auf O1 ausgerichtet)
+         O2:         x=440  → Mitte x=515
+         O3:         x=660  → Mitte x=735
+         O4:         x=880  → Mitte x=955
+         O5:         x=1100 → Mitte x=1175
+         O6:         x=1320 → Mitte x=1395
+         O7/K2:      x=1540 → Mitte x=1615  (K2 auf O7 ausgerichtet)
+         End:        x=1760 → Mitte x=1778
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_bp_tp6">
+    <bpmndi:BPMNPlane bpmnElement="Collaboration_bp_tp6">
+
+      <!-- ===== POOL: Kunde (oben, y=0) ===== -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_participant_bp" isHorizontal="true">
+        <omgdc:Bounds x="10" y="0" width="2040" height="380"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_kunde_lane_bp" isHorizontal="true">
+        <omgdc:Bounds x="40" y="0" width="2010" height="380"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Start Event; center=(138, 190) -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_start_bp">
+        <omgdc:Bounds x="120" y="172" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="66" y="215" width="144" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Task K1 - Medien nutzen und zurueckgeben; center=(295, 190) -->
+      <!-- Ausgerichtet auf OrgStart / O1 (Lektoratsteam) -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_task1_bp">
+        <omgdc:Bounds x="220" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Task K2 - Hochwertigen und attraktiven Bestand erleben; center=(1615, 190) -->
+      <!-- Ausgerichtet auf O7 (Medien loeschen und Bestandsentscheidung treffen) -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_task2_bp">
+        <omgdc:Bounds x="1540" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: End Event; center=(1778, 190) -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_end_bp">
+        <omgdc:Bounds x="1760" y="172" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="1706" y="215" width="144" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Sequence Flows -->
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow1_bp">
+        <omgdi:waypoint x="156" y="190"/>
+        <omgdi:waypoint x="220" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow2_bp">
+        <omgdi:waypoint x="371" y="190"/>
+        <omgdi:waypoint x="1540" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow3_bp">
+        <omgdi:waypoint x="1691" y="190"/>
+        <omgdi:waypoint x="1760" y="190"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== POOL: Organisation (unten, y=390) ===== -->
+      <bpmndi:BPMNShape bpmnElement="_org_participant_bp" isHorizontal="true">
+        <omgdc:Bounds x="10" y="390" width="2040" height="380"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane: Lektoratsteam (y=390, h=380) -->
+      <bpmndi:BPMNShape bpmnElement="_org_lane_lektorat_bp" isHorizontal="true">
+        <omgdc:Bounds x="40" y="390" width="2010" height="380"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: Start Event (Message); center=(138, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_start_bp">
+        <omgdc:Bounds x="120" y="562" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="66" y="605" width="144" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O1: Zahlen aus Statistik erfassen; center=(295, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task1_bp">
+        <omgdc:Bounds x="220" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O2: Zustand des Mediums erfassen und Massnahmen einleiten; center=(515, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task2_bp">
+        <omgdc:Bounds x="440" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O3: Laufende Kontrolle ... durchfuehren; center=(735, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task3_bp">
+        <omgdc:Bounds x="660" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O4: Auf regelmaessige Arbeiten verweisen (VPB); center=(955, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task4_bp">
+        <omgdc:Bounds x="880" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O5: Medien einsammeln; center=(1175, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task5_bp">
+        <omgdc:Bounds x="1100" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O6: Regelung fuer Letztexemplare beruecksichtigen (VPB); center=(1395, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task6_bp">
+        <omgdc:Bounds x="1320" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O7: Medien loeschen und Bestandsentscheidung treffen (VPB); center=(1615, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task7_bp">
+        <omgdc:Bounds x="1540" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: End Event; center=(1778, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_end_bp">
+        <omgdc:Bounds x="1760" y="562" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="1706" y="605" width="144" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Organisation: Sequence Flows (alle horizontal, gleiche Lane) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow1_bp">
+        <omgdi:waypoint x="156" y="580"/>
+        <omgdi:waypoint x="220" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow2_bp">
+        <omgdi:waypoint x="371" y="580"/>
+        <omgdi:waypoint x="440" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow3_bp">
+        <omgdi:waypoint x="591" y="580"/>
+        <omgdi:waypoint x="660" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow4_bp">
+        <omgdi:waypoint x="811" y="580"/>
+        <omgdi:waypoint x="880" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow5_bp">
+        <omgdi:waypoint x="1031" y="580"/>
+        <omgdi:waypoint x="1100" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow6_bp">
+        <omgdi:waypoint x="1251" y="580"/>
+        <omgdi:waypoint x="1320" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow7_bp">
+        <omgdi:waypoint x="1471" y="580"/>
+        <omgdi:waypoint x="1540" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow8_bp">
+        <omgdi:waypoint x="1691" y="580"/>
+        <omgdi:waypoint x="1760" y="580"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== MESSAGE FLOWS (Pool-uebergreifend) ===== -->
+
+      <!-- K1 (Medien nutzen und zurueckgeben) → Org Start (Bestandspflege beauftragt) -->
+      <!-- K1 Boden-Mitte: (295, 228); OrgStart Dach: (138, 562) -->
+      <!-- Verbindung kreuzt Poolgrenze bei y=390 -->
+      <bpmndi:BPMNEdge bpmnElement="_msgflow_k_o_bp">
+        <omgdi:waypoint x="295" y="228"/>
+        <omgdi:waypoint x="295" y="390"/>
+        <omgdi:waypoint x="138" y="390"/>
+        <omgdi:waypoint x="138" y="562"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="155" y="372" width="125" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- O7 (Medien loeschen / Bestandsentscheidung) → K2 (Bestand erleben) -->
+      <!-- O7 Dach-Mitte: (1615, 542); K2 Boden-Mitte: (1615, 228) -->
+      <!-- Gleiche x-Achse (1615): senkrechte Verbindung durch Poolgrenze bei y=390 -->
+      <bpmndi:BPMNEdge bpmnElement="_msgflow_o_k_bp">
+        <omgdi:waypoint x="1615" y="542"/>
+        <omgdi:waypoint x="1615" y="390"/>
+        <omgdi:waypoint x="1615" y="228"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="1625" y="362" width="130" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</definitions>

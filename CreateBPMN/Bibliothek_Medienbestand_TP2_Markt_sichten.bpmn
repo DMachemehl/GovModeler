@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  BPMN 2.0 Prozessmodell - Stadtbibliothek Stuttgart
+  ====================================================
+  Prozess:    TP2 Markt sichten
+  Kontext:    Teilprozess aus uebergeordnetem Prozess "Medienbestand managen"
+  Struktur:   2-Pool-Kollaboration (Kunde, Organisation)
+  Erstellt:   2026-07-21
+  Happy Path: Ja (ohne Alternativpfade)
+
+  e2e-Rahmen:
+  - Kundenbeduernis: Buergerinnen und Buerger benoetigen einen aktuellen,
+    vielfaeltigen und bedarfsorientierten Medienbestand, der ihre individuellen
+    Lese- und Informationsinteressen widerspiegelt.
+  - Startereignis:  Leser:innenwuensche und Marktimpulse eingegangen
+  - Endereignis:    Kaufentscheidung getroffen und Medienbestellung eingeleitet
+
+  Supplier:  TP01 Umfeldanalyse durchfuehren (liefert Bestandsprofil)
+  Nachfolger: TP03 Medien erwerben
+
+  Pools:
+    - Kunde        | Lane: Bibliotheksnutzer
+    - Organisation | Lane: Lektoratsteam
+-->
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:adonis="http://www.boc-group.com"
+             xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="definition__bibl-ms-tp2-2026"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd"
+             targetNamespace="http://www.boc-group.com">
+
+  <!-- =====================================================
+       COLLABORATION - TP2 Markt sichten
+       2-Pool-Kollaboration: Kunde, Organisation
+       ===================================================== -->
+  <collaboration id="Collaboration_ms_tp2"
+                 name="TP2 Markt sichten"
+                 isClosed="false">
+
+    <!-- Participants (Pools) -->
+    <participant processRef="process_kunde_ms"
+                 name="Kunde"
+                 id="_kunde_participant_ms"/>
+    <participant processRef="process_org_ms"
+                 name="Organisation"
+                 id="_org_participant_ms"/>
+
+    <!-- Message Flows zwischen den Pools -->
+    <!-- Kunde → Organisation: Leser:innenwuensche und Nutzerfeedback -->
+    <messageFlow id="_msgflow_k_o_ms"
+                 name="Leser:innenwuensche und Nutzerfeedback"
+                 sourceRef="_kunde_task1_ms"
+                 targetRef="_org_start_ms"/>
+
+    <!-- Organisation → Kunde: Kaufentscheidung getroffen -->
+    <messageFlow id="_msgflow_o_k_ms"
+                 name="Kaufentscheidung getroffen"
+                 sourceRef="_org_task6_ms"
+                 targetRef="_kunde_task2_ms"/>
+
+  </collaboration>
+
+  <!-- =====================================================
+       PROZESS: Kunde
+       Lane: Bibliotheksnutzer
+       ===================================================== -->
+  <process name="Kunde"
+           id="process_kunde_ms"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_kunde_ms">
+      <lane name="Bibliotheksnutzer" id="_kunde_lane_ms">
+        <flowNodeRef>_kunde_start_ms</flowNodeRef>
+        <flowNodeRef>_kunde_task1_ms</flowNodeRef>
+        <flowNodeRef>_kunde_task2_ms</flowNodeRef>
+        <flowNodeRef>_kunde_end_ms</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <!-- Start Event: Leser:innenwuensche und Marktimpulse eingegangen -->
+    <startEvent name="Leser:innenwuensche und Marktimpulse eingegangen"
+                id="_kunde_start_ms">
+      <outgoing>_kunde_flow1_ms</outgoing>
+    </startEvent>
+
+    <!-- Task K1: Medien- und Lesewunsch mitteilen -->
+    <task name="Medien- und Lesewunsch mitteilen"
+          id="_kunde_task1_ms"
+          isForCompensation="false">
+      <incoming>_kunde_flow1_ms</incoming>
+      <outgoing>_kunde_flow2_ms</outgoing>
+    </task>
+
+    <!-- Task K2: Kaufentscheidung wahrnehmen -->
+    <task name="Kaufentscheidung wahrnehmen"
+          id="_kunde_task2_ms"
+          isForCompensation="false">
+      <incoming>_kunde_flow2_ms</incoming>
+      <outgoing>_kunde_flow3_ms</outgoing>
+    </task>
+
+    <!-- End Event: Medienbestand entspricht Leseinteressen -->
+    <endEvent name="Medienbestand entspricht Leseinteressen"
+              id="_kunde_end_ms">
+      <incoming>_kunde_flow3_ms</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows Kunde -->
+    <sequenceFlow sourceRef="_kunde_start_ms" targetRef="_kunde_task1_ms" id="_kunde_flow1_ms"/>
+    <sequenceFlow sourceRef="_kunde_task1_ms" targetRef="_kunde_task2_ms" id="_kunde_flow2_ms"/>
+    <sequenceFlow sourceRef="_kunde_task2_ms" targetRef="_kunde_end_ms"   id="_kunde_flow3_ms"/>
+
+  </process>
+
+  <!-- =====================================================
+       PROZESS: Organisation
+       Lane: Lektoratsteam
+       ===================================================== -->
+  <process name="Organisation"
+           id="process_org_ms"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_org_ms">
+      <lane name="Lektoratsteam" id="_org_lane_lektorat_ms">
+        <flowNodeRef>_org_start_ms</flowNodeRef>
+        <flowNodeRef>_org_task1_ms</flowNodeRef>
+        <flowNodeRef>_org_task2_ms</flowNodeRef>
+        <flowNodeRef>_org_task3_ms</flowNodeRef>
+        <flowNodeRef>_org_task4_ms</flowNodeRef>
+        <flowNodeRef>_org_task5_ms</flowNodeRef>
+        <flowNodeRef>_org_task6_ms</flowNodeRef>
+        <flowNodeRef>_org_end_ms</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <!-- Start Event (Message Start): Leser:innenwuensche eingegangen -->
+    <startEvent name="Leser:innenwuensche eingegangen"
+                id="_org_start_ms">
+      <outgoing>_org_flow1_ms</outgoing>
+      <messageEventDefinition id="msgEvtDef_org_start_ms"/>
+    </startEvent>
+
+    <!-- Task O1: Marktquellen und Input sichten -->
+    <task name="Marktquellen und Input sichten"
+          id="_org_task1_ms"
+          isForCompensation="false">
+      <incoming>_org_flow1_ms</incoming>
+      <outgoing>_org_flow2_ms</outgoing>
+    </task>
+
+    <!-- Task O2: Liste anlegen und priorisieren -->
+    <task name="Liste anlegen und priorisieren"
+          id="_org_task2_ms"
+          isForCompensation="false">
+      <incoming>_org_flow2_ms</incoming>
+      <outgoing>_org_flow3_ms</outgoing>
+    </task>
+
+    <!-- Task O3: Bestellinformationen auffuellen -->
+    <task name="Bestellinformationen auffuellen"
+          id="_org_task3_ms"
+          isForCompensation="false">
+      <incoming>_org_flow3_ms</incoming>
+      <outgoing>_org_flow4_ms</outgoing>
+    </task>
+
+    <!-- Task O4: Inhaltliche Erschliessung durchfuehren -->
+    <task name="Inhaltliche Erschliessung durchfuehren"
+          id="_org_task4_ms"
+          isForCompensation="false">
+      <incoming>_org_flow4_ms</incoming>
+      <outgoing>_org_flow5_ms</outgoing>
+    </task>
+
+    <!-- Task O5: Ressourcenpruefung durchfuehren -->
+    <task name="Ressourcenpruefung durchfuehren"
+          id="_org_task5_ms"
+          isForCompensation="false">
+      <incoming>_org_flow5_ms</incoming>
+      <outgoing>_org_flow6_ms</outgoing>
+    </task>
+
+    <!-- Task O6: Kaufempfehlung fuer Stadtteilbibliotheken aussprechen -->
+    <task name="Kaufempfehlung fuer Stadtteilbibliotheken aussprechen"
+          id="_org_task6_ms"
+          isForCompensation="false">
+      <incoming>_org_flow6_ms</incoming>
+      <outgoing>_org_flow7_ms</outgoing>
+    </task>
+
+    <!-- End Event: Kaufentscheidung getroffen und Medienbestellung eingeleitet -->
+    <endEvent name="Kaufentscheidung getroffen und Medienbestellung eingeleitet"
+              id="_org_end_ms">
+      <incoming>_org_flow7_ms</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows Organisation (alle horizontal, eine Lane) -->
+    <sequenceFlow sourceRef="_org_start_ms"  targetRef="_org_task1_ms" id="_org_flow1_ms"/>
+    <sequenceFlow sourceRef="_org_task1_ms"  targetRef="_org_task2_ms" id="_org_flow2_ms"/>
+    <sequenceFlow sourceRef="_org_task2_ms"  targetRef="_org_task3_ms" id="_org_flow3_ms"/>
+    <sequenceFlow sourceRef="_org_task3_ms"  targetRef="_org_task4_ms" id="_org_flow4_ms"/>
+    <sequenceFlow sourceRef="_org_task4_ms"  targetRef="_org_task5_ms" id="_org_flow5_ms"/>
+    <sequenceFlow sourceRef="_org_task5_ms"  targetRef="_org_task6_ms" id="_org_flow6_ms"/>
+    <sequenceFlow sourceRef="_org_task6_ms"  targetRef="_org_end_ms"   id="_org_flow7_ms"/>
+
+  </process>
+
+  <!-- =====================================================
+       BPMN-DI: Diagramm-Visualisierung
+
+       Koordinatensystem (2-Pool-Layout):
+         Kunde:        y=0,    Hoehe=380
+         Organisation: y=390,  Hoehe=380  (1 Lane: Lektoratsteam)
+
+       Tasks Kunde:        y=152, h=76 → Mitte y=190
+       Events Kunde:       y=172, h=36 → Mitte y=190
+       Tasks Organisation: y=542, h=76 → Mitte y=580
+       Events Organisation:y=562, h=36 → Mitte y=580
+
+       Task-Dimensionen: 151 x 76 px
+       Event-Dimensionen: 36 x 36 px
+       Horizontaler Schritt: 220px (151px Breite + 69px Luecke)
+       Pool-Breite: 1830px
+
+       X-Positionen (Linke Kante Aufgaben / Mitte Events):
+         Start:  x=120  → Mitte x=138
+         O1/K1:  x=220  → Mitte x=295
+         O2:     x=440  → Mitte x=515
+         O3:     x=660  → Mitte x=735
+         O4:     x=880  → Mitte x=955
+         O5:     x=1100 → Mitte x=1175
+         O6/K2:  x=1320 → Mitte x=1395
+         End:    x=1540 → Mitte x=1558
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ms_tp2">
+    <bpmndi:BPMNPlane bpmnElement="Collaboration_ms_tp2">
+
+      <!-- ===== POOL: Kunde (oben, y=0) ===== -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_participant_ms" isHorizontal="true">
+        <omgdc:Bounds x="10" y="0" width="1830" height="380"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_kunde_lane_ms" isHorizontal="true">
+        <omgdc:Bounds x="40" y="0" width="1800" height="380"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Start Event; center=(138, 190) -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_start_ms">
+        <omgdc:Bounds x="120" y="172" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="66" y="215" width="144" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Task K1 - Medien- und Lesewunsch mitteilen; center=(295, 190) -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_task1_ms">
+        <omgdc:Bounds x="220" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Task K2 - Kaufentscheidung wahrnehmen; center=(1395, 190) -->
+      <!-- Ausgerichtet auf O6 (Kaufempfehlung) in der Organisation -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_task2_ms">
+        <omgdc:Bounds x="1320" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: End Event; center=(1558, 190) -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_end_ms">
+        <omgdc:Bounds x="1540" y="172" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="1490" y="215" width="135" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Sequence Flows -->
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow1_ms">
+        <omgdi:waypoint x="156" y="190"/>
+        <omgdi:waypoint x="220" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow2_ms">
+        <omgdi:waypoint x="371" y="190"/>
+        <omgdi:waypoint x="1320" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow3_ms">
+        <omgdi:waypoint x="1471" y="190"/>
+        <omgdi:waypoint x="1540" y="190"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== POOL: Organisation (unten, y=390) ===== -->
+      <bpmndi:BPMNShape bpmnElement="_org_participant_ms" isHorizontal="true">
+        <omgdc:Bounds x="10" y="390" width="1830" height="380"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane: Lektoratsteam (y=390, h=380) -->
+      <bpmndi:BPMNShape bpmnElement="_org_lane_lektorat_ms" isHorizontal="true">
+        <omgdc:Bounds x="40" y="390" width="1800" height="380"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: Start Event (Message); center=(138, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_start_ms">
+        <omgdc:Bounds x="120" y="562" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="66" y="605" width="144" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O1: Marktquellen und Input sichten; center=(295, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task1_ms">
+        <omgdc:Bounds x="220" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O2: Liste anlegen und priorisieren; center=(515, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task2_ms">
+        <omgdc:Bounds x="440" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O3: Bestellinformationen auffuellen; center=(735, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task3_ms">
+        <omgdc:Bounds x="660" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O4: Inhaltliche Erschliessung durchfuehren; center=(955, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task4_ms">
+        <omgdc:Bounds x="880" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O5: Ressourcenpruefung durchfuehren; center=(1175, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task5_ms">
+        <omgdc:Bounds x="1100" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O6: Kaufempfehlung fuer Stadtteilbibliotheken aussprechen; center=(1395, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task6_ms">
+        <omgdc:Bounds x="1320" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: End Event; center=(1558, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_end_ms">
+        <omgdc:Bounds x="1540" y="562" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="1490" y="605" width="135" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Organisation: Sequence Flows (alle horizontal, gleiche Lane) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow1_ms">
+        <omgdi:waypoint x="156" y="580"/>
+        <omgdi:waypoint x="220" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow2_ms">
+        <omgdi:waypoint x="371" y="580"/>
+        <omgdi:waypoint x="440" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow3_ms">
+        <omgdi:waypoint x="591" y="580"/>
+        <omgdi:waypoint x="660" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow4_ms">
+        <omgdi:waypoint x="811" y="580"/>
+        <omgdi:waypoint x="880" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow5_ms">
+        <omgdi:waypoint x="1031" y="580"/>
+        <omgdi:waypoint x="1100" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow6_ms">
+        <omgdi:waypoint x="1251" y="580"/>
+        <omgdi:waypoint x="1320" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow7_ms">
+        <omgdi:waypoint x="1471" y="580"/>
+        <omgdi:waypoint x="1540" y="580"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== MESSAGE FLOWS (Pool-uebergreifend) ===== -->
+
+      <!-- K1 (Medien- und Lesewunsch mitteilen) → Org Start (Leser:innenwuensche eingegangen) -->
+      <!-- K1 Boden-Mitte: (295, 228); OrgStart Mitte: (138, 562) -->
+      <!-- Verbindung kreuzt Poolgrenze bei y=390 -->
+      <bpmndi:BPMNEdge bpmnElement="_msgflow_k_o_ms">
+        <omgdi:waypoint x="295" y="228"/>
+        <omgdi:waypoint x="295" y="390"/>
+        <omgdi:waypoint x="138" y="390"/>
+        <omgdi:waypoint x="138" y="562"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="160" y="372" width="120" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- O6 (Kaufempfehlung aussprechen) → K2 (Kaufentscheidung wahrnehmen) -->
+      <!-- O6 Dach-Mitte: (1395, 542); K2 Boden-Mitte: (1395, 228) -->
+      <!-- Gleiche x-Achse (1395): senkrechte Verbindung durch Poolgrenze bei y=390 -->
+      <bpmndi:BPMNEdge bpmnElement="_msgflow_o_k_ms">
+        <omgdi:waypoint x="1395" y="542"/>
+        <omgdi:waypoint x="1395" y="390"/>
+        <omgdi:waypoint x="1395" y="228"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="1405" y="372" width="110" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</definitions>

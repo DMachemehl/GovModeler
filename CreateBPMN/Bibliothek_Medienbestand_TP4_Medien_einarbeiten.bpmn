@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  BPMN 2.0 Prozessmodell - Stadtbibliothek Stuttgart
+  ====================================================
+  Prozess:    TP4 Medien einarbeiten
+  Kontext:    Teilprozess aus uebergeordnetem Prozess "Medienbestand managen"
+  Struktur:   2-Pool-Kollaboration (Kunde, Organisation)
+  Erstellt:   2026-07-21
+  Happy Path: Ja (ohne Alternativpfade)
+
+  e2e-Rahmen:
+  - Kundenbeduernis: Buergerinnen und Buerger moechten ein bestelltes oder
+    vorgemerktes Medium so schnell wie moeglich ausleihen.
+  - Startereignis:  Medium geliefert und Einarbeitung beauftragt
+  - Endereignis:    Medium ist ausleihfertig und Bereitstellung ist erfolgt
+
+  Supplier:   Medienlieferanten (physische Lieferung),
+              41-3 HV Hauptverwaltung (Rechnungsbearbeitung),
+              Fachdatenbanken (Katalogdaten)
+  Vorlaeufer: TP03 Medien erwerben
+  Nachfolger: TP05 Medien vermitteln, TP06 Bestand pflegen
+
+  Pools:
+    - Kunde        | Lane: Bibliotheksnutzer
+    - Organisation | Lane: FaMIs (Fachangestellte fuer Medien- und
+                           Informationsdienste)
+
+  Besonderheit: Nach O2 (Inventarisierung) ist das Medium im OPAC
+                vorbestellbar (Kundenanmerkung aus TP-Beschreibung).
+                Nach O6 (Freibuchen) wird die Vorbestellung bedient.
+-->
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:adonis="http://www.boc-group.com"
+             xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="definition__bibl-ei-tp4-2026"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd"
+             targetNamespace="http://www.boc-group.com">
+
+  <!-- =====================================================
+       COLLABORATION - TP4 Medien einarbeiten
+       2-Pool-Kollaboration: Kunde, Organisation
+       ===================================================== -->
+  <collaboration id="Collaboration_ei_tp4"
+                 name="TP4 Medien einarbeiten"
+                 isClosed="false">
+
+    <!-- Participants (Pools) -->
+    <participant processRef="process_kunde_ei"
+                 name="Kunde"
+                 id="_kunde_participant_ei"/>
+    <participant processRef="process_org_ei"
+                 name="Organisation"
+                 id="_org_participant_ei"/>
+
+    <!-- Message Flows zwischen den Pools -->
+    <!-- Kunde → Organisation: Vorbestellung / Vormerkungsauftrag -->
+    <messageFlow id="_msgflow_k_o_ei"
+                 name="Vorbestellung / Vormerkungsauftrag"
+                 sourceRef="_kunde_task1_ei"
+                 targetRef="_org_start_ei"/>
+
+    <!-- Organisation → Kunde: Medium ausleihfertig, Bereitstellung erfolgt -->
+    <messageFlow id="_msgflow_o_k_ei"
+                 name="Medium ausleihfertig, Bereitstellung erfolgt"
+                 sourceRef="_org_task6_ei"
+                 targetRef="_kunde_task2_ei"/>
+
+  </collaboration>
+
+  <!-- =====================================================
+       PROZESS: Kunde
+       Lane: Bibliotheksnutzer
+       ===================================================== -->
+  <process name="Kunde"
+           id="process_kunde_ei"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_kunde_ei">
+      <lane name="Bibliotheksnutzer" id="_kunde_lane_ei">
+        <flowNodeRef>_kunde_start_ei</flowNodeRef>
+        <flowNodeRef>_kunde_task1_ei</flowNodeRef>
+        <flowNodeRef>_kunde_task2_ei</flowNodeRef>
+        <flowNodeRef>_kunde_end_ei</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <!-- Start Event: Medium geliefert und Einarbeitung beauftragt -->
+    <startEvent name="Medium geliefert und Einarbeitung beauftragt"
+                id="_kunde_start_ei">
+      <outgoing>_kunde_flow1_ei</outgoing>
+    </startEvent>
+
+    <!-- Task K1: Vorbestellung aufgeben -->
+    <task name="Vorbestellung aufgeben"
+          id="_kunde_task1_ei"
+          isForCompensation="false">
+      <incoming>_kunde_flow1_ei</incoming>
+      <outgoing>_kunde_flow2_ei</outgoing>
+    </task>
+
+    <!-- Task K2: Bereitstellungsbenachrichtigung empfangen -->
+    <task name="Bereitstellungsbenachrichtigung empfangen"
+          id="_kunde_task2_ei"
+          isForCompensation="false">
+      <incoming>_kunde_flow2_ei</incoming>
+      <outgoing>_kunde_flow3_ei</outgoing>
+    </task>
+
+    <!-- End Event: Medium ausleihbereit und Bereitstellung erfolgt -->
+    <endEvent name="Medium ausleihbereit und Bereitstellung erfolgt"
+              id="_kunde_end_ei">
+      <incoming>_kunde_flow3_ei</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows Kunde -->
+    <sequenceFlow sourceRef="_kunde_start_ei" targetRef="_kunde_task1_ei" id="_kunde_flow1_ei"/>
+    <sequenceFlow sourceRef="_kunde_task1_ei" targetRef="_kunde_task2_ei" id="_kunde_flow2_ei"/>
+    <sequenceFlow sourceRef="_kunde_task2_ei" targetRef="_kunde_end_ei"   id="_kunde_flow3_ei"/>
+
+  </process>
+
+  <!-- =====================================================
+       PROZESS: Organisation
+       Lane: FaMIs (Fachangestellte fuer Medien- und Informationsdienste)
+       ===================================================== -->
+  <process name="Organisation"
+           id="process_org_ei"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_org_ei">
+      <lane name="FaMIs (Fachangestellte fuer Medien- und Informationsdienste)"
+            id="_org_lane_famis_ei">
+        <flowNodeRef>_org_start_ei</flowNodeRef>
+        <flowNodeRef>_org_task1_ei</flowNodeRef>
+        <flowNodeRef>_org_task2_ei</flowNodeRef>
+        <flowNodeRef>_org_task3_ei</flowNodeRef>
+        <flowNodeRef>_org_task4_ei</flowNodeRef>
+        <flowNodeRef>_org_task5_ei</flowNodeRef>
+        <flowNodeRef>_org_task6_ei</flowNodeRef>
+        <flowNodeRef>_org_end_ei</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <!-- Start Event (Message Start): Medium geliefert -->
+    <startEvent name="Medium geliefert"
+                id="_org_start_ei">
+      <outgoing>_org_flow1_ei</outgoing>
+      <messageEventDefinition id="msgEvtDef_org_start_ei"/>
+    </startEvent>
+
+    <!-- Task O1: Lieferkontrolle durchfuehren -->
+    <task name="Lieferkontrolle durchfuehren"
+          id="_org_task1_ei"
+          isForCompensation="false">
+      <incoming>_org_flow1_ei</incoming>
+      <outgoing>_org_flow2_ei</outgoing>
+    </task>
+
+    <!-- Task O2: Medium inventarisieren (manuell/aDIS) -->
+    <!-- Hinweis: Nach Inventarisierung ist Medium im OPAC vorbestellbar -->
+    <task name="Medium inventarisieren"
+          id="_org_task2_ei"
+          isForCompensation="false">
+      <incoming>_org_flow2_ei</incoming>
+      <outgoing>_org_flow3_ei</outgoing>
+    </task>
+
+    <!-- Task O3: Rechnung bezahlen (SAP/aDIS) -->
+    <task name="Rechnung bezahlen"
+          id="_org_task3_ei"
+          isForCompensation="false">
+      <incoming>_org_flow3_ei</incoming>
+      <outgoing>_org_flow4_ei</outgoing>
+    </task>
+
+    <!-- Task O4: Erwerbungsdatensatz auffuellen (Katalogisierung) -->
+    <task name="Erwerbungsdatensatz auffuellen (Katalogisierung)"
+          id="_org_task4_ei"
+          isForCompensation="false">
+      <incoming>_org_flow4_ei</incoming>
+      <outgoing>_org_flow5_ei</outgoing>
+    </task>
+
+    <!-- Task O5: Medium technisch einarbeiten -->
+    <task name="Medium technisch einarbeiten"
+          id="_org_task5_ei"
+          isForCompensation="false">
+      <incoming>_org_flow5_ei</incoming>
+      <outgoing>_org_flow6_ei</outgoing>
+    </task>
+
+    <!-- Task O6: Medium freibuchen (aDIS) -->
+    <!-- Hinweis: Loest Bereitstellungsbenachrichtigung fuer Vorbestellungen aus -->
+    <task name="Medium freibuchen"
+          id="_org_task6_ei"
+          isForCompensation="false">
+      <incoming>_org_flow6_ei</incoming>
+      <outgoing>_org_flow7_ei</outgoing>
+    </task>
+
+    <!-- End Event: Medium ist ausleihfertig -->
+    <endEvent name="Medium ist ausleihfertig"
+              id="_org_end_ei">
+      <incoming>_org_flow7_ei</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows Organisation (alle horizontal, eine Lane) -->
+    <sequenceFlow sourceRef="_org_start_ei"  targetRef="_org_task1_ei" id="_org_flow1_ei"/>
+    <sequenceFlow sourceRef="_org_task1_ei"  targetRef="_org_task2_ei" id="_org_flow2_ei"/>
+    <sequenceFlow sourceRef="_org_task2_ei"  targetRef="_org_task3_ei" id="_org_flow3_ei"/>
+    <sequenceFlow sourceRef="_org_task3_ei"  targetRef="_org_task4_ei" id="_org_flow4_ei"/>
+    <sequenceFlow sourceRef="_org_task4_ei"  targetRef="_org_task5_ei" id="_org_flow5_ei"/>
+    <sequenceFlow sourceRef="_org_task5_ei"  targetRef="_org_task6_ei" id="_org_flow6_ei"/>
+    <sequenceFlow sourceRef="_org_task6_ei"  targetRef="_org_end_ei"   id="_org_flow7_ei"/>
+
+  </process>
+
+  <!-- =====================================================
+       BPMN-DI: Diagramm-Visualisierung
+
+       Koordinatensystem (2-Pool-Layout):
+         Kunde:        y=0,    Hoehe=380
+         Organisation: y=390,  Hoehe=380  (1 Lane: FaMIs)
+
+       Tasks Kunde:        y=152, h=76 → Mitte y=190
+       Events Kunde:       y=172, h=36 → Mitte y=190
+       Tasks Organisation: y=542, h=76 → Mitte y=580
+       Events Organisation:y=562, h=36 → Mitte y=580
+
+       Task-Dimensionen: 151 x 76 px
+       Event-Dimensionen: 36 x 36 px
+       Horizontaler Schritt: 220px (151px Breite + 69px Luecke)
+       Pool-Breite: 1830px
+
+       X-Positionen (Linke Kante Tasks / Mitte Events, Schritt 220px):
+         Start:      x=120  → Mitte x=138
+         O1/K1:      x=220  → Mitte x=295
+         O2:         x=440  → Mitte x=515
+         O3:         x=660  → Mitte x=735
+         O4:         x=880  → Mitte x=955
+         O5:         x=1100 → Mitte x=1175
+         O6/K2:      x=1320 → Mitte x=1395  (K2 auf O6 ausgerichtet)
+         End:        x=1540 → Mitte x=1558
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ei_tp4">
+    <bpmndi:BPMNPlane bpmnElement="Collaboration_ei_tp4">
+
+      <!-- ===== POOL: Kunde (oben, y=0) ===== -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_participant_ei" isHorizontal="true">
+        <omgdc:Bounds x="10" y="0" width="1830" height="380"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_kunde_lane_ei" isHorizontal="true">
+        <omgdc:Bounds x="40" y="0" width="1800" height="380"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Start Event; center=(138, 190) -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_start_ei">
+        <omgdc:Bounds x="120" y="172" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="66" y="215" width="144" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Task K1 - Vorbestellung aufgeben; center=(295, 190) -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_task1_ei">
+        <omgdc:Bounds x="220" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Task K2 - Bereitstellungsbenachrichtigung empfangen; center=(1395, 190) -->
+      <!-- Ausgerichtet auf O6 (Medium freibuchen) in der Organisation -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_task2_ei">
+        <omgdc:Bounds x="1320" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: End Event; center=(1558, 190) -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_end_ei">
+        <omgdc:Bounds x="1540" y="172" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="1486" y="215" width="144" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Sequence Flows -->
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow1_ei">
+        <omgdi:waypoint x="156" y="190"/>
+        <omgdi:waypoint x="220" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow2_ei">
+        <omgdi:waypoint x="371" y="190"/>
+        <omgdi:waypoint x="1320" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow3_ei">
+        <omgdi:waypoint x="1471" y="190"/>
+        <omgdi:waypoint x="1540" y="190"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== POOL: Organisation (unten, y=390) ===== -->
+      <bpmndi:BPMNShape bpmnElement="_org_participant_ei" isHorizontal="true">
+        <omgdc:Bounds x="10" y="390" width="1830" height="380"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane: FaMIs (y=390, h=380) -->
+      <bpmndi:BPMNShape bpmnElement="_org_lane_famis_ei" isHorizontal="true">
+        <omgdc:Bounds x="40" y="390" width="1800" height="380"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: Start Event (Message); center=(138, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_start_ei">
+        <omgdc:Bounds x="120" y="562" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="66" y="605" width="144" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O1: Lieferkontrolle durchfuehren; center=(295, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task1_ei">
+        <omgdc:Bounds x="220" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O2: Medium inventarisieren; center=(515, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task2_ei">
+        <omgdc:Bounds x="440" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O3: Rechnung bezahlen; center=(735, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task3_ei">
+        <omgdc:Bounds x="660" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O4: Erwerbungsdatensatz auffuellen (Katalogisierung); center=(955, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task4_ei">
+        <omgdc:Bounds x="880" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O5: Medium technisch einarbeiten; center=(1175, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task5_ei">
+        <omgdc:Bounds x="1100" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O6: Medium freibuchen; center=(1395, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task6_ei">
+        <omgdc:Bounds x="1320" y="542" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org: End Event; center=(1558, 580) -->
+      <bpmndi:BPMNShape bpmnElement="_org_end_ei">
+        <omgdc:Bounds x="1540" y="562" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="1490" y="605" width="135" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Organisation: Sequence Flows (alle horizontal, gleiche Lane) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow1_ei">
+        <omgdi:waypoint x="156" y="580"/>
+        <omgdi:waypoint x="220" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow2_ei">
+        <omgdi:waypoint x="371" y="580"/>
+        <omgdi:waypoint x="440" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow3_ei">
+        <omgdi:waypoint x="591" y="580"/>
+        <omgdi:waypoint x="660" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow4_ei">
+        <omgdi:waypoint x="811" y="580"/>
+        <omgdi:waypoint x="880" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow5_ei">
+        <omgdi:waypoint x="1031" y="580"/>
+        <omgdi:waypoint x="1100" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow6_ei">
+        <omgdi:waypoint x="1251" y="580"/>
+        <omgdi:waypoint x="1320" y="580"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow7_ei">
+        <omgdi:waypoint x="1471" y="580"/>
+        <omgdi:waypoint x="1540" y="580"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== MESSAGE FLOWS (Pool-uebergreifend) ===== -->
+
+      <!-- K1 (Vorbestellung aufgeben) → Org Start (Medium geliefert) -->
+      <!-- K1 Boden-Mitte: (295, 228); OrgStart Dach: (138, 562) -->
+      <!-- Verbindung kreuzt Poolgrenze bei y=390 -->
+      <bpmndi:BPMNEdge bpmnElement="_msgflow_k_o_ei">
+        <omgdi:waypoint x="295" y="228"/>
+        <omgdi:waypoint x="295" y="390"/>
+        <omgdi:waypoint x="138" y="390"/>
+        <omgdi:waypoint x="138" y="562"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="155" y="372" width="125" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- O6 (Medium freibuchen) → K2 (Bereitstellungsbenachrichtigung empfangen) -->
+      <!-- O6 Dach-Mitte: (1395, 542); K2 Boden-Mitte: (1395, 228) -->
+      <!-- Gleiche x-Achse (1395): senkrechte Verbindung durch Poolgrenze bei y=390 -->
+      <bpmndi:BPMNEdge bpmnElement="_msgflow_o_k_ei">
+        <omgdi:waypoint x="1395" y="542"/>
+        <omgdi:waypoint x="1395" y="390"/>
+        <omgdi:waypoint x="1395" y="228"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="1405" y="362" width="130" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</definitions>

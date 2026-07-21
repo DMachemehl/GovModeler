@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  BPMN 2.0 Prozessmodell - Stadtbibliothek Stuttgart
+  ====================================================
+  Prozess:    TP3 Medien erwerben
+  Kontext:    Teilprozess aus uebergeordnetem Prozess "Medienbestand managen"
+  Struktur:   2-Pool-Kollaboration (Kunde, Organisation)
+  Erstellt:   2026-07-21
+  Happy Path: Ja (ohne Alternativpfade)
+
+  e2e-Rahmen:
+  - Kundenbeduernis: Buergerinnen und Buerger moechten bestellte Medien
+    zeitnah beschafft wissen und den Bestellstatus im OPAC einsehen koennen.
+  - Startereignis:  Kaufentscheidung und Medienwunsch eingegangen
+  - Endereignis:    Medium ist bestellt und Bestellung ist im OPAC sichtbar
+
+  Supplier:   Lektoratsteam (Kaufentscheidung aus TP2),
+              Fremddatenanbieter (bibliografische Normdaten)
+  Nachfolger: TP04 Medien einarbeiten
+
+  Pools:
+    - Kunde        | Lane: Bibliotheksnutzer
+    - Organisation | Lane 1: FaMIs (Fachangestellte fuer Medien- und
+                             Informationsdienste)
+                   | Lane 2: IT (aDIS) Fachverfahren
+
+  Sequenz (lane-uebergreifend):
+    FaMIs:  Start → O1 Erwerbungsdatensatz anlegen
+    IT:           → O2 Fremddaten uebernehmen
+    FaMIs:        → O3 Lieferant auswaehlen
+                  → O4 Bestellung sammeln und abschicken
+    IT:           → O5 Bestelldaten in aDIS verarbeiten
+                  → O6 Bestellung im OPAC bereitstellen → End
+-->
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:adonis="http://www.boc-group.com"
+             xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="definition__bibl-me-tp3-2026"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd"
+             targetNamespace="http://www.boc-group.com">
+
+  <!-- =====================================================
+       COLLABORATION - TP3 Medien erwerben
+       2-Pool-Kollaboration: Kunde, Organisation
+       ===================================================== -->
+  <collaboration id="Collaboration_me_tp3"
+                 name="TP3 Medien erwerben"
+                 isClosed="false">
+
+    <!-- Participants (Pools) -->
+    <participant processRef="process_kunde_me"
+                 name="Kunde"
+                 id="_kunde_participant_me"/>
+    <participant processRef="process_org_me"
+                 name="Organisation"
+                 id="_org_participant_me"/>
+
+    <!-- Message Flows zwischen den Pools -->
+    <!-- Kunde → Organisation: Medienwunsch und Anschaffungsvorschlag -->
+    <messageFlow id="_msgflow_k_o_me"
+                 name="Medienwunsch und Anschaffungsvorschlag"
+                 sourceRef="_kunde_task1_me"
+                 targetRef="_org_start_me"/>
+
+    <!-- Organisation → Kunde: Bestellung ist sichtbar, Vormerkung moeglich -->
+    <messageFlow id="_msgflow_o_k_me"
+                 name="Bestellung ist sichtbar, Vormerkung moeglich"
+                 sourceRef="_org_task6_me"
+                 targetRef="_kunde_task2_me"/>
+
+  </collaboration>
+
+  <!-- =====================================================
+       PROZESS: Kunde
+       Lane: Bibliotheksnutzer
+       ===================================================== -->
+  <process name="Kunde"
+           id="process_kunde_me"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_kunde_me">
+      <lane name="Bibliotheksnutzer" id="_kunde_lane_me">
+        <flowNodeRef>_kunde_start_me</flowNodeRef>
+        <flowNodeRef>_kunde_task1_me</flowNodeRef>
+        <flowNodeRef>_kunde_task2_me</flowNodeRef>
+        <flowNodeRef>_kunde_end_me</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <!-- Start Event: Kaufentscheidung und Medienwunsch eingegangen -->
+    <startEvent name="Kaufentscheidung und Medienwunsch eingegangen"
+                id="_kunde_start_me">
+      <outgoing>_kunde_flow1_me</outgoing>
+    </startEvent>
+
+    <!-- Task K1: Medienwunsch und Vorbestellung aufgeben -->
+    <task name="Medienwunsch und Vorbestellung aufgeben"
+          id="_kunde_task1_me"
+          isForCompensation="false">
+      <incoming>_kunde_flow1_me</incoming>
+      <outgoing>_kunde_flow2_me</outgoing>
+    </task>
+
+    <!-- Task K2: Bestellstatus im OPAC einsehen -->
+    <task name="Bestellstatus im OPAC einsehen"
+          id="_kunde_task2_me"
+          isForCompensation="false">
+      <incoming>_kunde_flow2_me</incoming>
+      <outgoing>_kunde_flow3_me</outgoing>
+    </task>
+
+    <!-- End Event: Medium ist bestellt und Bestellung ist im OPAC sichtbar -->
+    <endEvent name="Medium ist bestellt und Bestellung ist im OPAC sichtbar"
+              id="_kunde_end_me">
+      <incoming>_kunde_flow3_me</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows Kunde -->
+    <sequenceFlow sourceRef="_kunde_start_me" targetRef="_kunde_task1_me" id="_kunde_flow1_me"/>
+    <sequenceFlow sourceRef="_kunde_task1_me" targetRef="_kunde_task2_me" id="_kunde_flow2_me"/>
+    <sequenceFlow sourceRef="_kunde_task2_me" targetRef="_kunde_end_me"   id="_kunde_flow3_me"/>
+
+  </process>
+
+  <!-- =====================================================
+       PROZESS: Organisation
+       Lane 1: FaMIs (Fachangestellte fuer Medien- und Informationsdienste)
+       Lane 2: IT (aDIS) Fachverfahren
+       ===================================================== -->
+  <process name="Organisation"
+           id="process_org_me"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_org_me">
+
+      <!-- Lane 1: FaMIs -->
+      <lane name="FaMIs (Fachangestellte fuer Medien- und Informationsdienste)"
+            id="_org_lane_famis_me">
+        <flowNodeRef>_org_start_me</flowNodeRef>
+        <flowNodeRef>_org_task1_me</flowNodeRef>
+        <flowNodeRef>_org_task3_me</flowNodeRef>
+        <flowNodeRef>_org_task4_me</flowNodeRef>
+      </lane>
+
+      <!-- Lane 2: IT (aDIS) Fachverfahren -->
+      <lane name="IT (aDIS) Fachverfahren"
+            id="_org_lane_it_me">
+        <flowNodeRef>_org_task2_me</flowNodeRef>
+        <flowNodeRef>_org_task5_me</flowNodeRef>
+        <flowNodeRef>_org_task6_me</flowNodeRef>
+        <flowNodeRef>_org_end_me</flowNodeRef>
+      </lane>
+
+    </laneSet>
+
+    <!-- Start Event (Message Start, Lane FaMIs): Kaufentscheidung eingegangen -->
+    <startEvent name="Kaufentscheidung eingegangen"
+                id="_org_start_me">
+      <outgoing>_org_flow1_me</outgoing>
+      <messageEventDefinition id="msgEvtDef_org_start_me"/>
+    </startEvent>
+
+    <!-- Task O1 (FaMIs): Erwerbungsdatensatz anlegen -->
+    <task name="Erwerbungsdatensatz anlegen"
+          id="_org_task1_me"
+          isForCompensation="false">
+      <incoming>_org_flow1_me</incoming>
+      <outgoing>_org_flow2_me</outgoing>
+    </task>
+
+    <!-- Task O2 (IT aDIS): Fremddaten in aDIS uebernehmen -->
+    <task name="Fremddaten in aDIS uebernehmen"
+          id="_org_task2_me"
+          isForCompensation="false">
+      <incoming>_org_flow2_me</incoming>
+      <outgoing>_org_flow3_me</outgoing>
+    </task>
+
+    <!-- Task O3 (FaMIs): Lieferant auswaehlen -->
+    <task name="Lieferant auswaehlen"
+          id="_org_task3_me"
+          isForCompensation="false">
+      <incoming>_org_flow3_me</incoming>
+      <outgoing>_org_flow4_me</outgoing>
+    </task>
+
+    <!-- Task O4 (FaMIs): Bestellung sammeln und abschicken -->
+    <task name="Bestellung sammeln und abschicken"
+          id="_org_task4_me"
+          isForCompensation="false">
+      <incoming>_org_flow4_me</incoming>
+      <outgoing>_org_flow5_me</outgoing>
+    </task>
+
+    <!-- Task O5 (IT aDIS): Bestelldaten in aDIS verarbeiten -->
+    <task name="Bestelldaten in aDIS verarbeiten"
+          id="_org_task5_me"
+          isForCompensation="false">
+      <incoming>_org_flow5_me</incoming>
+      <outgoing>_org_flow6_me</outgoing>
+    </task>
+
+    <!-- Task O6 (IT aDIS): Bestellung im OPAC bereitstellen -->
+    <task name="Bestellung im OPAC bereitstellen"
+          id="_org_task6_me"
+          isForCompensation="false">
+      <incoming>_org_flow6_me</incoming>
+      <outgoing>_org_flow7_me</outgoing>
+    </task>
+
+    <!-- End Event (IT aDIS): Medium ist bestellt und Bestellung ist sichtbar -->
+    <endEvent name="Medium ist bestellt und Bestellung ist sichtbar"
+              id="_org_end_me">
+      <incoming>_org_flow7_me</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows Organisation (teils lane-uebergreifend) -->
+    <!-- OrgStart → O1 (FaMIs, gleiche Lane) -->
+    <sequenceFlow sourceRef="_org_start_me" targetRef="_org_task1_me" id="_org_flow1_me"/>
+    <!-- O1 FaMIs → O2 IT (Lane 1 → Lane 2, cross-lane: runter) -->
+    <sequenceFlow sourceRef="_org_task1_me" targetRef="_org_task2_me" id="_org_flow2_me"/>
+    <!-- O2 IT → O3 FaMIs (Lane 2 → Lane 1, cross-lane: hoch) -->
+    <sequenceFlow sourceRef="_org_task2_me" targetRef="_org_task3_me" id="_org_flow3_me"/>
+    <!-- O3 → O4 (FaMIs, gleiche Lane) -->
+    <sequenceFlow sourceRef="_org_task3_me" targetRef="_org_task4_me" id="_org_flow4_me"/>
+    <!-- O4 FaMIs → O5 IT (Lane 1 → Lane 2, cross-lane: runter) -->
+    <sequenceFlow sourceRef="_org_task4_me" targetRef="_org_task5_me" id="_org_flow5_me"/>
+    <!-- O5 → O6 (IT, gleiche Lane) -->
+    <sequenceFlow sourceRef="_org_task5_me" targetRef="_org_task6_me" id="_org_flow6_me"/>
+    <!-- O6 → OrgEnd (IT, gleiche Lane) -->
+    <sequenceFlow sourceRef="_org_task6_me" targetRef="_org_end_me"   id="_org_flow7_me"/>
+
+  </process>
+
+  <!-- =====================================================
+       BPMN-DI: Diagramm-Visualisierung
+
+       Koordinatensystem (2-Pool-Layout):
+         Kunde:        y=0,    Hoehe=380
+         Organisation: y=390,  Hoehe=500  (2 Lanes à 250px)
+
+       Lanes Organisation (absolut):
+         Lane 1 FaMIs:           y=390, h=250 → Task-Y=477, Event-Y=497, Mitte-Y=515
+         Lane 2 IT (aDIS):       y=640, h=250 → Task-Y=727, Event-Y=747, Mitte-Y=765
+
+       Org Pool Unterkante: y=390+500=890
+
+       X-Positionen (Linke Kante Tasks / Mitte Events, Schritt 220px):
+         Start:  x=120  → Mitte x=138
+         O1:     x=220  → Mitte x=295   (FaMIs)
+         O2:     x=440  → Mitte x=515   (IT)
+         O3:     x=660  → Mitte x=735   (FaMIs)
+         O4:     x=880  → Mitte x=955   (FaMIs)
+         O5:     x=1100 → Mitte x=1175  (IT)
+         O6/K2:  x=1320 → Mitte x=1395  (IT / Kunde K2 ausgerichtet)
+         End:    x=1540 → Mitte x=1558  (IT)
+
+       Task-Dimensionen: 151 x 76 px
+       Event-Dimensionen: 36 x 36 px
+       Pool-Breite: 1830px
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_me_tp3">
+    <bpmndi:BPMNPlane bpmnElement="Collaboration_me_tp3">
+
+      <!-- ===== POOL: Kunde (oben, y=0) ===== -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_participant_me" isHorizontal="true">
+        <omgdc:Bounds x="10" y="0" width="1830" height="380"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_kunde_lane_me" isHorizontal="true">
+        <omgdc:Bounds x="40" y="0" width="1800" height="380"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Start Event; center=(138, 190) -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_start_me">
+        <omgdc:Bounds x="120" y="172" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="66" y="215" width="144" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Task K1 - Medienwunsch und Vorbestellung aufgeben; center=(295, 190) -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_task1_me">
+        <omgdc:Bounds x="220" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Task K2 - Bestellstatus im OPAC einsehen; center=(1395, 190) -->
+      <!-- Ausgerichtet auf O6 (Bestellung im OPAC bereitstellen) -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_task2_me">
+        <omgdc:Bounds x="1320" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: End Event; center=(1558, 190) -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_end_me">
+        <omgdc:Bounds x="1540" y="172" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="1486" y="215" width="144" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Sequence Flows -->
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow1_me">
+        <omgdi:waypoint x="156" y="190"/>
+        <omgdi:waypoint x="220" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow2_me">
+        <omgdi:waypoint x="371" y="190"/>
+        <omgdi:waypoint x="1320" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow3_me">
+        <omgdi:waypoint x="1471" y="190"/>
+        <omgdi:waypoint x="1540" y="190"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== POOL: Organisation (unten, y=390) ===== -->
+      <bpmndi:BPMNShape bpmnElement="_org_participant_me" isHorizontal="true">
+        <omgdc:Bounds x="10" y="390" width="1830" height="500"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane 1: FaMIs (y=390, h=250) -->
+      <bpmndi:BPMNShape bpmnElement="_org_lane_famis_me" isHorizontal="true">
+        <omgdc:Bounds x="40" y="390" width="1800" height="250"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane 2: IT (aDIS) Fachverfahren (y=640, h=250) -->
+      <bpmndi:BPMNShape bpmnElement="_org_lane_it_me" isHorizontal="true">
+        <omgdc:Bounds x="40" y="640" width="1800" height="250"/>
+      </bpmndi:BPMNShape>
+
+      <!-- === Lane 1: FaMIs === -->
+
+      <!-- Org Start Event (Message); center=(138, 515) -->
+      <bpmndi:BPMNShape bpmnElement="_org_start_me">
+        <omgdc:Bounds x="120" y="497" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="66" y="540" width="144" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O1: Erwerbungsdatensatz anlegen; center=(295, 515) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task1_me">
+        <omgdc:Bounds x="220" y="477" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O3: Lieferant auswaehlen; center=(735, 515) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task3_me">
+        <omgdc:Bounds x="660" y="477" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O4: Bestellung sammeln und abschicken; center=(955, 515) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task4_me">
+        <omgdc:Bounds x="880" y="477" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- === Lane 2: IT (aDIS) Fachverfahren === -->
+
+      <!-- Task O2: Fremddaten in aDIS uebernehmen; center=(515, 765) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task2_me">
+        <omgdc:Bounds x="440" y="727" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O5: Bestelldaten in aDIS verarbeiten; center=(1175, 765) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task5_me">
+        <omgdc:Bounds x="1100" y="727" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O6: Bestellung im OPAC bereitstellen; center=(1395, 765) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task6_me">
+        <omgdc:Bounds x="1320" y="727" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org End Event (IT); center=(1558, 765) -->
+      <bpmndi:BPMNShape bpmnElement="_org_end_me">
+        <omgdc:Bounds x="1540" y="747" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="1486" y="790" width="144" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- === Organisation: Sequence Flows === -->
+
+      <!-- OrgStart → O1 (FaMIs, gleiche Lane) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow1_me">
+        <omgdi:waypoint x="156" y="515"/>
+        <omgdi:waypoint x="220" y="515"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O1 FaMIs → O2 IT (Lane 1 → Lane 2: runter) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow2_me">
+        <omgdi:waypoint x="371" y="515"/>
+        <omgdi:waypoint x="406" y="515"/>
+        <omgdi:waypoint x="406" y="765"/>
+        <omgdi:waypoint x="440" y="765"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O2 IT → O3 FaMIs (Lane 2 → Lane 1: hoch) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow3_me">
+        <omgdi:waypoint x="591" y="765"/>
+        <omgdi:waypoint x="626" y="765"/>
+        <omgdi:waypoint x="626" y="515"/>
+        <omgdi:waypoint x="660" y="515"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O3 → O4 (FaMIs, gleiche Lane) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow4_me">
+        <omgdi:waypoint x="811" y="515"/>
+        <omgdi:waypoint x="880" y="515"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O4 FaMIs → O5 IT (Lane 1 → Lane 2: runter) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow5_me">
+        <omgdi:waypoint x="1031" y="515"/>
+        <omgdi:waypoint x="1066" y="515"/>
+        <omgdi:waypoint x="1066" y="765"/>
+        <omgdi:waypoint x="1100" y="765"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O5 → O6 (IT, gleiche Lane) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow6_me">
+        <omgdi:waypoint x="1251" y="765"/>
+        <omgdi:waypoint x="1320" y="765"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O6 → OrgEnd (IT, gleiche Lane) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow7_me">
+        <omgdi:waypoint x="1471" y="765"/>
+        <omgdi:waypoint x="1540" y="765"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== MESSAGE FLOWS (Pool-uebergreifend) ===== -->
+
+      <!-- K1 (Medienwunsch aufgeben) → Org Start (Kaufentscheidung eingegangen) -->
+      <!-- K1 Boden-Mitte: (295, 228); OrgStart Mitte: (138, 515) -->
+      <!-- Verbindung kreuzt Poolgrenze bei y=390 -->
+      <bpmndi:BPMNEdge bpmnElement="_msgflow_k_o_me">
+        <omgdi:waypoint x="295" y="228"/>
+        <omgdi:waypoint x="295" y="390"/>
+        <omgdi:waypoint x="138" y="390"/>
+        <omgdi:waypoint x="138" y="497"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="155" y="372" width="125" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- O6 (Bestellung im OPAC bereitstellen) → K2 (Bestellstatus einsehen) -->
+      <!-- O6 Dach-Mitte: (1395, 727); K2 Boden-Mitte: (1395, 228) -->
+      <!-- Gleiche x-Achse (1395): senkrechte Verbindung durch Poolgrenze bei y=390 -->
+      <bpmndi:BPMNEdge bpmnElement="_msgflow_o_k_me">
+        <omgdi:waypoint x="1395" y="727"/>
+        <omgdi:waypoint x="1395" y="390"/>
+        <omgdi:waypoint x="1395" y="228"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="1405" y="540" width="130" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</definitions>

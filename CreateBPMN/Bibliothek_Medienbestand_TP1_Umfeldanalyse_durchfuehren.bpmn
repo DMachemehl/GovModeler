@@ -1,0 +1,575 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  BPMN 2.0 Prozessmodell - Stadtbibliothek Stuttgart
+  ====================================================
+  Prozess:    TP1 Umfeldanalyse durchfuehren
+  Kontext:    Teilprozess aus uebergeordnetem Prozess "Medienbestand managen"
+  Struktur:   2-Pool-Kollaboration (Kunde, Organisation)
+  Erstellt:   2026-07-21
+  Happy Path: Ja (ohne Alternativpfade)
+
+  e2e-Rahmen:
+  - Kundenbeduernis: Buergerinnen und Buerger benoetigen einen bedarfsorientierten,
+    aktuellen und gesellschaftlich relevanten Medienbestand.
+  - Startereignis: Benutzerinteressen und Umfeldinformationen eingegangen
+  - Endereignis:   Bestandsprofil erstellt und bereitgestellt
+
+  Pools:
+    - Kunde       | Lane: Bibliotheksnutzer
+    - Organisation | Lanes: Auskunftsdienst, Veranstaltungsteam,
+                            Ebenen-/Stadtteilleitung, Lektoratsteam, Direktionsteam
+
+  Beteiligte Steuerungsprozesse:
+    1. Gesamtbibliothekskonzeption erstellen
+    2. Bibliothekskonzeption erstellen
+-->
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:adonis="http://www.boc-group.com"
+             xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="definition__bibl-ub-tp1-2026"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd"
+             targetNamespace="http://www.boc-group.com">
+
+  <!-- =====================================================
+       COLLABORATION - TP1 Umfeldanalyse durchfuehren
+       2-Pool-Kollaboration: Kunde, Organisation
+       ===================================================== -->
+  <collaboration id="Collaboration_ub_tp1"
+                 name="TP1 Umfeldanalyse durchfuehren"
+                 isClosed="false">
+
+    <!-- Participants (Pools) -->
+    <participant processRef="process_kunde_ub"
+                 name="Kunde"
+                 id="_kunde_participant_ub"/>
+    <participant processRef="process_org_ub"
+                 name="Organisation"
+                 id="_org_participant_ub"/>
+
+    <!-- Message Flows zwischen den Pools -->
+    <!-- Kunde → Organisation: Nutzerfeedback und Bedarfe -->
+    <messageFlow id="_msgflow_k_o_ub"
+                 name="Nutzerfeedback und Bedarfe"
+                 sourceRef="_kunde_task1_ub"
+                 targetRef="_org_start_ub"/>
+
+    <!-- Organisation → Kunde: Bestandsprofil aktualisiert -->
+    <messageFlow id="_msgflow_o_k_ub"
+                 name="Bestandsprofil aktualisiert"
+                 sourceRef="_org_task10_ub"
+                 targetRef="_kunde_task2_ub"/>
+
+  </collaboration>
+
+  <!-- =====================================================
+       PROZESS: Kunde
+       Lane: Bibliotheksnutzer
+       ===================================================== -->
+  <process name="Kunde"
+           id="process_kunde_ub"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_kunde_ub">
+      <lane name="Bibliotheksnutzer" id="_kunde_lane_ub">
+        <flowNodeRef>_kunde_start_ub</flowNodeRef>
+        <flowNodeRef>_kunde_task1_ub</flowNodeRef>
+        <flowNodeRef>_kunde_task2_ub</flowNodeRef>
+        <flowNodeRef>_kunde_end_ub</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <!-- Start Event: Benutzerinteressen und Umfeldinformationen eingegangen -->
+    <startEvent name="Benutzerinteressen und Umfeldinformationen eingegangen"
+                id="_kunde_start_ub">
+      <outgoing>_kunde_flow1_ub</outgoing>
+    </startEvent>
+
+    <!-- Task K1: Bedarf und Interesse aeussern -->
+    <task name="Bedarf und Interesse aeussern"
+          id="_kunde_task1_ub"
+          isForCompensation="false">
+      <incoming>_kunde_flow1_ub</incoming>
+      <outgoing>_kunde_flow2_ub</outgoing>
+    </task>
+
+    <!-- Task K2: Bestandsangebot empfangen -->
+    <task name="Bestandsangebot empfangen"
+          id="_kunde_task2_ub"
+          isForCompensation="false">
+      <incoming>_kunde_flow2_ub</incoming>
+      <outgoing>_kunde_flow3_ub</outgoing>
+    </task>
+
+    <!-- End Event: Bibliotheksangebot entspricht Beduerfnissen -->
+    <endEvent name="Bibliotheksangebot entspricht Beduerfnissen"
+              id="_kunde_end_ub">
+      <incoming>_kunde_flow3_ub</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows Kunde -->
+    <sequenceFlow sourceRef="_kunde_start_ub"  targetRef="_kunde_task1_ub" id="_kunde_flow1_ub"/>
+    <sequenceFlow sourceRef="_kunde_task1_ub"  targetRef="_kunde_task2_ub" id="_kunde_flow2_ub"/>
+    <sequenceFlow sourceRef="_kunde_task2_ub"  targetRef="_kunde_end_ub"   id="_kunde_flow3_ub"/>
+
+  </process>
+
+  <!-- =====================================================
+       PROZESS: Organisation
+       Lanes: Auskunftsdienst | Veranstaltungsteam |
+              Ebenen-/Stadtteilleitung | Lektoratsteam | Direktionsteam
+       ===================================================== -->
+  <process name="Organisation"
+           id="process_org_ub"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_org_ub">
+
+      <!-- Lane 1: Auskunftsdienst -->
+      <lane name="Auskunftsdienst" id="_org_lane_auskunft_ub">
+        <flowNodeRef>_org_start_ub</flowNodeRef>
+        <flowNodeRef>_org_task1_ub</flowNodeRef>
+      </lane>
+
+      <!-- Lane 2: Veranstaltungsteam -->
+      <lane name="Veranstaltungsteam" id="_org_lane_veranst_ub">
+        <flowNodeRef>_org_task2_ub</flowNodeRef>
+      </lane>
+
+      <!-- Lane 3: Ebenen-/Stadtteilleitung -->
+      <lane name="Ebenen-/Stadtteilleitung" id="_org_lane_ebenen_ub">
+        <flowNodeRef>_org_task3_ub</flowNodeRef>
+      </lane>
+
+      <!-- Lane 4: Lektoratsteam -->
+      <lane name="Lektoratsteam" id="_org_lane_lektorat_ub">
+        <flowNodeRef>_org_task4_ub</flowNodeRef>
+        <flowNodeRef>_org_task5_ub</flowNodeRef>
+        <flowNodeRef>_org_task6_ub</flowNodeRef>
+        <flowNodeRef>_org_task7_ub</flowNodeRef>
+      </lane>
+
+      <!-- Lane 5: Direktionsteam -->
+      <lane name="Direktionsteam" id="_org_lane_direktion_ub">
+        <flowNodeRef>_org_task8_ub</flowNodeRef>
+        <flowNodeRef>_org_task9_ub</flowNodeRef>
+        <flowNodeRef>_org_task10_ub</flowNodeRef>
+        <flowNodeRef>_org_end_ub</flowNodeRef>
+      </lane>
+
+    </laneSet>
+
+    <!-- Start Event (Message Start): Nutzerfeedback eingegangen -->
+    <startEvent name="Nutzerfeedback eingegangen"
+                id="_org_start_ub">
+      <outgoing>_org_flow1_ub</outgoing>
+      <messageEventDefinition id="msgEvtDef_org_start_ub"/>
+    </startEvent>
+
+    <!-- Task O1 (Auskunftsdienst): Benutzerinteressen und -bedarfe erfassen -->
+    <task name="Benutzerinteressen und -bedarfe erfassen"
+          id="_org_task1_ub"
+          isForCompensation="false">
+      <incoming>_org_flow1_ub</incoming>
+      <outgoing>_org_flow2_ub</outgoing>
+    </task>
+
+    <!-- Task O2 (Veranstaltungsteam): Veranstaltungsrueckmeldungen und Trends erfassen -->
+    <task name="Veranstaltungsrueckmeldungen und Trends erfassen"
+          id="_org_task2_ub"
+          isForCompensation="false">
+      <incoming>_org_flow2_ub</incoming>
+      <outgoing>_org_flow3_ub</outgoing>
+    </task>
+
+    <!-- Task O3 (Ebenen-/Stadtteilleitung): Partnerbeduerfnisse und Stadtteilbedarfe erfassen -->
+    <task name="Partnerbeduerfnisse und Stadtteilbedarfe erfassen"
+          id="_org_task3_ub"
+          isForCompensation="false">
+      <incoming>_org_flow3_ub</incoming>
+      <outgoing>_org_flow4_ub</outgoing>
+    </task>
+
+    <!-- Task O4 (Lektoratsteam): Trendscouting und Bibliothekslandschaft sichten -->
+    <task name="Trendscouting und Bibliothekslandschaft sichten"
+          id="_org_task4_ub"
+          isForCompensation="false">
+      <incoming>_org_flow4_ub</incoming>
+      <outgoing>_org_flow5_ub</outgoing>
+    </task>
+
+    <!-- Task O5 (Lektoratsteam): Daten erfassen, auswerten und priorisieren -->
+    <task name="Daten erfassen, auswerten und priorisieren"
+          id="_org_task5_ub"
+          isForCompensation="false">
+      <incoming>_org_flow5_ub</incoming>
+      <outgoing>_org_flow6_ub</outgoing>
+    </task>
+
+    <!-- Task O6 (Lektoratsteam): Daten in Bibliothekskonzeption anwenden -->
+    <task name="Daten in Bibliothekskonzeption anwenden"
+          id="_org_task6_ub"
+          isForCompensation="false">
+      <incoming>_org_flow6_ub</incoming>
+      <outgoing>_org_flow7_ub</outgoing>
+    </task>
+
+    <!-- Task O7 (Lektoratsteam): Schwerpunkte und mediale Entwicklungen beruecksichtigen -->
+    <task name="Schwerpunkte und mediale Entwicklungen beruecksichtigen"
+          id="_org_task7_ub"
+          isForCompensation="false">
+      <incoming>_org_flow7_ub</incoming>
+      <outgoing>_org_flow8_ub</outgoing>
+    </task>
+
+    <!-- Task O8 (Direktionsteam): Konzeption am oeffentlichen Bibliotheksauftrag orientieren -->
+    <task name="Konzeption am oeffentlichen Bibliotheksauftrag orientieren"
+          id="_org_task8_ub"
+          isForCompensation="false">
+      <incoming>_org_flow8_ub</incoming>
+      <outgoing>_org_flow9_ub</outgoing>
+    </task>
+
+    <!-- Task O9 (Direktionsteam): Ressourcenplanung durchfuehren -->
+    <task name="Ressourcenplanung durchfuehren"
+          id="_org_task9_ub"
+          isForCompensation="false">
+      <incoming>_org_flow9_ub</incoming>
+      <outgoing>_org_flow10_ub</outgoing>
+    </task>
+
+    <!-- Task O10 (Direktionsteam): Bestandsprofil erstellen und freigeben -->
+    <task name="Bestandsprofil erstellen und freigeben"
+          id="_org_task10_ub"
+          isForCompensation="false">
+      <incoming>_org_flow10_ub</incoming>
+      <outgoing>_org_flow11_ub</outgoing>
+    </task>
+
+    <!-- End Event: Bestandsprofil erstellt und bereitgestellt -->
+    <endEvent name="Bestandsprofil erstellt und bereitgestellt"
+              id="_org_end_ub">
+      <incoming>_org_flow11_ub</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows Organisation -->
+    <!-- O Start → O1 (Auskunftsdienst, gleiche Lane) -->
+    <sequenceFlow sourceRef="_org_start_ub"  targetRef="_org_task1_ub"  id="_org_flow1_ub"/>
+    <!-- O1 → O2 (Lane 1 → Lane 2, cross-lane) -->
+    <sequenceFlow sourceRef="_org_task1_ub"  targetRef="_org_task2_ub"  id="_org_flow2_ub"/>
+    <!-- O2 → O3 (Lane 2 → Lane 3, cross-lane) -->
+    <sequenceFlow sourceRef="_org_task2_ub"  targetRef="_org_task3_ub"  id="_org_flow3_ub"/>
+    <!-- O3 → O4 (Lane 3 → Lane 4, cross-lane) -->
+    <sequenceFlow sourceRef="_org_task3_ub"  targetRef="_org_task4_ub"  id="_org_flow4_ub"/>
+    <!-- O4 → O5 (Lektoratsteam, gleiche Lane) -->
+    <sequenceFlow sourceRef="_org_task4_ub"  targetRef="_org_task5_ub"  id="_org_flow5_ub"/>
+    <!-- O5 → O6 (Lektoratsteam, gleiche Lane) -->
+    <sequenceFlow sourceRef="_org_task5_ub"  targetRef="_org_task6_ub"  id="_org_flow6_ub"/>
+    <!-- O6 → O7 (Lektoratsteam, gleiche Lane) -->
+    <sequenceFlow sourceRef="_org_task6_ub"  targetRef="_org_task7_ub"  id="_org_flow7_ub"/>
+    <!-- O7 → O8 (Lane 4 → Lane 5, cross-lane) -->
+    <sequenceFlow sourceRef="_org_task7_ub"  targetRef="_org_task8_ub"  id="_org_flow8_ub"/>
+    <!-- O8 → O9 (Direktionsteam, gleiche Lane) -->
+    <sequenceFlow sourceRef="_org_task8_ub"  targetRef="_org_task9_ub"  id="_org_flow9_ub"/>
+    <!-- O9 → O10 (Direktionsteam, gleiche Lane) -->
+    <sequenceFlow sourceRef="_org_task9_ub"  targetRef="_org_task10_ub" id="_org_flow10_ub"/>
+    <!-- O10 → Org End (Direktionsteam, gleiche Lane) -->
+    <sequenceFlow sourceRef="_org_task10_ub" targetRef="_org_end_ub"    id="_org_flow11_ub"/>
+
+  </process>
+
+  <!-- =====================================================
+       BPMN-DI: Diagramm-Visualisierung
+
+       Koordinatensystem (2-Pool-Layout):
+         Kunde:        y=0,    Hoehe=380
+         Organisation: y=390,  Hoehe=1250  (5 Lanes à 250px)
+
+       Lanes Organisation (absolut):
+         Lane 1 Auskunftsdienst:        y=390,  h=250  → Task-Y=477, Event-Y=497
+         Lane 2 Veranstaltungsteam:     y=640,  h=250  → Task-Y=727
+         Lane 3 Ebenen-/Stadtteilltg.:  y=890,  h=250  → Task-Y=977
+         Lane 4 Lektoratsteam:          y=1140, h=250  → Task-Y=1227
+         Lane 5 Direktionsteam:         y=1390, h=250  → Task-Y=1477, Event-Y=1497
+
+       Task-Dimensionen: 151 x 76 px
+       Event-Dimensionen: 36 x 36 px
+       Horizontaler Task-Abstand: 220px (151px Breite + 69px Luecke)
+       Pool-Breite: 2700px
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ub_tp1">
+    <bpmndi:BPMNPlane bpmnElement="Collaboration_ub_tp1">
+
+      <!-- ===== POOL: Kunde (oben, y=0) ===== -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_participant_ub" isHorizontal="true">
+        <omgdc:Bounds x="10" y="0" width="2700" height="380"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_kunde_lane_ub" isHorizontal="true">
+        <omgdc:Bounds x="40" y="0" width="2670" height="380"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Start Event -->
+      <!-- center=(138, 190) -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_start_ub">
+        <omgdc:Bounds x="120" y="172" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="66" y="215" width="144" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Task K1 - Bedarf und Interesse aeussern -->
+      <!-- center=(295, 190) -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_task1_ub">
+        <omgdc:Bounds x="220" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Task K2 - Bestandsangebot empfangen -->
+      <!-- center=(2275, 190); aligned with O10 in Org pool -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_task2_ub">
+        <omgdc:Bounds x="2200" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: End Event -->
+      <!-- center=(2448, 190) -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_end_ub">
+        <omgdc:Bounds x="2430" y="172" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="2380" y="215" width="135" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Kunde: Sequence Flows -->
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow1_ub">
+        <omgdi:waypoint x="156" y="190"/>
+        <omgdi:waypoint x="220" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow2_ub">
+        <omgdi:waypoint x="371" y="190"/>
+        <omgdi:waypoint x="2200" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow3_ub">
+        <omgdi:waypoint x="2351" y="190"/>
+        <omgdi:waypoint x="2430" y="190"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== POOL: Organisation (unten, y=390) ===== -->
+      <bpmndi:BPMNShape bpmnElement="_org_participant_ub" isHorizontal="true">
+        <omgdc:Bounds x="10" y="390" width="2700" height="1250"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane 1: Auskunftsdienst (y=390, h=250) -->
+      <bpmndi:BPMNShape bpmnElement="_org_lane_auskunft_ub" isHorizontal="true">
+        <omgdc:Bounds x="40" y="390" width="2670" height="250"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane 2: Veranstaltungsteam (y=640, h=250) -->
+      <bpmndi:BPMNShape bpmnElement="_org_lane_veranst_ub" isHorizontal="true">
+        <omgdc:Bounds x="40" y="640" width="2670" height="250"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane 3: Ebenen-/Stadtteilleitung (y=890, h=250) -->
+      <bpmndi:BPMNShape bpmnElement="_org_lane_ebenen_ub" isHorizontal="true">
+        <omgdc:Bounds x="40" y="890" width="2670" height="250"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane 4: Lektoratsteam (y=1140, h=250) -->
+      <bpmndi:BPMNShape bpmnElement="_org_lane_lektorat_ub" isHorizontal="true">
+        <omgdc:Bounds x="40" y="1140" width="2670" height="250"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane 5: Direktionsteam (y=1390, h=250) -->
+      <bpmndi:BPMNShape bpmnElement="_org_lane_direktion_ub" isHorizontal="true">
+        <omgdc:Bounds x="40" y="1390" width="2670" height="250"/>
+      </bpmndi:BPMNShape>
+
+      <!-- === Lane 1: Auskunftsdienst === -->
+
+      <!-- Org Start Event (Message): center=(138, 515) -->
+      <bpmndi:BPMNShape bpmnElement="_org_start_ub">
+        <omgdc:Bounds x="120" y="497" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="66" y="540" width="144" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O1: Benutzerinteressen und -bedarfe erfassen; center=(295, 515) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task1_ub">
+        <omgdc:Bounds x="220" y="477" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- === Lane 2: Veranstaltungsteam === -->
+
+      <!-- Task O2: Veranstaltungsrueckmeldungen und Trends erfassen; center=(515, 765) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task2_ub">
+        <omgdc:Bounds x="440" y="727" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- === Lane 3: Ebenen-/Stadtteilleitung === -->
+
+      <!-- Task O3: Partnerbeduerfnisse und Stadtteilbedarfe erfassen; center=(735, 1015) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task3_ub">
+        <omgdc:Bounds x="660" y="977" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- === Lane 4: Lektoratsteam === -->
+
+      <!-- Task O4: Trendscouting und Bibliothekslandschaft sichten; center=(955, 1265) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task4_ub">
+        <omgdc:Bounds x="880" y="1227" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O5: Daten erfassen, auswerten und priorisieren; center=(1175, 1265) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task5_ub">
+        <omgdc:Bounds x="1100" y="1227" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O6: Daten in Bibliothekskonzeption anwenden; center=(1395, 1265) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task6_ub">
+        <omgdc:Bounds x="1320" y="1227" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O7: Schwerpunkte und mediale Entwicklungen beruecksichtigen; center=(1615, 1265) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task7_ub">
+        <omgdc:Bounds x="1540" y="1227" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- === Lane 5: Direktionsteam === -->
+
+      <!-- Task O8: Konzeption am oeffentlichen Bibliotheksauftrag orientieren; center=(1835, 1515) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task8_ub">
+        <omgdc:Bounds x="1760" y="1477" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O9: Ressourcenplanung durchfuehren; center=(2055, 1515) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task9_ub">
+        <omgdc:Bounds x="1980" y="1477" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Task O10: Bestandsprofil erstellen und freigeben; center=(2275, 1515) -->
+      <bpmndi:BPMNShape bpmnElement="_org_task10_ub">
+        <omgdc:Bounds x="2200" y="1477" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Org End Event: center=(2448, 1515) -->
+      <bpmndi:BPMNShape bpmnElement="_org_end_ub">
+        <omgdc:Bounds x="2430" y="1497" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="2380" y="1540" width="135" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- === Organisation: Sequence Flows === -->
+
+      <!-- OrgStart → O1 (Auskunftsdienst, gleiche Lane) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow1_ub">
+        <omgdi:waypoint x="156" y="515"/>
+        <omgdi:waypoint x="220" y="515"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O1 → O2 (Lane 1 Auskunftsdienst → Lane 2 Veranstaltungsteam) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow2_ub">
+        <omgdi:waypoint x="371" y="515"/>
+        <omgdi:waypoint x="406" y="515"/>
+        <omgdi:waypoint x="406" y="765"/>
+        <omgdi:waypoint x="440" y="765"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O2 → O3 (Lane 2 Veranstaltungsteam → Lane 3 Ebenen-/Stadtteilleitung) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow3_ub">
+        <omgdi:waypoint x="591" y="765"/>
+        <omgdi:waypoint x="626" y="765"/>
+        <omgdi:waypoint x="626" y="1015"/>
+        <omgdi:waypoint x="660" y="1015"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O3 → O4 (Lane 3 Ebenen-/Stadtteilleitung → Lane 4 Lektoratsteam) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow4_ub">
+        <omgdi:waypoint x="811" y="1015"/>
+        <omgdi:waypoint x="846" y="1015"/>
+        <omgdi:waypoint x="846" y="1265"/>
+        <omgdi:waypoint x="880" y="1265"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O4 → O5 (Lektoratsteam, gleiche Lane) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow5_ub">
+        <omgdi:waypoint x="1031" y="1265"/>
+        <omgdi:waypoint x="1100" y="1265"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O5 → O6 (Lektoratsteam, gleiche Lane) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow6_ub">
+        <omgdi:waypoint x="1251" y="1265"/>
+        <omgdi:waypoint x="1320" y="1265"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O6 → O7 (Lektoratsteam, gleiche Lane) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow7_ub">
+        <omgdi:waypoint x="1471" y="1265"/>
+        <omgdi:waypoint x="1540" y="1265"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O7 → O8 (Lane 4 Lektoratsteam → Lane 5 Direktionsteam) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow8_ub">
+        <omgdi:waypoint x="1691" y="1265"/>
+        <omgdi:waypoint x="1726" y="1265"/>
+        <omgdi:waypoint x="1726" y="1515"/>
+        <omgdi:waypoint x="1760" y="1515"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O8 → O9 (Direktionsteam, gleiche Lane) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow9_ub">
+        <omgdi:waypoint x="1911" y="1515"/>
+        <omgdi:waypoint x="1980" y="1515"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O9 → O10 (Direktionsteam, gleiche Lane) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow10_ub">
+        <omgdi:waypoint x="2131" y="1515"/>
+        <omgdi:waypoint x="2200" y="1515"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- O10 → Org End (Direktionsteam, gleiche Lane) -->
+      <bpmndi:BPMNEdge bpmnElement="_org_flow11_ub">
+        <omgdi:waypoint x="2351" y="1515"/>
+        <omgdi:waypoint x="2430" y="1515"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== MESSAGE FLOWS (Pool-uebergreifend) ===== -->
+
+      <!-- Kunde K1 (Bedarf aeussern) → Org Start (Nutzerfeedback eingegangen) -->
+      <!-- K1 Boden-Mitte: (295, 228); OrgStart Mitte-Oben: (138, 497) -->
+      <!-- Verbindung kreuzt Poolgrenze bei y=390 -->
+      <bpmndi:BPMNEdge bpmnElement="_msgflow_k_o_ub">
+        <omgdi:waypoint x="295" y="228"/>
+        <omgdi:waypoint x="295" y="390"/>
+        <omgdi:waypoint x="138" y="390"/>
+        <omgdi:waypoint x="138" y="497"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="180" y="372" width="110" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- Org O10 (Bestandsprofil freigeben) → Kunde K2 (Bestandsangebot empfangen) -->
+      <!-- O10 Dach-Mitte: (2275, 1477); K2 Boden-Mitte: (2275, 228) -->
+      <!-- Verbindung kreuzt Poolgrenze bei y=390; gleiche x-Achse (2275) -->
+      <bpmndi:BPMNEdge bpmnElement="_msgflow_o_k_ub">
+        <omgdi:waypoint x="2275" y="1477"/>
+        <omgdi:waypoint x="2275" y="390"/>
+        <omgdi:waypoint x="2275" y="228"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="2285" y="820" width="110" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</definitions>
