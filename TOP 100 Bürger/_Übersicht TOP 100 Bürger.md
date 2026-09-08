@@ -10,7 +10,7 @@
 | Personalausweis ausstellen                                             |   X    |
 | Antrag auf einfaches Führungszeugnis entgegennehmen und weiterleiten   |   X    |
 | Einbürgerungstest durchführen                                          |   X    |
-| Einbürgerung von Ausländern genehmigen                                 |        |
+| Einbürgerung von Ausländern genehmigen                                 |   x    |
 | Miteinbürgerung genehmigen                                             |   x    |
 | Staatsangehörigkeitsausweis ausstellen                                 |   X    |
 | Niederlassungserlaubnis erteilen                                       |        |
