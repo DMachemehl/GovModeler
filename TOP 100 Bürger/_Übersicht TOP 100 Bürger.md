@@ -13,7 +13,7 @@
 | Einbürgerung von Ausländern genehmigen                                 |   x    |
 | Miteinbürgerung genehmigen                                             |   x    |
 | Staatsangehörigkeitsausweis ausstellen                                 |   X    |
-| Niederlassungserlaubnis erteilen                                       |        |
+| Niederlassungserlaubnis erteilen                                       |   x    |
 | Aufenthaltserlaubnis bei Asylantrag erteilen                           |    x   |
 | Erlaubnis zur Aufnahme einer Erwerbstätigkeit erteilen                 |        |
 | Geburt beurkunden                                                      |    X   |
