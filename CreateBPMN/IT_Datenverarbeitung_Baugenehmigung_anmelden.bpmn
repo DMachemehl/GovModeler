@@ -1,0 +1,623 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0">
+
+  <!-- =====================================================
+       COLLABORATION
+       Pool 1: Bauantrags-Portal              (5 Tasks, width=1020)
+       Pool 2: Fachverfahren Bauaufsicht       (7 Tasks, width=1340)
+       Pool 3: Liegenschaftskataster/GIS       (4 Tasks, width=860)
+       Pool 4: Dokumenten-Management-System    (4 Tasks, width=860)
+       ===================================================== -->
+  <bpmn:collaboration id="Collab_IT_Baugenehmigung_anmelden">
+
+    <bpmn:participant id="Participant_Portal"
+                      name="Bauantrags-Portal"
+                      processRef="Process_Portal" />
+
+    <bpmn:participant id="Participant_Fachverfahren"
+                      name="Fachverfahren Bauaufsicht"
+                      processRef="Process_Fachverfahren" />
+
+    <bpmn:participant id="Participant_GIS"
+                      name="Liegenschaftskataster / GIS-System"
+                      processRef="Process_GIS" />
+
+    <bpmn:participant id="Participant_DMS"
+                      name="Dokumenten-Management-System (DMS)"
+                      processRef="Process_DMS" />
+
+    <!-- Message Flow: Portal -> Fachverfahren (Bauantragsdaten) -->
+    <bpmn:messageFlow id="MsgFlow_Portal_FV"
+                      name="Bauantragsdaten"
+                      sourceRef="Task_Portal_Daten_uebermitteln"
+                      targetRef="StartEvent_Fachverfahren" />
+
+    <!-- Message Flow: Fachverfahren -> GIS (Flurstuecksanfrage) -->
+    <bpmn:messageFlow id="MsgFlow_FV_GIS_Anfrage"
+                      name="Flurstuecksanfrage"
+                      sourceRef="Task_FV_Flurstuecksdaten_anfordern"
+                      targetRef="StartEvent_GIS" />
+
+    <!-- Message Flow: GIS -> Fachverfahren (Flurstuecksdaten) -->
+    <bpmn:messageFlow id="MsgFlow_GIS_FV_Antwort"
+                      name="Flurstuecksdaten"
+                      sourceRef="Task_GIS_Daten_uebermitteln"
+                      targetRef="Task_FV_Flurstuecksdaten_uebernehmen" />
+
+    <!-- Message Flow: Fachverfahren -> DMS (Baugenehmigungsbescheid) -->
+    <bpmn:messageFlow id="MsgFlow_FV_DMS"
+                      name="Baugenehmigungsbescheid"
+                      sourceRef="Task_FV_Bescheid_uebermitteln"
+                      targetRef="StartEvent_DMS" />
+
+  </bpmn:collaboration>
+
+  <!-- =====================================================
+       POOL 1: BAUANTRAGS-PORTAL
+       Empfaengt den Bauantrag des Bauherrn (extern), validiert
+       Format und Vollstaendigkeit und leitet die Daten an das
+       Fachverfahren Bauaufsicht weiter.
+       ===================================================== -->
+  <bpmn:process id="Process_Portal" name="Bauantrags_Portal" isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_Portal" name="Bauantrag über Online-Portal eingegangen">
+      <bpmn:outgoing>Flow_Portal_S_1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Portal_Start" />
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_Portal_Empfangen" name="Antragsdaten empfangen">
+      <bpmn:incoming>Flow_Portal_S_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_Portal_1_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Portal_Format_validieren" name="Datenformat validieren">
+      <bpmn:incoming>Flow_Portal_1_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_Portal_2_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Portal_Vollstaendigkeit_pruefen" name="Vollständigkeit prüfen">
+      <bpmn:incoming>Flow_Portal_2_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_Portal_3_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Portal_Unterlagen_speichern" name="Antragsunterlagen zwischenspeichern">
+      <bpmn:incoming>Flow_Portal_3_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Portal_4_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sendTask id="Task_Portal_Daten_uebermitteln" name="Antragsdaten an Fachverfahren übermitteln">
+      <bpmn:incoming>Flow_Portal_4_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_Portal_5_E</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:endEvent id="EndEvent_Portal" name="Antragsdaten übermittelt">
+      <bpmn:incoming>Flow_Portal_5_E</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_Portal_S_1" sourceRef="StartEvent_Portal"                  targetRef="Task_Portal_Empfangen" />
+    <bpmn:sequenceFlow id="Flow_Portal_1_2" sourceRef="Task_Portal_Empfangen"               targetRef="Task_Portal_Format_validieren" />
+    <bpmn:sequenceFlow id="Flow_Portal_2_3" sourceRef="Task_Portal_Format_validieren"        targetRef="Task_Portal_Vollstaendigkeit_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Portal_3_4" sourceRef="Task_Portal_Vollstaendigkeit_pruefen" targetRef="Task_Portal_Unterlagen_speichern" />
+    <bpmn:sequenceFlow id="Flow_Portal_4_5" sourceRef="Task_Portal_Unterlagen_speichern"     targetRef="Task_Portal_Daten_uebermitteln" />
+    <bpmn:sequenceFlow id="Flow_Portal_5_E" sourceRef="Task_Portal_Daten_uebermitteln"       targetRef="EndEvent_Portal" />
+
+  </bpmn:process>
+
+  <!-- =====================================================
+       POOL 2: FACHVERFAHREN BAUAUFSICHT
+       Empfaengt Antragsdaten vom Portal, reichert sie mit
+       Flurstuecksdaten des GIS-Systems an, prueft die
+       Bebauungsplan-Konformitaet, berechnet die Gebuehr und
+       erstellt den Baugenehmigungsbescheid fuer das DMS.
+       ===================================================== -->
+  <bpmn:process id="Process_Fachverfahren" name="Fachverfahren_Bauaufsicht" isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_Fachverfahren" name="Antragsdaten empfangen">
+      <bpmn:outgoing>Flow_FV_S_1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_FV_Start" />
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_FV_Antragsdaten_validieren" name="Antragsdaten auf Plausibilität validieren">
+      <bpmn:incoming>Flow_FV_S_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_FV_1_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sendTask id="Task_FV_Flurstuecksdaten_anfordern" name="Flurstücksdaten anfordern">
+      <bpmn:incoming>Flow_FV_1_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_FV_2_3</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:serviceTask id="Task_FV_Flurstuecksdaten_uebernehmen" name="Flurstücksdaten übernehmen">
+      <bpmn:incoming>Flow_FV_2_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_FV_3_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_FV_Bebauungsplan_pruefen" name="Bebauungsplan-Konformität prüfen">
+      <bpmn:incoming>Flow_FV_3_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_FV_4_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_FV_Gebuehr_berechnen" name="Baugebühr berechnen">
+      <bpmn:incoming>Flow_FV_4_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_FV_5_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_FV_Bescheid_generieren" name="Baugenehmigungsbescheid generieren">
+      <bpmn:incoming>Flow_FV_5_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_FV_6_7</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sendTask id="Task_FV_Bescheid_uebermitteln" name="Bescheid an DMS übermitteln">
+      <bpmn:incoming>Flow_FV_6_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_FV_7_E</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:endEvent id="EndEvent_Fachverfahren" name="Bescheid übermittelt">
+      <bpmn:incoming>Flow_FV_7_E</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_FV_S_1" sourceRef="StartEvent_Fachverfahren"              targetRef="Task_FV_Antragsdaten_validieren" />
+    <bpmn:sequenceFlow id="Flow_FV_1_2" sourceRef="Task_FV_Antragsdaten_validieren"       targetRef="Task_FV_Flurstuecksdaten_anfordern" />
+    <bpmn:sequenceFlow id="Flow_FV_2_3" sourceRef="Task_FV_Flurstuecksdaten_anfordern"    targetRef="Task_FV_Flurstuecksdaten_uebernehmen" />
+    <bpmn:sequenceFlow id="Flow_FV_3_4" sourceRef="Task_FV_Flurstuecksdaten_uebernehmen"  targetRef="Task_FV_Bebauungsplan_pruefen" />
+    <bpmn:sequenceFlow id="Flow_FV_4_5" sourceRef="Task_FV_Bebauungsplan_pruefen"         targetRef="Task_FV_Gebuehr_berechnen" />
+    <bpmn:sequenceFlow id="Flow_FV_5_6" sourceRef="Task_FV_Gebuehr_berechnen"             targetRef="Task_FV_Bescheid_generieren" />
+    <bpmn:sequenceFlow id="Flow_FV_6_7" sourceRef="Task_FV_Bescheid_generieren"           targetRef="Task_FV_Bescheid_uebermitteln" />
+    <bpmn:sequenceFlow id="Flow_FV_7_E" sourceRef="Task_FV_Bescheid_uebermitteln"         targetRef="EndEvent_Fachverfahren" />
+
+  </bpmn:process>
+
+  <!-- =====================================================
+       POOL 3: LIEGENSCHAFTSKATASTER / GIS-SYSTEM
+       Empfaengt die Flurstuecksanfrage des Fachverfahrens,
+       ruft die Katasterdaten ab und uebermittelt die
+       aufbereiteten Geodaten zurueck an das Fachverfahren.
+       ===================================================== -->
+  <bpmn:process id="Process_GIS" name="Liegenschaftskataster_GIS" isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_GIS" name="Flurstücksanfrage erhalten">
+      <bpmn:outgoing>Flow_GIS_S_1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_GIS_Start" />
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_GIS_Anfrage_validieren" name="Flurstücksanfrage validieren">
+      <bpmn:incoming>Flow_GIS_S_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_GIS_1_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_GIS_Daten_abrufen" name="Flurstücksdaten aus Kataster abrufen">
+      <bpmn:incoming>Flow_GIS_1_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_GIS_2_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_GIS_Daten_aufbereiten" name="Geodaten aufbereiten">
+      <bpmn:incoming>Flow_GIS_2_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_GIS_3_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sendTask id="Task_GIS_Daten_uebermitteln" name="Flurstücksdaten an Fachverfahren übermitteln">
+      <bpmn:incoming>Flow_GIS_3_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_GIS_4_E</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:endEvent id="EndEvent_GIS" name="Flurstücksdaten übermittelt">
+      <bpmn:incoming>Flow_GIS_4_E</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_GIS_S_1" sourceRef="StartEvent_GIS"               targetRef="Task_GIS_Anfrage_validieren" />
+    <bpmn:sequenceFlow id="Flow_GIS_1_2" sourceRef="Task_GIS_Anfrage_validieren"  targetRef="Task_GIS_Daten_abrufen" />
+    <bpmn:sequenceFlow id="Flow_GIS_2_3" sourceRef="Task_GIS_Daten_abrufen"       targetRef="Task_GIS_Daten_aufbereiten" />
+    <bpmn:sequenceFlow id="Flow_GIS_3_4" sourceRef="Task_GIS_Daten_aufbereiten"   targetRef="Task_GIS_Daten_uebermitteln" />
+    <bpmn:sequenceFlow id="Flow_GIS_4_E" sourceRef="Task_GIS_Daten_uebermitteln"  targetRef="EndEvent_GIS" />
+
+  </bpmn:process>
+
+  <!-- =====================================================
+       POOL 4: DOKUMENTEN-MANAGEMENT-SYSTEM (DMS)
+       Empfaengt den Baugenehmigungsbescheid vom Fachverfahren,
+       indexiert und archiviert das Dokument und stellt die
+       Baugenehmigung abschliessend bereit.
+       ===================================================== -->
+  <bpmn:process id="Process_DMS" name="Dokumenten_Management_System" isExecutable="true">
+
+    <bpmn:startEvent id="StartEvent_DMS" name="Baugenehmigungsbescheid eingegangen">
+      <bpmn:outgoing>Flow_DMS_S_1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_DMS_Start" />
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_DMS_Bescheid_empfangen" name="Bescheid empfangen">
+      <bpmn:incoming>Flow_DMS_S_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_DMS_1_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_DMS_Metadaten_indexieren" name="Metadaten indexieren">
+      <bpmn:incoming>Flow_DMS_1_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_DMS_2_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_DMS_Dokument_archivieren" name="Dokument archivieren">
+      <bpmn:incoming>Flow_DMS_2_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_DMS_3_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_DMS_Baugenehmigung_bereitstellen" name="Baugenehmigung bereitstellen">
+      <bpmn:incoming>Flow_DMS_3_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_DMS_4_E</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_DMS" name="Baugenehmigung archiviert und bereitgestellt">
+      <bpmn:incoming>Flow_DMS_4_E</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_DMS_S_1" sourceRef="StartEvent_DMS"                     targetRef="Task_DMS_Bescheid_empfangen" />
+    <bpmn:sequenceFlow id="Flow_DMS_1_2" sourceRef="Task_DMS_Bescheid_empfangen"        targetRef="Task_DMS_Metadaten_indexieren" />
+    <bpmn:sequenceFlow id="Flow_DMS_2_3" sourceRef="Task_DMS_Metadaten_indexieren"      targetRef="Task_DMS_Dokument_archivieren" />
+    <bpmn:sequenceFlow id="Flow_DMS_3_4" sourceRef="Task_DMS_Dokument_archivieren"      targetRef="Task_DMS_Baugenehmigung_bereitstellen" />
+    <bpmn:sequenceFlow id="Flow_DMS_4_E" sourceRef="Task_DMS_Baugenehmigung_bereitstellen" targetRef="EndEvent_DMS" />
+
+  </bpmn:process>
+
+  <!-- =====================================================
+       BPMN-DI VISUALISIERUNG
+
+       Pool 1 (Portal):        x=160, y=80,   width=1020, height=250 (5 Tasks)
+       Pool 2 (Fachverfahren):  x=160, y=420,  width=1340, height=250 (7 Tasks)
+       Pool 3 (GIS):            x=160, y=760,  width=860,  height=250 (4 Tasks)
+       Pool 4 (DMS):            x=160, y=1100, width=860,  height=250 (4 Tasks)
+
+       Task Y-Koordinaten:
+         Pool 1: Tasks y=140,  Events y=162
+         Pool 2: Tasks y=480,  Events y=502
+         Pool 3: Tasks y=820,  Events y=842
+         Pool 4: Tasks y=1160, Events y=1182
+
+       Pool-Breite: 220 + (Anzahl Tasks x 160)
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_IT_Baugenehmigung">
+    <bpmndi:BPMNPlane id="BPMNPlane_IT_Baugenehmigung" bpmnElement="Collab_IT_Baugenehmigung_anmelden">
+
+      <!-- ===============================
+           POOL 1: BAUANTRAGS-PORTAL
+           x=160, y=80, width=1020, height=250
+           Tasks y=140 | Events y=162
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Portal_di" bpmnElement="Participant_Portal" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1020" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="163" width="20" height="84" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_Portal_di" bpmnElement="StartEvent_Portal">
+        <dc:Bounds x="222" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="190" y="205" width="100" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Portal_Empfangen_di" bpmnElement="Task_Portal_Empfangen">
+        <dc:Bounds x="310" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Portal_Format_validieren_di" bpmnElement="Task_Portal_Format_validieren">
+        <dc:Bounds x="470" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Portal_Vollstaendigkeit_pruefen_di" bpmnElement="Task_Portal_Vollstaendigkeit_pruefen">
+        <dc:Bounds x="630" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Portal_Unterlagen_speichern_di" bpmnElement="Task_Portal_Unterlagen_speichern">
+        <dc:Bounds x="790" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Portal_Daten_uebermitteln_di" bpmnElement="Task_Portal_Daten_uebermitteln">
+        <dc:Bounds x="950" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_Portal_di" bpmnElement="EndEvent_Portal">
+        <dc:Bounds x="1102" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1080" y="205" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_Portal_S_1_di" bpmnElement="Flow_Portal_S_1">
+        <di:waypoint x="258" y="180" />
+        <di:waypoint x="310" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Portal_1_2_di" bpmnElement="Flow_Portal_1_2">
+        <di:waypoint x="410" y="180" />
+        <di:waypoint x="470" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Portal_2_3_di" bpmnElement="Flow_Portal_2_3">
+        <di:waypoint x="570" y="180" />
+        <di:waypoint x="630" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Portal_3_4_di" bpmnElement="Flow_Portal_3_4">
+        <di:waypoint x="730" y="180" />
+        <di:waypoint x="790" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Portal_4_5_di" bpmnElement="Flow_Portal_4_5">
+        <di:waypoint x="890" y="180" />
+        <di:waypoint x="950" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Portal_5_E_di" bpmnElement="Flow_Portal_5_E">
+        <di:waypoint x="1050" y="180" />
+        <di:waypoint x="1102" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===============================
+           POOL 2: FACHVERFAHREN BAUAUFSICHT
+           x=160, y=420, width=1340, height=250
+           Tasks y=480 | Events y=502
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_Fachverfahren_di" bpmnElement="Participant_Fachverfahren" isHorizontal="true">
+        <dc:Bounds x="160" y="420" width="1340" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="503" width="20" height="84" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_Fachverfahren_di" bpmnElement="StartEvent_Fachverfahren">
+        <dc:Bounds x="222" y="502" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="196" y="545" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_FV_Antragsdaten_validieren_di" bpmnElement="Task_FV_Antragsdaten_validieren">
+        <dc:Bounds x="310" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_FV_Flurstuecksdaten_anfordern_di" bpmnElement="Task_FV_Flurstuecksdaten_anfordern">
+        <dc:Bounds x="470" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_FV_Flurstuecksdaten_uebernehmen_di" bpmnElement="Task_FV_Flurstuecksdaten_uebernehmen">
+        <dc:Bounds x="630" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_FV_Bebauungsplan_pruefen_di" bpmnElement="Task_FV_Bebauungsplan_pruefen">
+        <dc:Bounds x="790" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_FV_Gebuehr_berechnen_di" bpmnElement="Task_FV_Gebuehr_berechnen">
+        <dc:Bounds x="950" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_FV_Bescheid_generieren_di" bpmnElement="Task_FV_Bescheid_generieren">
+        <dc:Bounds x="1110" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_FV_Bescheid_uebermitteln_di" bpmnElement="Task_FV_Bescheid_uebermitteln">
+        <dc:Bounds x="1270" y="480" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_Fachverfahren_di" bpmnElement="EndEvent_Fachverfahren">
+        <dc:Bounds x="1422" y="502" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1400" y="545" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_FV_S_1_di" bpmnElement="Flow_FV_S_1">
+        <di:waypoint x="258" y="520" />
+        <di:waypoint x="310" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_FV_1_2_di" bpmnElement="Flow_FV_1_2">
+        <di:waypoint x="410" y="520" />
+        <di:waypoint x="470" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_FV_2_3_di" bpmnElement="Flow_FV_2_3">
+        <di:waypoint x="570" y="520" />
+        <di:waypoint x="630" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_FV_3_4_di" bpmnElement="Flow_FV_3_4">
+        <di:waypoint x="730" y="520" />
+        <di:waypoint x="790" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_FV_4_5_di" bpmnElement="Flow_FV_4_5">
+        <di:waypoint x="890" y="520" />
+        <di:waypoint x="950" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_FV_5_6_di" bpmnElement="Flow_FV_5_6">
+        <di:waypoint x="1050" y="520" />
+        <di:waypoint x="1110" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_FV_6_7_di" bpmnElement="Flow_FV_6_7">
+        <di:waypoint x="1210" y="520" />
+        <di:waypoint x="1270" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_FV_7_E_di" bpmnElement="Flow_FV_7_E">
+        <di:waypoint x="1370" y="520" />
+        <di:waypoint x="1422" y="520" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===============================
+           POOL 3: LIEGENSCHAFTSKATASTER / GIS
+           x=160, y=760, width=860, height=250
+           Tasks y=820 | Events y=842
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_GIS_di" bpmnElement="Participant_GIS" isHorizontal="true">
+        <dc:Bounds x="160" y="760" width="860" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="843" width="20" height="84" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_GIS_di" bpmnElement="StartEvent_GIS">
+        <dc:Bounds x="222" y="842" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="198" y="885" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_GIS_Anfrage_validieren_di" bpmnElement="Task_GIS_Anfrage_validieren">
+        <dc:Bounds x="310" y="820" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_GIS_Daten_abrufen_di" bpmnElement="Task_GIS_Daten_abrufen">
+        <dc:Bounds x="470" y="820" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_GIS_Daten_aufbereiten_di" bpmnElement="Task_GIS_Daten_aufbereiten">
+        <dc:Bounds x="630" y="820" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_GIS_Daten_uebermitteln_di" bpmnElement="Task_GIS_Daten_uebermitteln">
+        <dc:Bounds x="790" y="820" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_GIS_di" bpmnElement="EndEvent_GIS">
+        <dc:Bounds x="942" y="842" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="918" y="885" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_GIS_S_1_di" bpmnElement="Flow_GIS_S_1">
+        <di:waypoint x="258" y="860" />
+        <di:waypoint x="310" y="860" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_GIS_1_2_di" bpmnElement="Flow_GIS_1_2">
+        <di:waypoint x="410" y="860" />
+        <di:waypoint x="470" y="860" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_GIS_2_3_di" bpmnElement="Flow_GIS_2_3">
+        <di:waypoint x="570" y="860" />
+        <di:waypoint x="630" y="860" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_GIS_3_4_di" bpmnElement="Flow_GIS_3_4">
+        <di:waypoint x="730" y="860" />
+        <di:waypoint x="790" y="860" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_GIS_4_E_di" bpmnElement="Flow_GIS_4_E">
+        <di:waypoint x="890" y="860" />
+        <di:waypoint x="942" y="860" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===============================
+           POOL 4: DOKUMENTEN-MANAGEMENT-SYSTEM (DMS)
+           x=160, y=1100, width=860, height=250
+           Tasks y=1160 | Events y=1182
+           =============================== -->
+      <bpmndi:BPMNShape id="Participant_DMS_di" bpmnElement="Participant_DMS" isHorizontal="true">
+        <dc:Bounds x="160" y="1100" width="860" height="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="1183" width="20" height="84" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_DMS_di" bpmnElement="StartEvent_DMS">
+        <dc:Bounds x="222" y="1182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="192" y="1225" width="96" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_DMS_Bescheid_empfangen_di" bpmnElement="Task_DMS_Bescheid_empfangen">
+        <dc:Bounds x="310" y="1160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_DMS_Metadaten_indexieren_di" bpmnElement="Task_DMS_Metadaten_indexieren">
+        <dc:Bounds x="470" y="1160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_DMS_Dokument_archivieren_di" bpmnElement="Task_DMS_Dokument_archivieren">
+        <dc:Bounds x="630" y="1160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_DMS_Baugenehmigung_bereitstellen_di" bpmnElement="Task_DMS_Baugenehmigung_bereitstellen">
+        <dc:Bounds x="790" y="1160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_DMS_di" bpmnElement="EndEvent_DMS">
+        <dc:Bounds x="942" y="1182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="900" y="1225" width="120" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_DMS_S_1_di" bpmnElement="Flow_DMS_S_1">
+        <di:waypoint x="258" y="1200" />
+        <di:waypoint x="310" y="1200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_DMS_1_2_di" bpmnElement="Flow_DMS_1_2">
+        <di:waypoint x="410" y="1200" />
+        <di:waypoint x="470" y="1200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_DMS_2_3_di" bpmnElement="Flow_DMS_2_3">
+        <di:waypoint x="570" y="1200" />
+        <di:waypoint x="630" y="1200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_DMS_3_4_di" bpmnElement="Flow_DMS_3_4">
+        <di:waypoint x="730" y="1200" />
+        <di:waypoint x="790" y="1200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_DMS_4_E_di" bpmnElement="Flow_DMS_4_E">
+        <di:waypoint x="890" y="1200" />
+        <di:waypoint x="942" y="1200" />
+      </bpmndi:BPMNEdge>
+
+      <!-- ===============================
+           MESSAGE FLOWS
+           =============================== -->
+
+      <!-- MsgFlow 1: Portal Task 5 -> StartEvent Fachverfahren -->
+      <bpmndi:BPMNEdge id="MsgFlow_Portal_FV_di" bpmnElement="MsgFlow_Portal_FV">
+        <di:waypoint x="1000" y="220" />
+        <di:waypoint x="1000" y="375" />
+        <di:waypoint x="240"  y="375" />
+        <di:waypoint x="240"  y="502" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="600" y="357" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- MsgFlow 2: Fachverfahren Task 2 -> StartEvent GIS -->
+      <bpmndi:BPMNEdge id="MsgFlow_FV_GIS_Anfrage_di" bpmnElement="MsgFlow_FV_GIS_Anfrage">
+        <di:waypoint x="520" y="560" />
+        <di:waypoint x="520" y="715" />
+        <di:waypoint x="240" y="715" />
+        <di:waypoint x="240" y="842" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="360" y="697" width="100" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- MsgFlow 3: GIS Task 4 -> Fachverfahren Task 3 (Flurstuecksdaten uebernehmen) -->
+      <bpmndi:BPMNEdge id="MsgFlow_GIS_FV_Antwort_di" bpmnElement="MsgFlow_GIS_FV_Antwort">
+        <di:waypoint x="840" y="820" />
+        <di:waypoint x="840" y="715" />
+        <di:waypoint x="680" y="715" />
+        <di:waypoint x="680" y="560" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="740" y="697" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <!-- MsgFlow 4: Fachverfahren Task 7 -> StartEvent DMS -->
+      <bpmndi:BPMNEdge id="MsgFlow_FV_DMS_di" bpmnElement="MsgFlow_FV_DMS">
+        <di:waypoint x="1320" y="560" />
+        <di:waypoint x="1320" y="1055" />
+        <di:waypoint x="240"  y="1055" />
+        <di:waypoint x="240"  y="1182" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="760" y="1037" width="130" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>
