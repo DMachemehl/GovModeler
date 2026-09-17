@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="utf-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:adonis="http://www.boc-group.com"
+             xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="definition__itsic_01"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd"
+             targetNamespace="http://www.boc-group.com">
+
+  <!-- =====================================================
+       COLLABORATION - IT-Sicherheitsvorfall bearbeiten
+       2-Pool-Kollaboration: Kunde (Schule), Organisation (Service Desk,
+       IT-Sicherheitskoordinatoren, IT-Dienstleister)
+       ===================================================== -->
+  <collaboration id="Collaboration_itsic_01"
+                 name="IT-Sicherheitsvorfall bearbeiten"
+                 isClosed="false">
+
+    <participant processRef="process_kunde_itsic"
+                 name="Kunde"
+                 id="_kunde_participant_itsic"/>
+    <participant processRef="process_org_itsic"
+                 name="Organisation"
+                 id="_org_participant_itsic"/>
+
+    <!-- Message Flows -->
+    <!-- Kunde -> Organisation: Vorfallmeldung -->
+    <messageFlow id="_msgflow_k_o_start_itsic"
+                 name="Vorfallmeldung"
+                 sourceRef="_kunde_task1_itsic"
+                 targetRef="_org_start_itsic"/>
+
+    <!-- Organisation -> Kunde: Freigabe zur Anzeigenerstattung -->
+    <messageFlow id="_msgflow_o_k_freigabe_itsic"
+                 name="Freigabe zur Anzeigenerstattung"
+                 sourceRef="_org_task5_itsic"
+                 targetRef="_kunde_catch1_itsic"/>
+
+    <!-- Organisation -> Kunde: Wiederinbetriebnahme bestaetigt -->
+    <messageFlow id="_msgflow_o_k_wiederinbetriebnahme_itsic"
+                 name="Wiederinbetriebnahme bestaetigt"
+                 sourceRef="_org_task10_itsic"
+                 targetRef="_kunde_catch2_itsic"/>
+
+  </collaboration>
+
+  <!-- =====================================================
+       PROZESS: Kunde (Schule)
+       ===================================================== -->
+  <process name="Kunde"
+           id="process_kunde_itsic"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_kunde_itsic">
+      <lane name="Schule" id="_kunde_lane_itsic">
+        <flowNodeRef>_kunde_start_itsic</flowNodeRef>
+        <flowNodeRef>_kunde_task1_itsic</flowNodeRef>
+        <flowNodeRef>_kunde_task2_itsic</flowNodeRef>
+        <flowNodeRef>_kunde_catch1_itsic</flowNodeRef>
+        <flowNodeRef>_kunde_task3_itsic</flowNodeRef>
+        <flowNodeRef>_kunde_task4_itsic</flowNodeRef>
+        <flowNodeRef>_kunde_task5_itsic</flowNodeRef>
+        <flowNodeRef>_kunde_catch2_itsic</flowNodeRef>
+        <flowNodeRef>_kunde_end_itsic</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <startEvent name="IT-Sicherheitsvorfall festgestellt" id="_kunde_start_itsic">
+      <outgoing>_kunde_flow1_itsic</outgoing>
+    </startEvent>
+
+    <task name="Vorfall melden" id="_kunde_task1_itsic" isForCompensation="false">
+      <incoming>_kunde_flow1_itsic</incoming>
+      <outgoing>_kunde_flow2_itsic</outgoing>
+    </task>
+
+    <task name="Sofortmassnahmen vor Ort ergreifen" id="_kunde_task2_itsic" isForCompensation="false">
+      <incoming>_kunde_flow2_itsic</incoming>
+      <outgoing>_kunde_flow3_itsic</outgoing>
+    </task>
+
+    <intermediateCatchEvent name="Freigabe zur Anzeige erhalten" id="_kunde_catch1_itsic">
+      <incoming>_kunde_flow3_itsic</incoming>
+      <outgoing>_kunde_flow4_itsic</outgoing>
+      <messageEventDefinition id="msgEvtDef_kunde_catch1_itsic"/>
+    </intermediateCatchEvent>
+
+    <task name="Anzeige bei der Polizei erstatten" id="_kunde_task3_itsic" isForCompensation="false">
+      <incoming>_kunde_flow4_itsic</incoming>
+      <outgoing>_kunde_flow5_itsic</outgoing>
+    </task>
+
+    <task name="Datenschutzrechtliche Bewertung vornehmen" id="_kunde_task4_itsic" isForCompensation="false">
+      <incoming>_kunde_flow5_itsic</incoming>
+      <outgoing>_kunde_flow6_itsic</outgoing>
+    </task>
+
+    <task name="Interne Kommunikation sicherstellen" id="_kunde_task5_itsic" isForCompensation="false">
+      <incoming>_kunde_flow6_itsic</incoming>
+      <outgoing>_kunde_flow7_itsic</outgoing>
+    </task>
+
+    <intermediateCatchEvent name="Wiederinbetriebnahme bestaetigt erhalten" id="_kunde_catch2_itsic">
+      <incoming>_kunde_flow7_itsic</incoming>
+      <outgoing>_kunde_flow8_itsic</outgoing>
+      <messageEventDefinition id="msgEvtDef_kunde_catch2_itsic"/>
+    </intermediateCatchEvent>
+
+    <endEvent name="IT-Sicherheitsvorfall bewaeltigt" id="_kunde_end_itsic">
+      <incoming>_kunde_flow8_itsic</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows -->
+    <sequenceFlow sourceRef="_kunde_start_itsic" targetRef="_kunde_task1_itsic" id="_kunde_flow1_itsic"/>
+    <sequenceFlow sourceRef="_kunde_task1_itsic" targetRef="_kunde_task2_itsic" id="_kunde_flow2_itsic"/>
+    <sequenceFlow sourceRef="_kunde_task2_itsic" targetRef="_kunde_catch1_itsic" id="_kunde_flow3_itsic"/>
+    <sequenceFlow sourceRef="_kunde_catch1_itsic" targetRef="_kunde_task3_itsic" id="_kunde_flow4_itsic"/>
+    <sequenceFlow sourceRef="_kunde_task3_itsic" targetRef="_kunde_task4_itsic" id="_kunde_flow5_itsic"/>
+    <sequenceFlow sourceRef="_kunde_task4_itsic" targetRef="_kunde_task5_itsic" id="_kunde_flow6_itsic"/>
+    <sequenceFlow sourceRef="_kunde_task5_itsic" targetRef="_kunde_catch2_itsic" id="_kunde_flow7_itsic"/>
+    <sequenceFlow sourceRef="_kunde_catch2_itsic" targetRef="_kunde_end_itsic" id="_kunde_flow8_itsic"/>
+
+  </process>
+
+  <!-- =====================================================
+       PROZESS: Organisation (Service Desk, IT-Sicherheitskoordinatoren,
+       IT-Dienstleister)
+       ===================================================== -->
+  <process name="Organisation"
+           id="process_org_itsic"
+           isExecutable="false"
+           isClosed="false"
+           processType="None">
+
+    <laneSet id="laneSet_org_itsic">
+      <lane name="Service Desk (40-4.3)" id="_org_lane_servicedesk_itsic">
+        <flowNodeRef>_org_start_itsic</flowNodeRef>
+        <flowNodeRef>_org_task1_itsic</flowNodeRef>
+      </lane>
+      <lane name="IT-Sicherheitskoordinatoren (40-4.1)" id="_org_lane_siko_itsic">
+        <flowNodeRef>_org_task2_itsic</flowNodeRef>
+        <flowNodeRef>_org_task3_itsic</flowNodeRef>
+        <flowNodeRef>_org_task5_itsic</flowNodeRef>
+        <flowNodeRef>_org_task9_itsic</flowNodeRef>
+        <flowNodeRef>_org_task12_itsic</flowNodeRef>
+        <flowNodeRef>_org_end_itsic</flowNodeRef>
+      </lane>
+      <lane name="IT-Dienstleister" id="_org_lane_dienstleister_itsic">
+        <flowNodeRef>_org_task4_itsic</flowNodeRef>
+        <flowNodeRef>_org_task6_itsic</flowNodeRef>
+        <flowNodeRef>_org_task7_itsic</flowNodeRef>
+        <flowNodeRef>_org_task8_itsic</flowNodeRef>
+        <flowNodeRef>_org_task10_itsic</flowNodeRef>
+        <flowNodeRef>_org_task11_itsic</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <startEvent name="Vorfallmeldung eingegangen" id="_org_start_itsic">
+      <outgoing>_org_flow1_itsic</outgoing>
+      <messageEventDefinition id="msgEvtDef_org_start_itsic"/>
+    </startEvent>
+
+    <task name="Vorfall entgegennehmen und weiterleiten" id="_org_task1_itsic" isForCompensation="false">
+      <incoming>_org_flow1_itsic</incoming>
+      <outgoing>_org_flow2_itsic</outgoing>
+    </task>
+
+    <task name="Erste Bewertung durchfuehren" id="_org_task2_itsic" isForCompensation="false">
+      <incoming>_org_flow2_itsic</incoming>
+      <outgoing>_org_flow3_itsic</outgoing>
+    </task>
+
+    <task name="Technische Isolierung mit IT-Dienstleister abstimmen" id="_org_task3_itsic" isForCompensation="false">
+      <incoming>_org_flow3_itsic</incoming>
+      <outgoing>_org_flow4_itsic</outgoing>
+    </task>
+
+    <task name="Systeme technisch isolieren und sichern" id="_org_task4_itsic" isForCompensation="false">
+      <incoming>_org_flow4_itsic</incoming>
+      <outgoing>_org_flow5_itsic</outgoing>
+    </task>
+
+    <task name="Freigabe zur Anzeigenerstattung erteilen" id="_org_task5_itsic" isForCompensation="false">
+      <incoming>_org_flow5_itsic</incoming>
+      <outgoing>_org_flow6_itsic</outgoing>
+    </task>
+
+    <task name="Forensische Untersuchung durchfuehren" id="_org_task6_itsic" isForCompensation="false">
+      <incoming>_org_flow6_itsic</incoming>
+      <outgoing>_org_flow7_itsic</outgoing>
+    </task>
+
+    <task name="Backup-Wiederherstellung durchfuehren" id="_org_task7_itsic" isForCompensation="false">
+      <incoming>_org_flow7_itsic</incoming>
+      <outgoing>_org_flow8_itsic</outgoing>
+    </task>
+
+    <task name="Systeme neu aufsetzen" id="_org_task8_itsic" isForCompensation="false">
+      <incoming>_org_flow8_itsic</incoming>
+      <outgoing>_org_flow9_itsic</outgoing>
+    </task>
+
+    <task name="Freigabe zur Wiederinbetriebnahme erteilen" id="_org_task9_itsic" isForCompensation="false">
+      <incoming>_org_flow9_itsic</incoming>
+      <outgoing>_org_flow10_itsic</outgoing>
+    </task>
+
+    <task name="Wiederinbetriebnahme durchfuehren und Funktionstest ausfuehren" id="_org_task10_itsic" isForCompensation="false">
+      <incoming>_org_flow10_itsic</incoming>
+      <outgoing>_org_flow11_itsic</outgoing>
+    </task>
+
+    <task name="Abschlussbericht erstellen" id="_org_task11_itsic" isForCompensation="false">
+      <incoming>_org_flow11_itsic</incoming>
+      <outgoing>_org_flow12_itsic</outgoing>
+    </task>
+
+    <task name="Nachbereitung durchfuehren" id="_org_task12_itsic" isForCompensation="false">
+      <incoming>_org_flow12_itsic</incoming>
+      <outgoing>_org_flow13_itsic</outgoing>
+    </task>
+
+    <endEvent name="IT-Sicherheitsvorfall nachbereitet" id="_org_end_itsic">
+      <incoming>_org_flow13_itsic</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows -->
+    <sequenceFlow sourceRef="_org_start_itsic" targetRef="_org_task1_itsic" id="_org_flow1_itsic"/>
+    <sequenceFlow sourceRef="_org_task1_itsic" targetRef="_org_task2_itsic" id="_org_flow2_itsic"/>
+    <sequenceFlow sourceRef="_org_task2_itsic" targetRef="_org_task3_itsic" id="_org_flow3_itsic"/>
+    <sequenceFlow sourceRef="_org_task3_itsic" targetRef="_org_task4_itsic" id="_org_flow4_itsic"/>
+    <sequenceFlow sourceRef="_org_task4_itsic" targetRef="_org_task5_itsic" id="_org_flow5_itsic"/>
+    <sequenceFlow sourceRef="_org_task5_itsic" targetRef="_org_task6_itsic" id="_org_flow6_itsic"/>
+    <sequenceFlow sourceRef="_org_task6_itsic" targetRef="_org_task7_itsic" id="_org_flow7_itsic"/>
+    <sequenceFlow sourceRef="_org_task7_itsic" targetRef="_org_task8_itsic" id="_org_flow8_itsic"/>
+    <sequenceFlow sourceRef="_org_task8_itsic" targetRef="_org_task9_itsic" id="_org_flow9_itsic"/>
+    <sequenceFlow sourceRef="_org_task9_itsic" targetRef="_org_task10_itsic" id="_org_flow10_itsic"/>
+    <sequenceFlow sourceRef="_org_task10_itsic" targetRef="_org_task11_itsic" id="_org_flow11_itsic"/>
+    <sequenceFlow sourceRef="_org_task11_itsic" targetRef="_org_task12_itsic" id="_org_flow12_itsic"/>
+    <sequenceFlow sourceRef="_org_task12_itsic" targetRef="_org_end_itsic" id="_org_flow13_itsic"/>
+
+  </process>
+
+  <!-- =====================================================
+       BPMN-DI: Diagramm-Visualisierung
+       Kunde-Pool (y=0, Hoehe=380) oben, Organisation-Pool (y=460,
+       Hoehe=660, 3 Lanes je 220px) unten.
+       ===================================================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane bpmnElement="Collaboration_itsic_01">
+
+      <!-- ===== POOL: Kunde (Schule) ===== -->
+      <bpmndi:BPMNShape bpmnElement="_kunde_participant_itsic" isHorizontal="true">
+        <omgdc:Bounds x="10" y="0" width="3320" height="380"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_kunde_lane_itsic" isHorizontal="true">
+        <omgdc:Bounds x="40" y="0" width="3290" height="380"/>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape bpmnElement="_kunde_start_itsic">
+        <omgdc:Bounds x="80" y="172" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_kunde_task1_itsic">
+        <omgdc:Bounds x="310" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_kunde_task2_itsic">
+        <omgdc:Bounds x="540" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_kunde_catch1_itsic">
+        <omgdc:Bounds x="770" y="172" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_kunde_task3_itsic">
+        <omgdc:Bounds x="1000" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_kunde_task4_itsic">
+        <omgdc:Bounds x="1230" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_kunde_task5_itsic">
+        <omgdc:Bounds x="1460" y="152" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_kunde_catch2_itsic">
+        <omgdc:Bounds x="1690" y="172" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_kunde_end_itsic">
+        <omgdc:Bounds x="1920" y="172" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow1_itsic">
+        <omgdi:waypoint x="116" y="190"/>
+        <omgdi:waypoint x="310" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow2_itsic">
+        <omgdi:waypoint x="461" y="190"/>
+        <omgdi:waypoint x="540" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow3_itsic">
+        <omgdi:waypoint x="691" y="190"/>
+        <omgdi:waypoint x="770" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow4_itsic">
+        <omgdi:waypoint x="806" y="190"/>
+        <omgdi:waypoint x="1000" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow5_itsic">
+        <omgdi:waypoint x="1151" y="190"/>
+        <omgdi:waypoint x="1230" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow6_itsic">
+        <omgdi:waypoint x="1381" y="190"/>
+        <omgdi:waypoint x="1460" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow7_itsic">
+        <omgdi:waypoint x="1611" y="190"/>
+        <omgdi:waypoint x="1690" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_kunde_flow8_itsic">
+        <omgdi:waypoint x="1726" y="190"/>
+        <omgdi:waypoint x="1920" y="190"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== POOL: Organisation ===== -->
+      <bpmndi:BPMNShape bpmnElement="_org_participant_itsic" isHorizontal="true">
+        <omgdc:Bounds x="10" y="460" width="3320" height="660"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_org_lane_servicedesk_itsic" isHorizontal="true">
+        <omgdc:Bounds x="40" y="460" width="3290" height="220"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_org_lane_siko_itsic" isHorizontal="true">
+        <omgdc:Bounds x="40" y="680" width="3290" height="220"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_org_lane_dienstleister_itsic" isHorizontal="true">
+        <omgdc:Bounds x="40" y="900" width="3290" height="220"/>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape bpmnElement="_org_start_itsic">
+        <omgdc:Bounds x="80" y="552" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_org_task1_itsic">
+        <omgdc:Bounds x="310" y="532" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_org_task2_itsic">
+        <omgdc:Bounds x="540" y="752" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_org_task3_itsic">
+        <omgdc:Bounds x="770" y="752" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_org_task4_itsic">
+        <omgdc:Bounds x="1000" y="972" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_org_task5_itsic">
+        <omgdc:Bounds x="1230" y="752" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_org_task6_itsic">
+        <omgdc:Bounds x="1460" y="972" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_org_task7_itsic">
+        <omgdc:Bounds x="1690" y="972" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_org_task8_itsic">
+        <omgdc:Bounds x="1920" y="972" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_org_task9_itsic">
+        <omgdc:Bounds x="2150" y="752" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_org_task10_itsic">
+        <omgdc:Bounds x="2380" y="972" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_org_task11_itsic">
+        <omgdc:Bounds x="2610" y="972" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_org_task12_itsic">
+        <omgdc:Bounds x="2840" y="752" width="151" height="76"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_org_end_itsic">
+        <omgdc:Bounds x="3070" y="772" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge bpmnElement="_org_flow1_itsic">
+        <omgdi:waypoint x="116" y="570"/>
+        <omgdi:waypoint x="310" y="570"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow2_itsic">
+        <omgdi:waypoint x="461" y="570"/>
+        <omgdi:waypoint x="500" y="570"/>
+        <omgdi:waypoint x="500" y="790"/>
+        <omgdi:waypoint x="540" y="790"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow3_itsic">
+        <omgdi:waypoint x="691" y="790"/>
+        <omgdi:waypoint x="770" y="790"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow4_itsic">
+        <omgdi:waypoint x="921" y="790"/>
+        <omgdi:waypoint x="960" y="790"/>
+        <omgdi:waypoint x="960" y="1010"/>
+        <omgdi:waypoint x="1000" y="1010"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow5_itsic">
+        <omgdi:waypoint x="1151" y="1010"/>
+        <omgdi:waypoint x="1190" y="1010"/>
+        <omgdi:waypoint x="1190" y="790"/>
+        <omgdi:waypoint x="1230" y="790"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow6_itsic">
+        <omgdi:waypoint x="1381" y="790"/>
+        <omgdi:waypoint x="1420" y="790"/>
+        <omgdi:waypoint x="1420" y="1010"/>
+        <omgdi:waypoint x="1460" y="1010"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow7_itsic">
+        <omgdi:waypoint x="1611" y="1010"/>
+        <omgdi:waypoint x="1690" y="1010"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow8_itsic">
+        <omgdi:waypoint x="1841" y="1010"/>
+        <omgdi:waypoint x="1920" y="1010"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow9_itsic">
+        <omgdi:waypoint x="2071" y="1010"/>
+        <omgdi:waypoint x="2110" y="1010"/>
+        <omgdi:waypoint x="2110" y="790"/>
+        <omgdi:waypoint x="2150" y="790"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow10_itsic">
+        <omgdi:waypoint x="2301" y="790"/>
+        <omgdi:waypoint x="2340" y="790"/>
+        <omgdi:waypoint x="2340" y="1010"/>
+        <omgdi:waypoint x="2380" y="1010"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow11_itsic">
+        <omgdi:waypoint x="2531" y="1010"/>
+        <omgdi:waypoint x="2610" y="1010"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow12_itsic">
+        <omgdi:waypoint x="2761" y="1010"/>
+        <omgdi:waypoint x="2800" y="1010"/>
+        <omgdi:waypoint x="2800" y="790"/>
+        <omgdi:waypoint x="2840" y="790"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_org_flow13_itsic">
+        <omgdi:waypoint x="2991" y="790"/>
+        <omgdi:waypoint x="3070" y="790"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- ===== MESSAGE FLOWS ===== -->
+      <!-- Kunde -> Organisation: Vorfallmeldung -->
+      <bpmndi:BPMNEdge bpmnElement="_msgflow_k_o_start_itsic">
+        <omgdi:waypoint x="385" y="228"/>
+        <omgdi:waypoint x="385" y="400"/>
+        <omgdi:waypoint x="98" y="400"/>
+        <omgdi:waypoint x="98" y="552"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- Organisation -> Kunde: Freigabe zur Anzeigenerstattung -->
+      <bpmndi:BPMNEdge bpmnElement="_msgflow_o_k_freigabe_itsic">
+        <omgdi:waypoint x="1305" y="752"/>
+        <omgdi:waypoint x="1305" y="400"/>
+        <omgdi:waypoint x="788" y="400"/>
+        <omgdi:waypoint x="788" y="208"/>
+      </bpmndi:BPMNEdge>
+
+      <!-- Organisation -> Kunde: Wiederinbetriebnahme bestaetigt -->
+      <bpmndi:BPMNEdge bpmnElement="_msgflow_o_k_wiederinbetriebnahme_itsic">
+        <omgdi:waypoint x="2455" y="972"/>
+        <omgdi:waypoint x="2455" y="400"/>
+        <omgdi:waypoint x="1708" y="400"/>
+        <omgdi:waypoint x="1708" y="208"/>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</definitions>
