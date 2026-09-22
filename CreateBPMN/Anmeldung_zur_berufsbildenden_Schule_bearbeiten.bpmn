@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:modeler="http://camunda.org/schema/modeler/1.0"
+  targetNamespace="http://example.com/bpmn"
+  exporter="GitHub-Copilot-GovModeler"
+  exporterVersion="2.0"
+  modeler:executionPlatform="Camunda Platform"
+  modeler:executionPlatformVersion="7.20.0">
+  <bpmn:collaboration id="Collab_Anmeldung_zur_berufsbildenden_Schule_bearbeiten">
+    <bpmn:participant id="Participant_Buerger" name="Buerger" processRef="Process_Buerger" />
+    <bpmn:participant id="Participant_IT" name="IT" processRef="Process_IT" />
+    <bpmn:participant id="Participant_Behoerde" name="Schulverwaltungsamt" processRef="Process_Behoerde" />
+    <bpmn:messageFlow id="MsgFlow_Antrag" name="Anmeldung" sourceRef="Task_Anmeldung_einreichen" targetRef="StartEvent_Antrag_eingegangen" />
+    <bpmn:messageFlow id="MsgFlow_Anmeldedaten" name="Anmeldedaten" sourceRef="Task_Anmeldedaten_uebermitteln" targetRef="StartEvent_Anmeldedaten_erhalten" />
+    <bpmn:messageFlow id="MsgFlow_Pruefergebnis" name="Pruefergebnis" sourceRef="Task_Pruefergebnis_bereitstellen" targetRef="Event_Pruefergebnis_erhalten" />
+    <bpmn:messageFlow id="MsgFlow_Bescheid" name="Bescheid" sourceRef="Task_Bescheid_erstellen" targetRef="Event_Bescheid_erhalten" />
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_Buerger" name="Anmeldung_zur_berufsbildenden_Schule_bearbeiten_Buerger" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Buerger" name="Anmeldebedarf festgestellt">
+      <bpmn:outgoing>Flow_Buerger_Start_Ausfuellen</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_Anmeldeformular_ausfuellen" name="Anmeldeformular ausfuellen">
+      <bpmn:incoming>Flow_Buerger_Start_Ausfuellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Ausfuellen_Einreichen</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Anmeldung_einreichen" name="Anmeldung einreichen">
+      <bpmn:incoming>Flow_Buerger_Ausfuellen_Einreichen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Einreichen_Bescheid</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:intermediateCatchEvent id="Event_Bescheid_erhalten" name="Bescheid erhalten">
+      <bpmn:incoming>Flow_Buerger_Einreichen_Bescheid</bpmn:incoming>
+      <bpmn:outgoing>Flow_Buerger_Bescheid_Ende</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Bescheid" messageRef="Message_Bescheid" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="EndEvent_Buerger" name="Anmeldung bearbeitet">
+      <bpmn:incoming>Flow_Buerger_Bescheid_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Buerger_Start_Ausfuellen" sourceRef="StartEvent_Buerger" targetRef="Task_Anmeldeformular_ausfuellen" />
+    <bpmn:sequenceFlow id="Flow_Buerger_Ausfuellen_Einreichen" sourceRef="Task_Anmeldeformular_ausfuellen" targetRef="Task_Anmeldung_einreichen" />
+    <bpmn:sequenceFlow id="Flow_Buerger_Einreichen_Bescheid" sourceRef="Task_Anmeldung_einreichen" targetRef="Event_Bescheid_erhalten" />
+    <bpmn:sequenceFlow id="Flow_Buerger_Bescheid_Ende" sourceRef="Event_Bescheid_erhalten" targetRef="EndEvent_Buerger" />
+  </bpmn:process>
+
+  <bpmn:process id="Process_IT" name="Anmeldung_zur_berufsbildenden_Schule_bearbeiten_IT" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Anmeldedaten_erhalten" name="Anmeldedaten erhalten">
+      <bpmn:outgoing>Flow_IT_Start_Erfassen</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_Anmeldedaten_erfassen" name="Anmeldedaten erfassen">
+      <bpmn:incoming>Flow_IT_Start_Erfassen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Erfassen_Vollstaendigkeit</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Vollstaendigkeit_pruefen" name="Vollstaendigkeit pruefen">
+      <bpmn:incoming>Flow_IT_Erfassen_Vollstaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Vollstaendigkeit_Schulplatz</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Schulplatzverfuegbarkeit_pruefen" name="Schulplatzverfuegbarkeit pruefen">
+      <bpmn:incoming>Flow_IT_Vollstaendigkeit_Schulplatz</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Schulplatz_Bereitstellen</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Pruefergebnis_bereitstellen" name="Pruefergebnis bereitstellen">
+      <bpmn:incoming>Flow_IT_Schulplatz_Bereitstellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_IT_Bereitstellen_Ende</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent_IT" name="Pruefergebnis gesendet">
+      <bpmn:incoming>Flow_IT_Bereitstellen_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_IT_Start_Erfassen" sourceRef="StartEvent_Anmeldedaten_erhalten" targetRef="Task_Anmeldedaten_erfassen" />
+    <bpmn:sequenceFlow id="Flow_IT_Erfassen_Vollstaendigkeit" sourceRef="Task_Anmeldedaten_erfassen" targetRef="Task_Vollstaendigkeit_pruefen" />
+    <bpmn:sequenceFlow id="Flow_IT_Vollstaendigkeit_Schulplatz" sourceRef="Task_Vollstaendigkeit_pruefen" targetRef="Task_Schulplatzverfuegbarkeit_pruefen" />
+    <bpmn:sequenceFlow id="Flow_IT_Schulplatz_Bereitstellen" sourceRef="Task_Schulplatzverfuegbarkeit_pruefen" targetRef="Task_Pruefergebnis_bereitstellen" />
+    <bpmn:sequenceFlow id="Flow_IT_Bereitstellen_Ende" sourceRef="Task_Pruefergebnis_bereitstellen" targetRef="EndEvent_IT" />
+  </bpmn:process>
+
+  <bpmn:process id="Process_Behoerde" name="Anmeldung_zur_berufsbildenden_Schule_bearbeiten_Behoerde" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Antrag_eingegangen" name="Anmeldung eingegangen">
+      <bpmn:outgoing>Flow_Behoerde_Start_Zustaendigkeit</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_Zustaendigkeit_pruefen" name="Zustaendigkeit pruefen">
+      <bpmn:incoming>Flow_Behoerde_Start_Zustaendigkeit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Zustaendigkeit_Uebermitteln</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_Anmeldedaten_uebermitteln" name="Anmeldedaten uebermitteln">
+      <bpmn:incoming>Flow_Behoerde_Zustaendigkeit_Uebermitteln</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Uebermitteln_Pruefergebnis</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:intermediateCatchEvent id="Event_Pruefergebnis_erhalten" name="Pruefergebnis erhalten">
+      <bpmn:incoming>Flow_Behoerde_Uebermitteln_Pruefergebnis</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Pruefergebnis_Zuweisen</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDef_Pruefergebnis" messageRef="Message_Pruefergebnis" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:userTask id="Task_Schulplatz_zuweisen" name="Schulplatz zuweisen">
+      <bpmn:incoming>Flow_Behoerde_Pruefergebnis_Zuweisen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Zuweisen_Bescheid</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Bescheid_erstellen" name="Bescheid erstellen">
+      <bpmn:incoming>Flow_Behoerde_Zuweisen_Bescheid</bpmn:incoming>
+      <bpmn:outgoing>Flow_Behoerde_Bescheid_Ende</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_Behoerde" name="Bescheid zugestellt">
+      <bpmn:incoming>Flow_Behoerde_Bescheid_Ende</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Behoerde_Start_Zustaendigkeit" sourceRef="StartEvent_Antrag_eingegangen" targetRef="Task_Zustaendigkeit_pruefen" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Zustaendigkeit_Uebermitteln" sourceRef="Task_Zustaendigkeit_pruefen" targetRef="Task_Anmeldedaten_uebermitteln" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Uebermitteln_Pruefergebnis" sourceRef="Task_Anmeldedaten_uebermitteln" targetRef="Event_Pruefergebnis_erhalten" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Pruefergebnis_Zuweisen" sourceRef="Event_Pruefergebnis_erhalten" targetRef="Task_Schulplatz_zuweisen" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Zuweisen_Bescheid" sourceRef="Task_Schulplatz_zuweisen" targetRef="Task_Bescheid_erstellen" />
+    <bpmn:sequenceFlow id="Flow_Behoerde_Bescheid_Ende" sourceRef="Task_Bescheid_erstellen" targetRef="EndEvent_Behoerde" />
+  </bpmn:process>
+
+  <bpmn:message id="Message_Bescheid" name="Bescheid" />
+  <bpmn:message id="Message_Pruefergebnis" name="Pruefergebnis" />
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Anmeldung_zur_berufsbildenden_Schule_bearbeiten">
+    <bpmndi:BPMNPlane id="BPMNPlane_Anmeldung_zur_berufsbildenden_Schule_bearbeiten" bpmnElement="Collab_Anmeldung_zur_berufsbildenden_Schule_bearbeiten">
+      <bpmndi:BPMNShape id="Participant_Buerger_di" bpmnElement="Participant_Buerger" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="260" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Buerger_di" bpmnElement="StartEvent_Buerger">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Anmeldeformular_ausfuellen_di" bpmnElement="Task_Anmeldeformular_ausfuellen">
+        <dc:Bounds x="310" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Anmeldung_einreichen_di" bpmnElement="Task_Anmeldung_einreichen">
+        <dc:Bounds x="470" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Bescheid_erhalten_di" bpmnElement="Event_Bescheid_erhalten">
+        <dc:Bounds x="630" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Buerger_di" bpmnElement="EndEvent_Buerger">
+        <dc:Bounds x="790" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Start_Ausfuellen_di" bpmnElement="Flow_Buerger_Start_Ausfuellen">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="310" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Ausfuellen_Einreichen_di" bpmnElement="Flow_Buerger_Ausfuellen_Einreichen">
+        <di:waypoint x="410" y="200" />
+        <di:waypoint x="470" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Einreichen_Bescheid_di" bpmnElement="Flow_Buerger_Einreichen_Bescheid">
+        <di:waypoint x="570" y="200" />
+        <di:waypoint x="630" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Buerger_Bescheid_Ende_di" bpmnElement="Flow_Buerger_Bescheid_Ende">
+        <di:waypoint x="666" y="200" />
+        <di:waypoint x="790" y="200" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNShape id="Participant_IT_di" bpmnElement="Participant_IT" isHorizontal="true">
+        <dc:Bounds x="160" y="370" width="1200" height="260" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Anmeldedaten_erhalten_di" bpmnElement="StartEvent_Anmeldedaten_erhalten">
+        <dc:Bounds x="222" y="477" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Anmeldedaten_erfassen_di" bpmnElement="Task_Anmeldedaten_erfassen">
+        <dc:Bounds x="310" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Vollstaendigkeit_pruefen_di" bpmnElement="Task_Vollstaendigkeit_pruefen">
+        <dc:Bounds x="470" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Schulplatzverfuegbarkeit_pruefen_di" bpmnElement="Task_Schulplatzverfuegbarkeit_pruefen">
+        <dc:Bounds x="630" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Pruefergebnis_bereitstellen_di" bpmnElement="Task_Pruefergebnis_bereitstellen">
+        <dc:Bounds x="790" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_IT_di" bpmnElement="EndEvent_IT">
+        <dc:Bounds x="952" y="477" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_IT_Start_Erfassen_di" bpmnElement="Flow_IT_Start_Erfassen">
+        <di:waypoint x="258" y="495" />
+        <di:waypoint x="310" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Erfassen_Vollstaendigkeit_di" bpmnElement="Flow_IT_Erfassen_Vollstaendigkeit">
+        <di:waypoint x="410" y="495" />
+        <di:waypoint x="470" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Vollstaendigkeit_Schulplatz_di" bpmnElement="Flow_IT_Vollstaendigkeit_Schulplatz">
+        <di:waypoint x="570" y="495" />
+        <di:waypoint x="630" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Schulplatz_Bereitstellen_di" bpmnElement="Flow_IT_Schulplatz_Bereitstellen">
+        <di:waypoint x="730" y="495" />
+        <di:waypoint x="790" y="495" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_IT_Bereitstellen_Ende_di" bpmnElement="Flow_IT_Bereitstellen_Ende">
+        <di:waypoint x="890" y="495" />
+        <di:waypoint x="952" y="495" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNShape id="Participant_Behoerde_di" bpmnElement="Participant_Behoerde" isHorizontal="true">
+        <dc:Bounds x="160" y="660" width="1200" height="260" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Antrag_eingegangen_di" bpmnElement="StartEvent_Antrag_eingegangen">
+        <dc:Bounds x="222" y="782" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Zustaendigkeit_pruefen_di" bpmnElement="Task_Zustaendigkeit_pruefen">
+        <dc:Bounds x="310" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Anmeldedaten_uebermitteln_di" bpmnElement="Task_Anmeldedaten_uebermitteln">
+        <dc:Bounds x="470" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Pruefergebnis_erhalten_di" bpmnElement="Event_Pruefergebnis_erhalten">
+        <dc:Bounds x="650" y="782" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Schulplatz_zuweisen_di" bpmnElement="Task_Schulplatz_zuweisen">
+        <dc:Bounds x="790" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Bescheid_erstellen_di" bpmnElement="Task_Bescheid_erstellen">
+        <dc:Bounds x="950" y="760" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Behoerde_di" bpmnElement="EndEvent_Behoerde">
+        <dc:Bounds x="1112" y="782" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Start_Zustaendigkeit_di" bpmnElement="Flow_Behoerde_Start_Zustaendigkeit">
+        <di:waypoint x="258" y="800" />
+        <di:waypoint x="310" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Zustaendigkeit_Uebermitteln_di" bpmnElement="Flow_Behoerde_Zustaendigkeit_Uebermitteln">
+        <di:waypoint x="410" y="800" />
+        <di:waypoint x="470" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Uebermitteln_Pruefergebnis_di" bpmnElement="Flow_Behoerde_Uebermitteln_Pruefergebnis">
+        <di:waypoint x="570" y="800" />
+        <di:waypoint x="650" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Pruefergebnis_Zuweisen_di" bpmnElement="Flow_Behoerde_Pruefergebnis_Zuweisen">
+        <di:waypoint x="686" y="800" />
+        <di:waypoint x="790" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Zuweisen_Bescheid_di" bpmnElement="Flow_Behoerde_Zuweisen_Bescheid">
+        <di:waypoint x="890" y="800" />
+        <di:waypoint x="950" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Behoerde_Bescheid_Ende_di" bpmnElement="Flow_Behoerde_Bescheid_Ende">
+        <di:waypoint x="1050" y="800" />
+        <di:waypoint x="1112" y="800" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="MsgFlow_Antrag_di" bpmnElement="MsgFlow_Antrag">
+        <di:waypoint x="520" y="240" />
+        <di:waypoint x="520" y="620" />
+        <di:waypoint x="240" y="620" />
+        <di:waypoint x="240" y="782" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Anmeldedaten_di" bpmnElement="MsgFlow_Anmeldedaten">
+        <di:waypoint x="520" y="760" />
+        <di:waypoint x="520" y="660" />
+        <di:waypoint x="240" y="660" />
+        <di:waypoint x="240" y="513" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Pruefergebnis_di" bpmnElement="MsgFlow_Pruefergebnis">
+        <di:waypoint x="840" y="535" />
+        <di:waypoint x="840" y="640" />
+        <di:waypoint x="668" y="640" />
+        <di:waypoint x="668" y="782" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MsgFlow_Bescheid_di" bpmnElement="MsgFlow_Bescheid">
+        <di:waypoint x="1000" y="760" />
+        <di:waypoint x="1000" y="620" />
+        <di:waypoint x="648" y="620" />
+        <di:waypoint x="648" y="218" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

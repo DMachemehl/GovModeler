@@ -1,0 +1,353 @@
+{
+  "components": [
+    {
+      "text": "## Reisekostenantrag - Abrechnung einer Dienstreise",
+      "type": "text",
+      "id": "Field_Titel",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "text": "Bitte geben Sie alle Angaben zu Ihrer Dienstreise sowie den entstandenen Kosten vollstaendig an und fuegen Sie die erforderlichen Belege bei.",
+      "type": "text",
+      "id": "Field_Hinweis",
+      "layout": {
+        "row": "Row_0"
+      }
+    },
+    {
+      "label": "Angaben zum Antragsteller",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Antragsteller",
+      "layout": {
+        "row": "Row_1"
+      }
+    },
+    {
+      "label": "Vorname",
+      "type": "textfield",
+      "id": "Field_Vorname",
+      "key": "vorname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Nachname",
+      "type": "textfield",
+      "id": "Field_Nachname",
+      "key": "nachname",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_2",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Personalnummer",
+      "type": "textfield",
+      "id": "Field_Personalnummer",
+      "key": "personalnummer",
+      "validate": {
+        "required": true,
+        "maxLength": 20
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Abteilung / Kostenstelle",
+      "type": "textfield",
+      "id": "Field_Kostenstelle",
+      "key": "kostenstelle",
+      "validate": {
+        "required": true,
+        "maxLength": 50
+      },
+      "layout": {
+        "row": "Row_3",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Angaben zur Dienstreise",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Dienstreise",
+      "layout": {
+        "row": "Row_4"
+      }
+    },
+    {
+      "label": "Reisezweck / Anlass",
+      "type": "textfield",
+      "id": "Field_Reisezweck",
+      "key": "reisezweck",
+      "description": "z.B. Kundentermin, Fortbildung, Konferenz",
+      "validate": {
+        "required": true,
+        "minLength": 3,
+        "maxLength": 150
+      },
+      "layout": {
+        "row": "Row_5",
+        "columns": 12
+      }
+    },
+    {
+      "label": "Reiseziel",
+      "type": "textfield",
+      "id": "Field_Reiseziel",
+      "key": "reiseziel",
+      "validate": {
+        "required": true,
+        "minLength": 2,
+        "maxLength": 100
+      },
+      "layout": {
+        "row": "Row_6",
+        "columns": 12
+      }
+    },
+    {
+      "label": "Reisebeginn",
+      "type": "textfield",
+      "id": "Field_Reisebeginn",
+      "key": "reisebeginn",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_7",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Reiseende",
+      "type": "textfield",
+      "id": "Field_Reiseende",
+      "key": "reiseende",
+      "description": "Format: TT.MM.JJJJ",
+      "validate": {
+        "required": true,
+        "pattern": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[012])\\.(19|20)\\d\\d$"
+      },
+      "layout": {
+        "row": "Row_7",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Reisekosten",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Reisekosten",
+      "layout": {
+        "row": "Row_8"
+      }
+    },
+    {
+      "label": "Fahrtkosten (EUR)",
+      "type": "textfield",
+      "id": "Field_Fahrtkosten",
+      "key": "fahrtkosten",
+      "description": "z.B. 45,50",
+      "validate": {
+        "required": true,
+        "pattern": "^[0-9]+(,[0-9]{2})?$"
+      },
+      "layout": {
+        "row": "Row_9",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Uebernachtungskosten (EUR)",
+      "type": "textfield",
+      "id": "Field_Uebernachtungskosten",
+      "key": "uebernachtungskosten",
+      "description": "z.B. 89,00",
+      "validate": {
+        "required": false,
+        "pattern": "^[0-9]+(,[0-9]{2})?$"
+      },
+      "layout": {
+        "row": "Row_9",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Verpflegungsmehraufwand (EUR)",
+      "type": "textfield",
+      "id": "Field_Verpflegungsmehraufwand",
+      "key": "verpflegungsmehraufwand",
+      "description": "z.B. 28,00",
+      "validate": {
+        "required": false,
+        "pattern": "^[0-9]+(,[0-9]{2})?$"
+      },
+      "layout": {
+        "row": "Row_9",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Sonstige Kosten (EUR)",
+      "type": "textfield",
+      "id": "Field_SonstigeKosten",
+      "key": "sonstigeKosten",
+      "description": "z.B. Parkgebuehren, optional",
+      "validate": {
+        "required": false,
+        "pattern": "^[0-9]+(,[0-9]{2})?$"
+      },
+      "layout": {
+        "row": "Row_10",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Gesamtbetrag (EUR)",
+      "type": "textfield",
+      "id": "Field_Gesamtbetrag",
+      "key": "gesamtbetrag",
+      "validate": {
+        "required": true,
+        "pattern": "^[0-9]+(,[0-9]{2})?$"
+      },
+      "layout": {
+        "row": "Row_10",
+        "columns": 6
+      }
+    },
+    {
+      "label": "Nachweise",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Nachweise",
+      "layout": {
+        "row": "Row_11"
+      }
+    },
+    {
+      "label": "Beigefuegte Belege",
+      "type": "checklist",
+      "id": "Field_Belege",
+      "key": "belege",
+      "values": [
+        {
+          "label": "Fahrkarten / Tickets",
+          "value": "fahrkarten"
+        },
+        {
+          "label": "Hotelrechnung",
+          "value": "hotelrechnung"
+        },
+        {
+          "label": "Tankquittungen / Kilometergeld-Nachweis",
+          "value": "tankquittungen"
+        },
+        {
+          "label": "Sonstige Belege",
+          "value": "sonstige"
+        }
+      ],
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_12"
+      }
+    },
+    {
+      "label": "Bankverbindung fuer Erstattung",
+      "components": [],
+      "showOutline": true,
+      "type": "group",
+      "id": "Field_Group_Bank",
+      "layout": {
+        "row": "Row_13"
+      }
+    },
+    {
+      "label": "IBAN",
+      "type": "textfield",
+      "id": "Field_IBAN",
+      "key": "iban",
+      "description": "Format: DExx xxxx xxxx xxxx xxxx xx",
+      "validate": {
+        "required": true,
+        "pattern": "^DE[0-9]{2}[0-9]{4}[0-9]{4}[0-9]{4}[0-9]{4}[0-9]{2}$|^DE[0-9]{2} [0-9]{4} [0-9]{4} [0-9]{4} [0-9]{4} [0-9]{2}$"
+      },
+      "layout": {
+        "row": "Row_14",
+        "columns": 8
+      }
+    },
+    {
+      "label": "BIC",
+      "type": "textfield",
+      "id": "Field_BIC",
+      "key": "bic",
+      "description": "Optional",
+      "validate": {
+        "required": false,
+        "maxLength": 11
+      },
+      "layout": {
+        "row": "Row_14",
+        "columns": 4
+      }
+    },
+    {
+      "label": "Ich bestaetige die Richtigkeit und Vollstaendigkeit der Angaben.",
+      "type": "checkbox",
+      "id": "Field_Bestaetigung",
+      "key": "richtigkeitBestaetigt",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_15"
+      }
+    },
+    {
+      "label": "Reisekostenantrag einreichen",
+      "type": "button",
+      "id": "Field_Submit",
+      "action": "submit",
+      "layout": {
+        "row": "Row_16"
+      }
+    }
+  ],
+  "type": "default",
+  "id": "Reisekostenantrag_einreichen",
+  "exporter": {
+    "name": "GitHub-Copilot-GovModeler",
+    "version": "2.0"
+  },
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0",
+  "schemaVersion": 9
+}
