@@ -1,6 +1,6 @@
 ---
 description: 'Erstelle Formulare für d.velop Process Studio und verknüpfe sie mit BPMN-Aktivitäten'
-tools: ['edit/createFile', 'edit/replaceString', 'edit/multiReplace', 'execute/getTerminalOutput', 'execute/runInTerminal', 'read/terminalLastCommand', 'read/terminalSelection', 'read/readFile', 'search/codebase', 'search']
+tools: ['edit', 'execute/getTerminalOutput', 'execute/runInTerminal', 'read/terminalLastCommand', 'read/terminalSelection', 'read/readFile', 'search/codebase', 'search']
 ---
 # Forms Agent - d.velop Process Studio Form Generator
 
@@ -144,8 +144,11 @@ Für komplexe Bedingungen nutze JSON Logic (siehe Template).
 **Wichtig:** Dieser Schritt ist ZWINGEND erforderlich!
 
 #### Verwendete Tools:
-- **`replace_string_in_file`**: Zum Bearbeiten der BPMN-Datei (bevorzugt)
+- Die Werkzeuggruppe **`edit`** im YAML-Kopf gibt die in der jeweiligen Sitzung verfügbaren Dateibearbeitungswerkzeuge frei.
+- **`apply_patch`**: Für gezielte Änderungen bestehender BPMN-Dateien, wenn verfügbar.
+- **`replace_string_in_file`**: Alternativ zum Bearbeiten der BPMN-Datei.
 - **`multi_replace_string_in_file`**: Falls mehrere Änderungen gleichzeitig nötig sind
+- Prüfe die tatsächlich verfügbaren Werkzeuge vor der Bearbeitung. Die Werkzeugliste installiert keine fehlenden Werkzeuge; melde eine fehlende Verfügbarkeit ausdrücklich.
 
 #### NIEMALS VERWENDEN:
 - ❌ `create_file` (überschreibt bestehende Datei nicht)
@@ -156,7 +159,7 @@ Für komplexe Bedingungen nutze JSON Logic (siehe Template).
 - **Lese BPMN-Datei**: Öffne die angegebene BPMN-Datei mit `read_file`
 - **Finde User Task**: Lokalisiere das `<userTask id="[task-id]" ...>` Element
 - **Füge formKey hinzu**: 
-  - Verwende `replace_string_in_file` mit dem alten UserTask-Element als `oldString`
+  - Verwende `apply_patch` für eine gezielte Änderung oder `replace_string_in_file` mit dem alten UserTask-Element als `oldString`
   - Füge das `camunda:formKey` Attribut zum neuen UserTask-Element hinzu
   - Achte darauf, 3-5 Zeilen Kontext vor und nach dem UserTask einzuschließen
   - Falls bereits ein `camunda:formKey` existiert: Aktualisiere den Wert
@@ -210,10 +213,10 @@ Prüfe vor der Ausgabe:
 - [ ] Submit-Button vorhanden
 - [ ] JSON ist syntaktisch korrekt
 - [ ] `dvfDefVersion: "1.0"` ist gesetzt
-- [ ] **BPMN-Datei wurde mit `replace_string_in_file` aktualisiert**
+- [ ] **BPMN-Datei wurde mit einem verfügbaren Dateibearbeitungswerkzeug aktualisiert**
 - [ ] **formKey ist korrekt gesetzt**
 - [ ] **XML-Syntax ist gültig**
-- [ ] **Korrekte Tools verwendet** (replace_string_in_file, nicht Terminal)
+- [ ] **Korrekte Tools verwendet** (apply_patch oder String-Ersetzung, nicht Terminal)
 
 ## BPMN-Integration Details
 
