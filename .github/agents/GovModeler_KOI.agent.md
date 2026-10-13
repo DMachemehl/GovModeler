@@ -46,9 +46,10 @@ Wenn der Nutzer einen Prozessnamen nennt, erstelle eine strukturierte Prozessbes
 Wenn der Nutzer die Erstellung eines BPMN-Modells bestätigt:
 
 #### Vorbereitung: Referenzdokumente lesen
-**WICHTIG**: Vor der Erstellung des BPMN-Modells MÜSSEN beide Referenzdokumente gelesen werden:
+**WICHTIG**: Vor der Erstellung des BPMN-Modells MÜSSEN die folgenden Referenzdokumente gelesen werden:
 1. `BPMN_Template.xml` - Vollständiges Template mit 3-Pool-Struktur (Bürger, IT, Behörde)
 2. `BPMN-DI_Guidelines.md` - Technische BPMN-DI Standards und Layout-Regeln
+3. `.github/instructions/BPMN_Documentation.instructions.md` - Verbindliche Regel fuer Taskinformationen in Documentation - Element documentation
 
 #### BPMN-Modell-Struktur:
 - **Basis**: Verwende die Struktur aus `BPMN_Template.xml`
@@ -101,7 +102,8 @@ Diese Dokumente MÜSSEN vor der BPMN-Modell-Erstellung gelesen werden:
 ## Qualitätssicherung
 
 Vor Abschluss prüfen:
-- ✅ Beide Referenzdokumente wurden gelesen
+- ✅ Alle verpflichtenden Referenzdokumente wurden gelesen
+- Taskdokumentation gemaess `.github/instructions/BPMN_Documentation.instructions.md` geprueft
 - ✅ 3-Pool-Struktur implementiert (Bürger, IT, Behörde)
 - ✅ Alle Tasks horizontal auf identischer Y-Koordinate pro Pool
 - ✅ Maximal 5 Schritte pro Pool eingehalten

@@ -1,479 +1,442 @@
-<?xml version="1.0" encoding="utf-8"?>
-<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
-             xmlns:adonis="http://www.boc-group.com"
-             xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
-             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
-             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
-             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             id="definition__itsic_01"
-             typeLanguage="http://www.w3.org/2001/XMLSchema"
-             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd"
-             targetNamespace="http://www.boc-group.com">
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:adonis="http://www.boc-group.com" id="definition__itsic_01" targetNamespace="http://www.boc-group.com" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd">
+  <bpmn:collaboration id="Collaboration_itsic_01" name="IT-Sicherheitsvorfall bearbeiten" isClosed="false">
+    <bpmn:participant id="_kunde_participant_itsic" name="Kunde" processRef="process_kunde_itsic" />
+    <bpmn:participant id="_org_participant_itsic" name="Organisation" processRef="process_org_itsic" />
+    <bpmn:messageFlow id="_msgflow_k_o_start_itsic" name="Vorfallmeldung" sourceRef="_kunde_task1_itsic" targetRef="_org_start_itsic" />
+    <bpmn:messageFlow id="_msgflow_o_k_freigabe_itsic" name="Freigabe zur Anzeigenerstattung" sourceRef="_org_task5_itsic" targetRef="_kunde_catch1_itsic" />
+    <bpmn:messageFlow id="_msgflow_o_k_wiederinbetriebnahme_itsic" name="Wiederinbetriebnahme bestaetigt" sourceRef="_org_task10_itsic" targetRef="_kunde_catch2_itsic" />
+  </bpmn:collaboration>
+  <bpmn:process id="process_kunde_itsic" name="Kunde" processType="None" isClosed="false" isExecutable="false">
+    <bpmn:laneSet id="laneSet_kunde_itsic">
+      <bpmn:lane id="_kunde_lane_itsic" name="Schule">
+        <bpmn:flowNodeRef>_kunde_start_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_kunde_task1_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_kunde_task2_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_kunde_catch1_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_kunde_task3_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_kunde_task4_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_kunde_task5_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_kunde_catch2_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_kunde_end_itsic</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="_kunde_start_itsic" name="IT-Sicherheitsvorfall festgestellt">
+      <bpmn:outgoing>_kunde_flow1_itsic</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="_kunde_task1_itsic" name="Vorfall melden">
+      <bpmn:documentation>KI-gestützte Prozessmodellierung mit GovModeler BPMN
+Pilotierung im Schulverwaltungsamt der Landeshauptstadt Stuttgart
+Dokumententyp: PoC-Konzept
+Projekt: KI-gestützte BPMN-Prozessmodellierung im Rahmen des stadtweiten Geschäftsprozessmanagements (GPM)
+Pilotbereich: Schulverwaltungsamt der Landeshauptstadt Stuttgart
+Ausführende Einheit: 17-3.4
+Werkzeug: GovModeler mit Agent 40
 
-  <!-- =====================================================
-       COLLABORATION - IT-Sicherheitsvorfall bearbeiten
-       2-Pool-Kollaboration: Kunde (Schule), Organisation (Service Desk,
-       IT-Sicherheitskoordinatoren, IT-Dienstleister)
-       ===================================================== -->
-  <collaboration id="Collaboration_itsic_01"
-                 name="IT-Sicherheitsvorfall bearbeiten"
-                 isClosed="false">
+1. Ausgangslage und Ziele
+Im Rahmen des stadtweiten Geschäftsprozessmanagements wird die KI-gestützte Erstellung von BPMN-Prozessmodellen mit GovModeler erprobt. Der PoC im Schulverwaltungsamt dient dazu, die Praxistauglichkeit von Agent 40 für die Modellierung der vom Amt benannten Prozesse zu prüfen und den Agenten anhand der gewonnenen Erkenntnisse gezielt weiterzuentwickeln.
 
-    <participant processRef="process_kunde_itsic"
-                 name="Kunde"
-                 id="_kunde_participant_itsic"/>
-    <participant processRef="process_org_itsic"
-                 name="Organisation"
-                 id="_org_participant_itsic"/>
+Das Schulverwaltungsamt benennt den zu modellierenden Prozess. Die Erstellung des BPMN-Modells erfolgt durch 17-3.4 mithilfe von Agent 40. Anschließend prüft das Schulverwaltungsamt das Modell fachlich und übernimmt es nach gegebenenfalls erforderlichen Korrekturen.
 
-    <!-- Message Flows -->
-    <!-- Kunde -> Organisation: Vorfallmeldung -->
-    <messageFlow id="_msgflow_k_o_start_itsic"
-                 name="Vorfallmeldung"
-                 sourceRef="_kunde_task1_itsic"
-                 targetRef="_org_start_itsic"/>
+Die Ziele des PoC sind:
 
-    <!-- Organisation -> Kunde: Freigabe zur Anzeigenerstattung -->
-    <messageFlow id="_msgflow_o_k_freigabe_itsic"
-                 name="Freigabe zur Anzeigenerstattung"
-                 sourceRef="_org_task5_itsic"
-                 targetRef="_kunde_catch1_itsic"/>
+Erstellung von BPMN-Modellen für die durch das Schulverwaltungsamt benannten Prozesse.
+Erprobung eines schlanken Ablaufs von der Prozessbenennung bis zur fachlichen Prüfung und Übernahme.
+Bewertung der Qualität und Nutzbarkeit der KI-generierten Modelle sowie des Erstellungs-, Prüf- und Korrekturaufwands.
+Sammlung von Rückmeldungen und Verbesserungsvorschlägen in einem Backlog für die iterative Weiterentwicklung von Agent 40.
+KI-generierte Modelle sind zunächst Entwürfe. Eine fachliche Prüfung durch das Schulverwaltungsamt wird durch den KI-Einsatz nicht ersetzt.
 
-    <!-- Organisation -> Kunde: Wiederinbetriebnahme bestaetigt -->
-    <messageFlow id="_msgflow_o_k_wiederinbetriebnahme_itsic"
-                 name="Wiederinbetriebnahme bestaetigt"
-                 sourceRef="_org_task10_itsic"
-                 targetRef="_kunde_catch2_itsic"/>
+2. Vorgehen
+2.1 Prozessbenennung durch das Schulverwaltungsamt
+Das Schulverwaltungsamt benennt den Prozess, der als BPMN-Modell erstellt werden soll. Die Prozessbenennung bildet den Ausgangspunkt der Modellierung. Soweit vorhanden, können ergänzende fachliche Angaben bereitgestellt werden. Fehlende Informationen werden im weiteren Verlauf gezielt geklärt.
 
-  </collaboration>
+2.2 Modellerstellung durch 17-3.4
+17-3.4 erstellt mithilfe von Agent 40 einen BPMN-Modellentwurf. Die Erstmodellierung konzentriert sich auf den regulären Prozessablauf (Happy Path). Annahmen und offene fachliche Fragen werden begleitend dokumentiert, damit sie bei der Prüfung eindeutig erkennbar sind.
 
-  <!-- =====================================================
-       PROZESS: Kunde (Schule)
-       ===================================================== -->
-  <process name="Kunde"
-           id="process_kunde_itsic"
-           isExecutable="false"
-           isClosed="false"
-           processType="None">
+17-3.4 stellt das BPMN-Modell dem Schulverwaltungsamt in ADONIS zur Prüfung und weiteren Verwendung zur Verfügung.
 
-    <laneSet id="laneSet_kunde_itsic">
-      <lane name="Schule" id="_kunde_lane_itsic">
-        <flowNodeRef>_kunde_start_itsic</flowNodeRef>
-        <flowNodeRef>_kunde_task1_itsic</flowNodeRef>
-        <flowNodeRef>_kunde_task2_itsic</flowNodeRef>
-        <flowNodeRef>_kunde_catch1_itsic</flowNodeRef>
-        <flowNodeRef>_kunde_task3_itsic</flowNodeRef>
-        <flowNodeRef>_kunde_task4_itsic</flowNodeRef>
-        <flowNodeRef>_kunde_task5_itsic</flowNodeRef>
-        <flowNodeRef>_kunde_catch2_itsic</flowNodeRef>
-        <flowNodeRef>_kunde_end_itsic</flowNodeRef>
-      </lane>
-    </laneSet>
+2.3 Fachliche Prüfung durch das Schulverwaltungsamt
+Das Schulverwaltungsamt prüft methodisch, ob das Modell den tatsächlichen Prozessablauf zutreffend abbildet. Im Mittelpunkt stehen Start- und Endereignis, wesentliche Prozessschritte, deren Reihenfolge sowie die dargestellten Zuständigkeiten. Annahmen und offene Fragen werden bestätigt, korrigiert oder ergänzt. Das Schulverwaltungsamt gibt 17-3.4 eine schriftliche Rückmeldung zu den methodischen Mängeln und macht Verbesserungsvorschläge.
 
-    <startEvent name="IT-Sicherheitsvorfall festgestellt" id="_kunde_start_itsic">
-      <outgoing>_kunde_flow1_itsic</outgoing>
-    </startEvent>
+Erforderliche inhaltliche Änderungen werden nicht an 17-3.4 zurückgemeldet, sondern von 40 selbst vorgenommen.
 
-    <task name="Vorfall melden" id="_kunde_task1_itsic" isForCompensation="false">
-      <incoming>_kunde_flow1_itsic</incoming>
-      <outgoing>_kunde_flow2_itsic</outgoing>
-    </task>
+2.4 Übernahme des Prozessmodells
+Nach Abschluss der fachlichen Prüfung und der erforderlichen Korrekturen übernimmt das Schulverwaltungsamt das Prozessmodell. Die Übernahme wird nachvollziehbar dokumentiert. Sie bezieht sich auf den geprüften Modellstand und den vereinbarten Modellierungsumfang.
 
-    <task name="Sofortmassnahmen vor Ort ergreifen" id="_kunde_task2_itsic" isForCompensation="false">
-      <incoming>_kunde_flow2_itsic</incoming>
-      <outgoing>_kunde_flow3_itsic</outgoing>
-    </task>
+3. Iterative Weiterentwicklung von Agent 40
+Parallel zur Bearbeitung der Prozesse wird Agent 40 anhand eines Backlogs weiterentwickelt. Grundlage sind die Erfahrungen von 17-3.4 bei der Modellerstellung sowie die Rückmeldungen des Schulverwaltungsamts.
 
-    <intermediateCatchEvent name="Freigabe zur Anzeige erhalten" id="_kunde_catch1_itsic">
-      <incoming>_kunde_flow3_itsic</incoming>
-      <outgoing>_kunde_flow4_itsic</outgoing>
-      <messageEventDefinition id="msgEvtDef_kunde_catch1_itsic"/>
-    </intermediateCatchEvent>
+Der Verbesserungszyklus umfasst:
 
-    <task name="Anzeige bei der Polizei erstatten" id="_kunde_task3_itsic" isForCompensation="false">
-      <incoming>_kunde_flow4_itsic</incoming>
-      <outgoing>_kunde_flow5_itsic</outgoing>
-    </task>
+Rückmeldungen erfassen: Wiederkehrende Fehler, unpassende Fachbegriffe, fehlende Modellierungsregeln und Verbesserungsvorschläge werden im Backlog gesammelt. Korrekturen an einzelnen Modellen werden von allgemeinen Verbesserungen des Agenten unterschieden.
+Backlog priorisieren: 17-3.4 priorisiert die Einträge unter Berücksichtigung der fachlichen Rückmeldungen, ihrer Auswirkungen auf die Modellqualität und des Umsetzungsaufwands.
+Agenten anpassen: 17-3.4 entwickelt die Vorgaben und Anweisungen von Agent 40 schrittweise weiter.
+Änderungen prüfen: Die Anpassungen werden anhand ausgewählter Beispielprozesse überprüft. Dabei wird geprüft, ob das adressierte Problem behoben wurde und bereits funktionierende Modellierungsregeln erhalten bleiben.
+Stand dokumentieren: Änderungen, Prüfergebnisse und der jeweils eingesetzte Agentenstand werden nachvollziehbar festgehalten. Daraus können weitere Backlog-Einträge entstehen.
+Änderungen an Agent 40 führen nicht automatisch zu Änderungen bereits übernommener Prozessmodelle. Eine erneute Modellierung oder Anpassung erfolgt bei Bedarf und erfordert eine erneute fachliche Prüfung.
 
-    <task name="Datenschutzrechtliche Bewertung vornehmen" id="_kunde_task4_itsic" isForCompensation="false">
-      <incoming>_kunde_flow5_itsic</incoming>
-      <outgoing>_kunde_flow6_itsic</outgoing>
-    </task>
+4. Scope
+4.1 In-Scope
+BPMN-Modellerstellung für Prozesse, die das Schulverwaltungsamt benennt.
+Einsatz von Agent 40 durch 17-3.4.
+Erstmodellierung des regulären Prozessablaufs (Happy Path).
+Methodische und fachliche Prüfung durch das Schulverwaltungsamt.
+Rückmeldung zu Mängeln und Verbesserungsvorschläge an 17-3.4.
+Prüfung der technischen Anschlussfähigkeit an ADONIS.
+Backlog-basierte, iterative Weiterentwicklung von Agent 40.
+4.2 Out-of-Scope
+Prozesse außerhalb des Schulverwaltungsamts.
+Vollständige Modellierung aller Ausnahme- und Fehlerpfade in der KI-Erstgenerierung.
+Technische Umsetzung von Digitalisierungs- oder Automatisierungslösungen.
+Flächendeckende Einführung des Werkzeugs oder Übernahme von Modellen ohne fachliche Prüfung.
+5. Bewertung
+Der PoC wird anhand des tatsächlichen Bearbeitungsverlaufs und der Rückmeldungen des Schulverwaltungsamts bewertet. Erstellungs-, Prüf- und Korrekturaufwand werden getrennt betrachtet, damit zusätzlicher Prüfaufwand nicht als Zeitersparnis erscheint.
 
-    <task name="Interne Kommunikation sicherstellen" id="_kunde_task5_itsic" isForCompensation="false">
-      <incoming>_kunde_flow6_itsic</incoming>
-      <outgoing>_kunde_flow7_itsic</outgoing>
-    </task>
-
-    <intermediateCatchEvent name="Wiederinbetriebnahme bestaetigt erhalten" id="_kunde_catch2_itsic">
-      <incoming>_kunde_flow7_itsic</incoming>
-      <outgoing>_kunde_flow8_itsic</outgoing>
-      <messageEventDefinition id="msgEvtDef_kunde_catch2_itsic"/>
-    </intermediateCatchEvent>
-
-    <endEvent name="IT-Sicherheitsvorfall bewaeltigt" id="_kunde_end_itsic">
-      <incoming>_kunde_flow8_itsic</incoming>
-    </endEvent>
-
-    <!-- Sequence Flows -->
-    <sequenceFlow sourceRef="_kunde_start_itsic" targetRef="_kunde_task1_itsic" id="_kunde_flow1_itsic"/>
-    <sequenceFlow sourceRef="_kunde_task1_itsic" targetRef="_kunde_task2_itsic" id="_kunde_flow2_itsic"/>
-    <sequenceFlow sourceRef="_kunde_task2_itsic" targetRef="_kunde_catch1_itsic" id="_kunde_flow3_itsic"/>
-    <sequenceFlow sourceRef="_kunde_catch1_itsic" targetRef="_kunde_task3_itsic" id="_kunde_flow4_itsic"/>
-    <sequenceFlow sourceRef="_kunde_task3_itsic" targetRef="_kunde_task4_itsic" id="_kunde_flow5_itsic"/>
-    <sequenceFlow sourceRef="_kunde_task4_itsic" targetRef="_kunde_task5_itsic" id="_kunde_flow6_itsic"/>
-    <sequenceFlow sourceRef="_kunde_task5_itsic" targetRef="_kunde_catch2_itsic" id="_kunde_flow7_itsic"/>
-    <sequenceFlow sourceRef="_kunde_catch2_itsic" targetRef="_kunde_end_itsic" id="_kunde_flow8_itsic"/>
-
-  </process>
-
-  <!-- =====================================================
-       PROZESS: Organisation (Service Desk, IT-Sicherheitskoordinatoren,
-       IT-Dienstleister)
-       ===================================================== -->
-  <process name="Organisation"
-           id="process_org_itsic"
-           isExecutable="false"
-           isClosed="false"
-           processType="None">
-
-    <laneSet id="laneSet_org_itsic">
-      <lane name="Service Desk (40-4.3)" id="_org_lane_servicedesk_itsic">
-        <flowNodeRef>_org_start_itsic</flowNodeRef>
-        <flowNodeRef>_org_task1_itsic</flowNodeRef>
-      </lane>
-      <lane name="IT-Sicherheitskoordinatoren (40-4.1)" id="_org_lane_siko_itsic">
-        <flowNodeRef>_org_task2_itsic</flowNodeRef>
-        <flowNodeRef>_org_task3_itsic</flowNodeRef>
-        <flowNodeRef>_org_task5_itsic</flowNodeRef>
-        <flowNodeRef>_org_task9_itsic</flowNodeRef>
-        <flowNodeRef>_org_task12_itsic</flowNodeRef>
-        <flowNodeRef>_org_end_itsic</flowNodeRef>
-      </lane>
-      <lane name="IT-Dienstleister" id="_org_lane_dienstleister_itsic">
-        <flowNodeRef>_org_task4_itsic</flowNodeRef>
-        <flowNodeRef>_org_task6_itsic</flowNodeRef>
-        <flowNodeRef>_org_task7_itsic</flowNodeRef>
-        <flowNodeRef>_org_task8_itsic</flowNodeRef>
-        <flowNodeRef>_org_task10_itsic</flowNodeRef>
-        <flowNodeRef>_org_task11_itsic</flowNodeRef>
-      </lane>
-    </laneSet>
-
-    <startEvent name="Vorfallmeldung eingegangen" id="_org_start_itsic">
-      <outgoing>_org_flow1_itsic</outgoing>
-      <messageEventDefinition id="msgEvtDef_org_start_itsic"/>
-    </startEvent>
-
-    <task name="Vorfall entgegennehmen und weiterleiten" id="_org_task1_itsic" isForCompensation="false">
-      <incoming>_org_flow1_itsic</incoming>
-      <outgoing>_org_flow2_itsic</outgoing>
-    </task>
-
-    <task name="Erste Bewertung durchfuehren" id="_org_task2_itsic" isForCompensation="false">
-      <incoming>_org_flow2_itsic</incoming>
-      <outgoing>_org_flow3_itsic</outgoing>
-    </task>
-
-    <task name="Technische Isolierung mit IT-Dienstleister abstimmen" id="_org_task3_itsic" isForCompensation="false">
-      <incoming>_org_flow3_itsic</incoming>
-      <outgoing>_org_flow4_itsic</outgoing>
-    </task>
-
-    <task name="Systeme technisch isolieren und sichern" id="_org_task4_itsic" isForCompensation="false">
-      <incoming>_org_flow4_itsic</incoming>
-      <outgoing>_org_flow5_itsic</outgoing>
-    </task>
-
-    <task name="Freigabe zur Anzeigenerstattung erteilen" id="_org_task5_itsic" isForCompensation="false">
-      <incoming>_org_flow5_itsic</incoming>
-      <outgoing>_org_flow6_itsic</outgoing>
-    </task>
-
-    <task name="Forensische Untersuchung durchfuehren" id="_org_task6_itsic" isForCompensation="false">
-      <incoming>_org_flow6_itsic</incoming>
-      <outgoing>_org_flow7_itsic</outgoing>
-    </task>
-
-    <task name="Backup-Wiederherstellung durchfuehren" id="_org_task7_itsic" isForCompensation="false">
-      <incoming>_org_flow7_itsic</incoming>
-      <outgoing>_org_flow8_itsic</outgoing>
-    </task>
-
-    <task name="Systeme neu aufsetzen" id="_org_task8_itsic" isForCompensation="false">
-      <incoming>_org_flow8_itsic</incoming>
-      <outgoing>_org_flow9_itsic</outgoing>
-    </task>
-
-    <task name="Freigabe zur Wiederinbetriebnahme erteilen" id="_org_task9_itsic" isForCompensation="false">
-      <incoming>_org_flow9_itsic</incoming>
-      <outgoing>_org_flow10_itsic</outgoing>
-    </task>
-
-    <task name="Wiederinbetriebnahme durchfuehren und Funktionstest ausfuehren" id="_org_task10_itsic" isForCompensation="false">
-      <incoming>_org_flow10_itsic</incoming>
-      <outgoing>_org_flow11_itsic</outgoing>
-    </task>
-
-    <task name="Abschlussbericht erstellen" id="_org_task11_itsic" isForCompensation="false">
-      <incoming>_org_flow11_itsic</incoming>
-      <outgoing>_org_flow12_itsic</outgoing>
-    </task>
-
-    <task name="Nachbereitung durchfuehren" id="_org_task12_itsic" isForCompensation="false">
-      <incoming>_org_flow12_itsic</incoming>
-      <outgoing>_org_flow13_itsic</outgoing>
-    </task>
-
-    <endEvent name="IT-Sicherheitsvorfall nachbereitet" id="_org_end_itsic">
-      <incoming>_org_flow13_itsic</incoming>
-    </endEvent>
-
-    <!-- Sequence Flows -->
-    <sequenceFlow sourceRef="_org_start_itsic" targetRef="_org_task1_itsic" id="_org_flow1_itsic"/>
-    <sequenceFlow sourceRef="_org_task1_itsic" targetRef="_org_task2_itsic" id="_org_flow2_itsic"/>
-    <sequenceFlow sourceRef="_org_task2_itsic" targetRef="_org_task3_itsic" id="_org_flow3_itsic"/>
-    <sequenceFlow sourceRef="_org_task3_itsic" targetRef="_org_task4_itsic" id="_org_flow4_itsic"/>
-    <sequenceFlow sourceRef="_org_task4_itsic" targetRef="_org_task5_itsic" id="_org_flow5_itsic"/>
-    <sequenceFlow sourceRef="_org_task5_itsic" targetRef="_org_task6_itsic" id="_org_flow6_itsic"/>
-    <sequenceFlow sourceRef="_org_task6_itsic" targetRef="_org_task7_itsic" id="_org_flow7_itsic"/>
-    <sequenceFlow sourceRef="_org_task7_itsic" targetRef="_org_task8_itsic" id="_org_flow8_itsic"/>
-    <sequenceFlow sourceRef="_org_task8_itsic" targetRef="_org_task9_itsic" id="_org_flow9_itsic"/>
-    <sequenceFlow sourceRef="_org_task9_itsic" targetRef="_org_task10_itsic" id="_org_flow10_itsic"/>
-    <sequenceFlow sourceRef="_org_task10_itsic" targetRef="_org_task11_itsic" id="_org_flow11_itsic"/>
-    <sequenceFlow sourceRef="_org_task11_itsic" targetRef="_org_task12_itsic" id="_org_flow12_itsic"/>
-    <sequenceFlow sourceRef="_org_task12_itsic" targetRef="_org_end_itsic" id="_org_flow13_itsic"/>
-
-  </process>
-
-  <!-- =====================================================
-       BPMN-DI: Diagramm-Visualisierung
-       Kunde-Pool (y=0, Hoehe=380) oben, Organisation-Pool (y=460,
-       Hoehe=660, 3 Lanes je 220px) unten.
-       ===================================================== -->
+Dimension	Leitfrage	Messgröße / Indikator
+Bearbeitungsaufwand	Welcher Aufwand entsteht von der Prozessbenennung bis zur Übernahme?	Zeit für Erstellung, fachliche Prüfung und Korrekturen je Prozess
+Fachliche Qualität	Wie zutreffend bildet der Erstentwurf den tatsächlichen Ablauf ab?	Anzahl und Art fachlicher Korrekturen; ohne Änderung übernommene Schritte
+Übernahmefähigkeit	Kann das Schulverwaltungsamt das Modell nach der Prüfung übernehmen?	Übernahmestatus und Anzahl der erforderlichen Korrekturschleifen
+Technische Anschlussfähigkeit	Lässt sich das Modell in ADONIS übernehmen und weiterbearbeiten?	Ergebnis der Importprüfung und erforderliche technische Nacharbeit
+Wirksamkeit der Agentenentwicklung	Verbessern die Backlog-Anpassungen die Modellqualität?	Ergebnisse der Prüfungen vor und nach Anpassungen; Wiederauftreten bekannter Fehler
+Eine Zeitersparnis gegenüber dem klassischen Vorgehen wird nur ausgewiesen, wenn eine nachvollziehbare Vergleichsbasis für vergleichbare Prozesse vorliegt. Andernfalls wird der beobachtete Aufwand dokumentiert, ohne einen Einsparungseffekt zu behaupten.</bpmn:documentation>
+      <bpmn:incoming>_kunde_flow1_itsic</bpmn:incoming>
+      <bpmn:outgoing>_kunde_flow2_itsic</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="_kunde_task2_itsic" name="Sofortmassnahmen vor Ort ergreifen">
+      <bpmn:incoming>_kunde_flow2_itsic</bpmn:incoming>
+      <bpmn:outgoing>_kunde_flow3_itsic</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:intermediateCatchEvent id="_kunde_catch1_itsic" name="Freigabe zur Anzeige erhalten">
+      <bpmn:incoming>_kunde_flow3_itsic</bpmn:incoming>
+      <bpmn:outgoing>_kunde_flow4_itsic</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="msgEvtDef_kunde_catch1_itsic" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:task id="_kunde_task3_itsic" name="Anzeige bei der Polizei erstatten">
+      <bpmn:incoming>_kunde_flow4_itsic</bpmn:incoming>
+      <bpmn:outgoing>_kunde_flow5_itsic</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="_kunde_task4_itsic" name="Datenschutzrechtliche Bewertung vornehmen">
+      <bpmn:incoming>_kunde_flow5_itsic</bpmn:incoming>
+      <bpmn:outgoing>_kunde_flow6_itsic</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="_kunde_task5_itsic" name="Interne Kommunikation sicherstellen">
+      <bpmn:incoming>_kunde_flow6_itsic</bpmn:incoming>
+      <bpmn:outgoing>_kunde_flow7_itsic</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:intermediateCatchEvent id="_kunde_catch2_itsic" name="Wiederinbetriebnahme bestaetigt erhalten">
+      <bpmn:incoming>_kunde_flow7_itsic</bpmn:incoming>
+      <bpmn:outgoing>_kunde_flow8_itsic</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="msgEvtDef_kunde_catch2_itsic" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="_kunde_end_itsic" name="IT-Sicherheitsvorfall bewaeltigt">
+      <bpmn:incoming>_kunde_flow8_itsic</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="_kunde_flow1_itsic" sourceRef="_kunde_start_itsic" targetRef="_kunde_task1_itsic" />
+    <bpmn:sequenceFlow id="_kunde_flow2_itsic" sourceRef="_kunde_task1_itsic" targetRef="_kunde_task2_itsic" />
+    <bpmn:sequenceFlow id="_kunde_flow3_itsic" sourceRef="_kunde_task2_itsic" targetRef="_kunde_catch1_itsic" />
+    <bpmn:sequenceFlow id="_kunde_flow4_itsic" sourceRef="_kunde_catch1_itsic" targetRef="_kunde_task3_itsic" />
+    <bpmn:sequenceFlow id="_kunde_flow5_itsic" sourceRef="_kunde_task3_itsic" targetRef="_kunde_task4_itsic" />
+    <bpmn:sequenceFlow id="_kunde_flow6_itsic" sourceRef="_kunde_task4_itsic" targetRef="_kunde_task5_itsic" />
+    <bpmn:sequenceFlow id="_kunde_flow7_itsic" sourceRef="_kunde_task5_itsic" targetRef="_kunde_catch2_itsic" />
+    <bpmn:sequenceFlow id="_kunde_flow8_itsic" sourceRef="_kunde_catch2_itsic" targetRef="_kunde_end_itsic" />
+  </bpmn:process>
+  <bpmn:process id="process_org_itsic" name="Organisation" processType="None" isClosed="false" isExecutable="false">
+    <bpmn:laneSet id="laneSet_org_itsic">
+      <bpmn:lane id="_org_lane_servicedesk_itsic" name="Service Desk (40-4.3)">
+        <bpmn:flowNodeRef>_org_start_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_org_task1_itsic</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="_org_lane_siko_itsic" name="IT-Sicherheitskoordinatoren (40-4.1)">
+        <bpmn:flowNodeRef>_org_task2_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_org_task3_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_org_task5_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_org_task9_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_org_task12_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_org_end_itsic</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="_org_lane_dienstleister_itsic" name="IT-Dienstleister">
+        <bpmn:flowNodeRef>_org_task4_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_org_task6_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_org_task7_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_org_task8_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_org_task10_itsic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>_org_task11_itsic</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="_org_start_itsic" name="Vorfallmeldung eingegangen">
+      <bpmn:outgoing>_org_flow1_itsic</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="msgEvtDef_org_start_itsic" />
+    </bpmn:startEvent>
+    <bpmn:task id="_org_task1_itsic" name="Vorfall entgegennehmen und weiterleiten">
+      <bpmn:incoming>_org_flow1_itsic</bpmn:incoming>
+      <bpmn:outgoing>_org_flow2_itsic</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="_org_task2_itsic" name="Erste Bewertung durchfuehren">
+      <bpmn:incoming>_org_flow2_itsic</bpmn:incoming>
+      <bpmn:outgoing>_org_flow3_itsic</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="_org_task3_itsic" name="Technische Isolierung mit IT-Dienstleister abstimmen">
+      <bpmn:incoming>_org_flow3_itsic</bpmn:incoming>
+      <bpmn:outgoing>_org_flow4_itsic</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="_org_task4_itsic" name="Systeme technisch isolieren und sichern">
+      <bpmn:incoming>_org_flow4_itsic</bpmn:incoming>
+      <bpmn:outgoing>_org_flow5_itsic</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="_org_task5_itsic" name="Freigabe zur Anzeigenerstattung erteilen">
+      <bpmn:incoming>_org_flow5_itsic</bpmn:incoming>
+      <bpmn:outgoing>_org_flow6_itsic</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="_org_task6_itsic" name="Forensische Untersuchung durchfuehren">
+      <bpmn:incoming>_org_flow6_itsic</bpmn:incoming>
+      <bpmn:outgoing>_org_flow7_itsic</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="_org_task7_itsic" name="Backup-Wiederherstellung durchfuehren">
+      <bpmn:incoming>_org_flow7_itsic</bpmn:incoming>
+      <bpmn:outgoing>_org_flow8_itsic</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="_org_task8_itsic" name="Systeme neu aufsetzen">
+      <bpmn:incoming>_org_flow8_itsic</bpmn:incoming>
+      <bpmn:outgoing>_org_flow9_itsic</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="_org_task9_itsic" name="Freigabe zur Wiederinbetriebnahme erteilen">
+      <bpmn:incoming>_org_flow9_itsic</bpmn:incoming>
+      <bpmn:outgoing>_org_flow10_itsic</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="_org_task10_itsic" name="Wiederinbetriebnahme durchfuehren und Funktionstest ausfuehren">
+      <bpmn:incoming>_org_flow10_itsic</bpmn:incoming>
+      <bpmn:outgoing>_org_flow11_itsic</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="_org_task11_itsic" name="Abschlussbericht erstellen">
+      <bpmn:incoming>_org_flow11_itsic</bpmn:incoming>
+      <bpmn:outgoing>_org_flow12_itsic</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="_org_task12_itsic" name="Nachbereitung durchfuehren">
+      <bpmn:incoming>_org_flow12_itsic</bpmn:incoming>
+      <bpmn:outgoing>_org_flow13_itsic</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="_org_end_itsic" name="IT-Sicherheitsvorfall nachbereitet">
+      <bpmn:incoming>_org_flow13_itsic</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="_org_flow1_itsic" sourceRef="_org_start_itsic" targetRef="_org_task1_itsic" />
+    <bpmn:sequenceFlow id="_org_flow2_itsic" sourceRef="_org_task1_itsic" targetRef="_org_task2_itsic" />
+    <bpmn:sequenceFlow id="_org_flow3_itsic" sourceRef="_org_task2_itsic" targetRef="_org_task3_itsic" />
+    <bpmn:sequenceFlow id="_org_flow4_itsic" sourceRef="_org_task3_itsic" targetRef="_org_task4_itsic" />
+    <bpmn:sequenceFlow id="_org_flow5_itsic" sourceRef="_org_task4_itsic" targetRef="_org_task5_itsic" />
+    <bpmn:sequenceFlow id="_org_flow6_itsic" sourceRef="_org_task5_itsic" targetRef="_org_task6_itsic" />
+    <bpmn:sequenceFlow id="_org_flow7_itsic" sourceRef="_org_task6_itsic" targetRef="_org_task7_itsic" />
+    <bpmn:sequenceFlow id="_org_flow8_itsic" sourceRef="_org_task7_itsic" targetRef="_org_task8_itsic" />
+    <bpmn:sequenceFlow id="_org_flow9_itsic" sourceRef="_org_task8_itsic" targetRef="_org_task9_itsic" />
+    <bpmn:sequenceFlow id="_org_flow10_itsic" sourceRef="_org_task9_itsic" targetRef="_org_task10_itsic" />
+    <bpmn:sequenceFlow id="_org_flow11_itsic" sourceRef="_org_task10_itsic" targetRef="_org_task11_itsic" />
+    <bpmn:sequenceFlow id="_org_flow12_itsic" sourceRef="_org_task11_itsic" targetRef="_org_task12_itsic" />
+    <bpmn:sequenceFlow id="_org_flow13_itsic" sourceRef="_org_task12_itsic" targetRef="_org_end_itsic" />
+  </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane bpmnElement="Collaboration_itsic_01">
-
-      <!-- ===== POOL: Kunde (Schule) ===== -->
       <bpmndi:BPMNShape bpmnElement="_kunde_participant_itsic" isHorizontal="true">
-        <omgdc:Bounds x="10" y="0" width="3320" height="380"/>
+        <omgdc:Bounds x="10" y="0" width="3320" height="380" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_kunde_lane_itsic" isHorizontal="true">
-        <omgdc:Bounds x="40" y="0" width="3290" height="380"/>
+        <omgdc:Bounds x="40" y="0" width="3290" height="380" />
       </bpmndi:BPMNShape>
-
       <bpmndi:BPMNShape bpmnElement="_kunde_start_itsic">
-        <omgdc:Bounds x="80" y="172" width="36" height="36"/>
+        <omgdc:Bounds x="80" y="172" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_kunde_task1_itsic">
-        <omgdc:Bounds x="310" y="152" width="151" height="76"/>
+        <omgdc:Bounds x="310" y="152" width="151" height="76" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_kunde_task2_itsic">
-        <omgdc:Bounds x="540" y="152" width="151" height="76"/>
+        <omgdc:Bounds x="540" y="152" width="151" height="76" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_kunde_catch1_itsic">
-        <omgdc:Bounds x="770" y="172" width="36" height="36"/>
+        <omgdc:Bounds x="770" y="172" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_kunde_task3_itsic">
-        <omgdc:Bounds x="1000" y="152" width="151" height="76"/>
+        <omgdc:Bounds x="1000" y="152" width="151" height="76" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_kunde_task4_itsic">
-        <omgdc:Bounds x="1230" y="152" width="151" height="76"/>
+        <omgdc:Bounds x="1230" y="152" width="151" height="76" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_kunde_task5_itsic">
-        <omgdc:Bounds x="1460" y="152" width="151" height="76"/>
+        <omgdc:Bounds x="1460" y="152" width="151" height="76" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_kunde_catch2_itsic">
-        <omgdc:Bounds x="1690" y="172" width="36" height="36"/>
+        <omgdc:Bounds x="1690" y="172" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_kunde_end_itsic">
-        <omgdc:Bounds x="1920" y="172" width="36" height="36"/>
+        <omgdc:Bounds x="1920" y="172" width="36" height="36" />
       </bpmndi:BPMNShape>
-
       <bpmndi:BPMNEdge bpmnElement="_kunde_flow1_itsic">
-        <omgdi:waypoint x="116" y="190"/>
-        <omgdi:waypoint x="310" y="190"/>
+        <omgdi:waypoint x="116" y="190" />
+        <omgdi:waypoint x="310" y="190" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_kunde_flow2_itsic">
-        <omgdi:waypoint x="461" y="190"/>
-        <omgdi:waypoint x="540" y="190"/>
+        <omgdi:waypoint x="461" y="190" />
+        <omgdi:waypoint x="540" y="190" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_kunde_flow3_itsic">
-        <omgdi:waypoint x="691" y="190"/>
-        <omgdi:waypoint x="770" y="190"/>
+        <omgdi:waypoint x="691" y="190" />
+        <omgdi:waypoint x="770" y="190" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_kunde_flow4_itsic">
-        <omgdi:waypoint x="806" y="190"/>
-        <omgdi:waypoint x="1000" y="190"/>
+        <omgdi:waypoint x="806" y="190" />
+        <omgdi:waypoint x="1000" y="190" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_kunde_flow5_itsic">
-        <omgdi:waypoint x="1151" y="190"/>
-        <omgdi:waypoint x="1230" y="190"/>
+        <omgdi:waypoint x="1151" y="190" />
+        <omgdi:waypoint x="1230" y="190" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_kunde_flow6_itsic">
-        <omgdi:waypoint x="1381" y="190"/>
-        <omgdi:waypoint x="1460" y="190"/>
+        <omgdi:waypoint x="1381" y="190" />
+        <omgdi:waypoint x="1460" y="190" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_kunde_flow7_itsic">
-        <omgdi:waypoint x="1611" y="190"/>
-        <omgdi:waypoint x="1690" y="190"/>
+        <omgdi:waypoint x="1611" y="190" />
+        <omgdi:waypoint x="1690" y="190" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_kunde_flow8_itsic">
-        <omgdi:waypoint x="1726" y="190"/>
-        <omgdi:waypoint x="1920" y="190"/>
+        <omgdi:waypoint x="1726" y="190" />
+        <omgdi:waypoint x="1920" y="190" />
       </bpmndi:BPMNEdge>
-
-      <!-- ===== POOL: Organisation ===== -->
       <bpmndi:BPMNShape bpmnElement="_org_participant_itsic" isHorizontal="true">
-        <omgdc:Bounds x="10" y="460" width="3320" height="660"/>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="_org_lane_servicedesk_itsic" isHorizontal="true">
-        <omgdc:Bounds x="40" y="460" width="3290" height="220"/>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="_org_lane_siko_itsic" isHorizontal="true">
-        <omgdc:Bounds x="40" y="680" width="3290" height="220"/>
+        <omgdc:Bounds x="10" y="460" width="3320" height="660" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_org_lane_dienstleister_itsic" isHorizontal="true">
-        <omgdc:Bounds x="40" y="900" width="3290" height="220"/>
+        <omgdc:Bounds x="40" y="900" width="3290" height="220" />
       </bpmndi:BPMNShape>
-
+      <bpmndi:BPMNShape bpmnElement="_org_lane_siko_itsic" isHorizontal="true">
+        <omgdc:Bounds x="40" y="680" width="3290" height="220" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_org_lane_servicedesk_itsic" isHorizontal="true">
+        <omgdc:Bounds x="40" y="460" width="3290" height="220" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_org_start_itsic">
-        <omgdc:Bounds x="80" y="552" width="36" height="36"/>
+        <omgdc:Bounds x="80" y="552" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_org_task1_itsic">
-        <omgdc:Bounds x="310" y="532" width="151" height="76"/>
+        <omgdc:Bounds x="310" y="532" width="151" height="76" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_org_task2_itsic">
-        <omgdc:Bounds x="540" y="752" width="151" height="76"/>
+        <omgdc:Bounds x="540" y="752" width="151" height="76" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_org_task3_itsic">
-        <omgdc:Bounds x="770" y="752" width="151" height="76"/>
+        <omgdc:Bounds x="770" y="752" width="151" height="76" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_org_task4_itsic">
-        <omgdc:Bounds x="1000" y="972" width="151" height="76"/>
+        <omgdc:Bounds x="1000" y="972" width="151" height="76" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_org_task5_itsic">
-        <omgdc:Bounds x="1230" y="752" width="151" height="76"/>
+        <omgdc:Bounds x="1230" y="752" width="151" height="76" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_org_task6_itsic">
-        <omgdc:Bounds x="1460" y="972" width="151" height="76"/>
+        <omgdc:Bounds x="1460" y="972" width="151" height="76" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_org_task7_itsic">
-        <omgdc:Bounds x="1690" y="972" width="151" height="76"/>
+        <omgdc:Bounds x="1690" y="972" width="151" height="76" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_org_task8_itsic">
-        <omgdc:Bounds x="1920" y="972" width="151" height="76"/>
+        <omgdc:Bounds x="1920" y="972" width="151" height="76" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_org_task9_itsic">
-        <omgdc:Bounds x="2150" y="752" width="151" height="76"/>
+        <omgdc:Bounds x="2150" y="752" width="151" height="76" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_org_task10_itsic">
-        <omgdc:Bounds x="2380" y="972" width="151" height="76"/>
+        <omgdc:Bounds x="2380" y="972" width="151" height="76" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_org_task11_itsic">
-        <omgdc:Bounds x="2610" y="972" width="151" height="76"/>
+        <omgdc:Bounds x="2610" y="972" width="151" height="76" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_org_task12_itsic">
-        <omgdc:Bounds x="2840" y="752" width="151" height="76"/>
+        <omgdc:Bounds x="2840" y="752" width="151" height="76" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_org_end_itsic">
-        <omgdc:Bounds x="3070" y="772" width="36" height="36"/>
+        <omgdc:Bounds x="3070" y="772" width="36" height="36" />
       </bpmndi:BPMNShape>
-
       <bpmndi:BPMNEdge bpmnElement="_org_flow1_itsic">
-        <omgdi:waypoint x="116" y="570"/>
-        <omgdi:waypoint x="310" y="570"/>
+        <omgdi:waypoint x="116" y="570" />
+        <omgdi:waypoint x="310" y="570" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_org_flow2_itsic">
-        <omgdi:waypoint x="461" y="570"/>
-        <omgdi:waypoint x="500" y="570"/>
-        <omgdi:waypoint x="500" y="790"/>
-        <omgdi:waypoint x="540" y="790"/>
+        <omgdi:waypoint x="461" y="570" />
+        <omgdi:waypoint x="500" y="570" />
+        <omgdi:waypoint x="500" y="790" />
+        <omgdi:waypoint x="540" y="790" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_org_flow3_itsic">
-        <omgdi:waypoint x="691" y="790"/>
-        <omgdi:waypoint x="770" y="790"/>
+        <omgdi:waypoint x="691" y="790" />
+        <omgdi:waypoint x="770" y="790" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_org_flow4_itsic">
-        <omgdi:waypoint x="921" y="790"/>
-        <omgdi:waypoint x="960" y="790"/>
-        <omgdi:waypoint x="960" y="1010"/>
-        <omgdi:waypoint x="1000" y="1010"/>
+        <omgdi:waypoint x="921" y="790" />
+        <omgdi:waypoint x="960" y="790" />
+        <omgdi:waypoint x="960" y="1010" />
+        <omgdi:waypoint x="1000" y="1010" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_org_flow5_itsic">
-        <omgdi:waypoint x="1151" y="1010"/>
-        <omgdi:waypoint x="1190" y="1010"/>
-        <omgdi:waypoint x="1190" y="790"/>
-        <omgdi:waypoint x="1230" y="790"/>
+        <omgdi:waypoint x="1151" y="1010" />
+        <omgdi:waypoint x="1190" y="1010" />
+        <omgdi:waypoint x="1190" y="790" />
+        <omgdi:waypoint x="1230" y="790" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_org_flow6_itsic">
-        <omgdi:waypoint x="1381" y="790"/>
-        <omgdi:waypoint x="1420" y="790"/>
-        <omgdi:waypoint x="1420" y="1010"/>
-        <omgdi:waypoint x="1460" y="1010"/>
+        <omgdi:waypoint x="1381" y="790" />
+        <omgdi:waypoint x="1420" y="790" />
+        <omgdi:waypoint x="1420" y="1010" />
+        <omgdi:waypoint x="1460" y="1010" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_org_flow7_itsic">
-        <omgdi:waypoint x="1611" y="1010"/>
-        <omgdi:waypoint x="1690" y="1010"/>
+        <omgdi:waypoint x="1611" y="1010" />
+        <omgdi:waypoint x="1690" y="1010" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_org_flow8_itsic">
-        <omgdi:waypoint x="1841" y="1010"/>
-        <omgdi:waypoint x="1920" y="1010"/>
+        <omgdi:waypoint x="1841" y="1010" />
+        <omgdi:waypoint x="1920" y="1010" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_org_flow9_itsic">
-        <omgdi:waypoint x="2071" y="1010"/>
-        <omgdi:waypoint x="2110" y="1010"/>
-        <omgdi:waypoint x="2110" y="790"/>
-        <omgdi:waypoint x="2150" y="790"/>
+        <omgdi:waypoint x="2071" y="1010" />
+        <omgdi:waypoint x="2110" y="1010" />
+        <omgdi:waypoint x="2110" y="790" />
+        <omgdi:waypoint x="2150" y="790" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_org_flow10_itsic">
-        <omgdi:waypoint x="2301" y="790"/>
-        <omgdi:waypoint x="2340" y="790"/>
-        <omgdi:waypoint x="2340" y="1010"/>
-        <omgdi:waypoint x="2380" y="1010"/>
+        <omgdi:waypoint x="2301" y="790" />
+        <omgdi:waypoint x="2340" y="790" />
+        <omgdi:waypoint x="2340" y="1010" />
+        <omgdi:waypoint x="2380" y="1010" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_org_flow11_itsic">
-        <omgdi:waypoint x="2531" y="1010"/>
-        <omgdi:waypoint x="2610" y="1010"/>
+        <omgdi:waypoint x="2531" y="1010" />
+        <omgdi:waypoint x="2610" y="1010" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_org_flow12_itsic">
-        <omgdi:waypoint x="2761" y="1010"/>
-        <omgdi:waypoint x="2800" y="1010"/>
-        <omgdi:waypoint x="2800" y="790"/>
-        <omgdi:waypoint x="2840" y="790"/>
+        <omgdi:waypoint x="2761" y="1010" />
+        <omgdi:waypoint x="2800" y="1010" />
+        <omgdi:waypoint x="2800" y="790" />
+        <omgdi:waypoint x="2840" y="790" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_org_flow13_itsic">
-        <omgdi:waypoint x="2991" y="790"/>
-        <omgdi:waypoint x="3070" y="790"/>
+        <omgdi:waypoint x="2991" y="790" />
+        <omgdi:waypoint x="3070" y="790" />
       </bpmndi:BPMNEdge>
-
-      <!-- ===== MESSAGE FLOWS ===== -->
-      <!-- Kunde -> Organisation: Vorfallmeldung -->
       <bpmndi:BPMNEdge bpmnElement="_msgflow_k_o_start_itsic">
-        <omgdi:waypoint x="385" y="228"/>
-        <omgdi:waypoint x="385" y="400"/>
-        <omgdi:waypoint x="98" y="400"/>
-        <omgdi:waypoint x="98" y="552"/>
+        <omgdi:waypoint x="385" y="228" />
+        <omgdi:waypoint x="385" y="400" />
+        <omgdi:waypoint x="98" y="400" />
+        <omgdi:waypoint x="98" y="552" />
       </bpmndi:BPMNEdge>
-
-      <!-- Organisation -> Kunde: Freigabe zur Anzeigenerstattung -->
       <bpmndi:BPMNEdge bpmnElement="_msgflow_o_k_freigabe_itsic">
-        <omgdi:waypoint x="1305" y="752"/>
-        <omgdi:waypoint x="1305" y="400"/>
-        <omgdi:waypoint x="788" y="400"/>
-        <omgdi:waypoint x="788" y="208"/>
+        <omgdi:waypoint x="1305" y="752" />
+        <omgdi:waypoint x="1305" y="400" />
+        <omgdi:waypoint x="788" y="400" />
+        <omgdi:waypoint x="788" y="208" />
       </bpmndi:BPMNEdge>
-
-      <!-- Organisation -> Kunde: Wiederinbetriebnahme bestaetigt -->
       <bpmndi:BPMNEdge bpmnElement="_msgflow_o_k_wiederinbetriebnahme_itsic">
-        <omgdi:waypoint x="2455" y="972"/>
-        <omgdi:waypoint x="2455" y="400"/>
-        <omgdi:waypoint x="1708" y="400"/>
-        <omgdi:waypoint x="1708" y="208"/>
+        <omgdi:waypoint x="2455" y="972" />
+        <omgdi:waypoint x="2455" y="400" />
+        <omgdi:waypoint x="1708" y="400" />
+        <omgdi:waypoint x="1708" y="208" />
       </bpmndi:BPMNEdge>
-
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
-
-</definitions>
+</bpmn:definitions>

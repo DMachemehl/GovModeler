@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:adonis="http://www.boc-group.com"
+             xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="definition__a6400000-1000-4000-8000-000000000001"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd"
+             targetNamespace="http://www.boc-group.com">
+  <message id="_a6400000-1000-4000-8000-000000000002" name="Anmeldung des Kindes mit erforderlichen Angaben und Nachweisen"/>
+  <message id="_a6400000-1000-4000-8000-000000000003" name="Aufnahmebestaetigung mit Informationen zum Schulbeginn"/>
+  <collaboration id="Collaboration_a6400000-1000-4000-8000-000000000004" name="Kind fuer weiterfuehrende Schule anmelden" isClosed="false">
+    <documentation textFormat="text/plain">Kundenbeduerfnis: Die Sorgeberechtigten benoetigen einen bestaetigten Schulplatz fuer ihr Kind an einer weiterfuehrenden Schule in Stuttgart. Kundenstart: Bedarf an weiterfuehrendem Schulplatz festgestellt. Kundenende: Aufnahmebestaetigung erhalten. Modelliert ist der regulaere erfolgreiche Eintritt in Klasse 5 einer oeffentlichen Schule mit vollstaendigen Unterlagen, erfuellten Zugangsvoraussetzungen und verfuegbarem Schulplatz. Beteiligte: Sorgeberechtigte, Schulsekretariat und Schulleitung der aufnehmenden Schule. Die Schule bearbeitet die Anmeldung und Aufnahme; das Schulverwaltungsamt ist nicht als entscheidende Stelle dargestellt. Aktuelle Anmeldevorgaben, schulartspezifische Voraussetzungen und Zustaendigkeiten sind fachlich zu bestaetigen. Grundlage: BPMN_ADONIS/BPMN_ADONIS_Template.xml, angepasst auf zwei Pools. ADONIS-Import und Zuordnung der Taskdokumentation zum UI-Feld Documentation - Element documentation sind unbestaetigt.</documentation>
+    <participant id="_a6400000-1000-4000-8000-000000000005" name="Kunde" processRef="process_a6400000-1000-4000-8000-000000000010"/>
+    <participant id="_a6400000-1000-4000-8000-000000000006" name="Organisation" processRef="process_a6400000-1000-4000-8000-000000000020"/>
+    <messageFlow id="_a6400000-1000-4000-8000-000000000007" name="Anmeldung des Kindes mit erforderlichen Angaben und Nachweisen" sourceRef="_a6400000-1000-4000-8000-000000000015" targetRef="_a6400000-1000-4000-8000-000000000023" messageRef="_a6400000-1000-4000-8000-000000000002">
+      <extensionElements>
+        <adonis:connector>
+          <adonis:attribute name="DISPLAY_DENOMNIATION" type="BOOL" notebook="1" sourcelang="" novalue="0"><adonis:value>true</adonis:value><adonis:metavalue/></adonis:attribute>
+          <adonis:attribute name="REPRESENTATION_HAS_PROCESS" type="ENUM" notebook="1" sourcelang="" novalue="0" lang-independent="v0"><adonis:value>automatisch</adonis:value><adonis:metavalue/></adonis:attribute>
+        </adonis:connector>
+      </extensionElements>
+    </messageFlow>
+    <messageFlow id="_a6400000-1000-4000-8000-000000000008" name="Aufnahmebestaetigung mit Informationen zum Schulbeginn" sourceRef="_a6400000-1000-4000-8000-000000000028" targetRef="_a6400000-1000-4000-8000-000000000016" messageRef="_a6400000-1000-4000-8000-000000000003">
+      <extensionElements>
+        <adonis:connector>
+          <adonis:attribute name="DISPLAY_DENOMNIATION" type="BOOL" notebook="1" sourcelang="" novalue="0"><adonis:value>true</adonis:value><adonis:metavalue/></adonis:attribute>
+          <adonis:attribute name="REPRESENTATION_HAS_PROCESS" type="ENUM" notebook="1" sourcelang="" novalue="0" lang-independent="v0"><adonis:value>automatisch</adonis:value><adonis:metavalue/></adonis:attribute>
+        </adonis:connector>
+      </extensionElements>
+    </messageFlow>
+  </collaboration>
+  <process id="process_a6400000-1000-4000-8000-000000000010" name="Kunde" isExecutable="false" isClosed="false" processType="None">
+    <laneSet id="laneSet_a6400000-1000-4000-8000-000000000011">
+      <lane id="_a6400000-1000-4000-8000-000000000011" name="Sorgeberechtigte">
+        <flowNodeRef>_a6400000-1000-4000-8000-000000000012</flowNodeRef>
+        <flowNodeRef>_a6400000-1000-4000-8000-000000000013</flowNodeRef>
+        <flowNodeRef>_a6400000-1000-4000-8000-000000000014</flowNodeRef>
+        <flowNodeRef>_a6400000-1000-4000-8000-000000000015</flowNodeRef>
+        <flowNodeRef>_a6400000-1000-4000-8000-000000000016</flowNodeRef>
+        <flowNodeRef>_a6400000-1000-4000-8000-000000000017</flowNodeRef>
+      </lane>
+    </laneSet>
+    <startEvent id="_a6400000-1000-4000-8000-000000000012" name="Bedarf an weiterfuehrendem Schulplatz festgestellt">
+      <outgoing>_a6400000-1000-4000-8000-000000000031</outgoing>
+    </startEvent>
+    <task id="_a6400000-1000-4000-8000-000000000013" name="Schule auswaehlen" isForCompensation="false">
+      <documentation textFormat="text/plain">Die Sorgeberechtigten waehlen unter Beruecksichtigung des vorgesehenen Bildungswegs und der geltenden Zugangsvoraussetzungen eine weiterfuehrende Schule aus. Ergebnis ist die fuer die Anmeldung gewaehlte Schule.</documentation>
+      <incoming>_a6400000-1000-4000-8000-000000000031</incoming>
+      <outgoing>_a6400000-1000-4000-8000-000000000032</outgoing>
+    </task>
+    <task id="_a6400000-1000-4000-8000-000000000014" name="Anmeldeunterlagen zusammenstellen" isForCompensation="false">
+      <documentation textFormat="text/plain">Die Sorgeberechtigten erfassen die erforderlichen Angaben zum Kind und zu den Sorgeberechtigten. Sie stellen die nach den aktuellen Anmeldevorgaben erforderlichen Nachweise zusammen. Ergebnis sind vollstaendige Anmeldeunterlagen.</documentation>
+      <incoming>_a6400000-1000-4000-8000-000000000032</incoming>
+      <outgoing>_a6400000-1000-4000-8000-000000000033</outgoing>
+    </task>
+    <sendTask id="_a6400000-1000-4000-8000-000000000015" name="Anmeldung uebermitteln" isForCompensation="false" messageRef="_a6400000-1000-4000-8000-000000000002">
+      <documentation textFormat="text/plain">Die Sorgeberechtigten reichen die Anmeldung innerhalb des vorgesehenen Anmeldezeitraums ueber den von der Schule angebotenen Zugang ein. Nachricht von den Sorgeberechtigten an das Schulsekretariat: Anmeldung des Kindes mit erforderlichen Angaben und Nachweisen.</documentation>
+      <incoming>_a6400000-1000-4000-8000-000000000033</incoming>
+      <outgoing>_a6400000-1000-4000-8000-000000000034</outgoing>
+    </sendTask>
+    <receiveTask id="_a6400000-1000-4000-8000-000000000016" name="Aufnahmebestaetigung entgegennehmen" isForCompensation="false" instantiate="false" messageRef="_a6400000-1000-4000-8000-000000000003">
+      <documentation textFormat="text/plain">Die Sorgeberechtigten erhalten die Aufnahmebestaetigung der Schule mit den fuer den Schulbeginn erforderlichen Informationen. Der Schulplatz fuer das Kind ist damit bestaetigt und das Kundenbeduerfnis erfuellt.</documentation>
+      <incoming>_a6400000-1000-4000-8000-000000000034</incoming>
+      <outgoing>_a6400000-1000-4000-8000-000000000035</outgoing>
+    </receiveTask>
+    <endEvent id="_a6400000-1000-4000-8000-000000000017" name="Aufnahmebestaetigung erhalten">
+      <incoming>_a6400000-1000-4000-8000-000000000035</incoming>
+    </endEvent>
+    <sequenceFlow id="_a6400000-1000-4000-8000-000000000031" sourceRef="_a6400000-1000-4000-8000-000000000012" targetRef="_a6400000-1000-4000-8000-000000000013"/>
+    <sequenceFlow id="_a6400000-1000-4000-8000-000000000032" sourceRef="_a6400000-1000-4000-8000-000000000013" targetRef="_a6400000-1000-4000-8000-000000000014"/>
+    <sequenceFlow id="_a6400000-1000-4000-8000-000000000033" sourceRef="_a6400000-1000-4000-8000-000000000014" targetRef="_a6400000-1000-4000-8000-000000000015"/>
+    <sequenceFlow id="_a6400000-1000-4000-8000-000000000034" sourceRef="_a6400000-1000-4000-8000-000000000015" targetRef="_a6400000-1000-4000-8000-000000000016"/>
+    <sequenceFlow id="_a6400000-1000-4000-8000-000000000035" sourceRef="_a6400000-1000-4000-8000-000000000016" targetRef="_a6400000-1000-4000-8000-000000000017"/>
+  </process>
+  <process id="process_a6400000-1000-4000-8000-000000000020" name="Organisation - Aufnehmende Schule" isExecutable="false" isClosed="false" processType="None">
+    <laneSet id="laneSet_a6400000-1000-4000-8000-000000000021">
+      <lane id="_a6400000-1000-4000-8000-000000000021" name="Schulsekretariat">
+        <flowNodeRef>_a6400000-1000-4000-8000-000000000023</flowNodeRef>
+        <flowNodeRef>_a6400000-1000-4000-8000-000000000024</flowNodeRef>
+        <flowNodeRef>_a6400000-1000-4000-8000-000000000025</flowNodeRef>
+        <flowNodeRef>_a6400000-1000-4000-8000-000000000027</flowNodeRef>
+        <flowNodeRef>_a6400000-1000-4000-8000-000000000028</flowNodeRef>
+        <flowNodeRef>_a6400000-1000-4000-8000-000000000029</flowNodeRef>
+      </lane>
+      <lane id="_a6400000-1000-4000-8000-000000000022" name="Schulleitung">
+        <flowNodeRef>_a6400000-1000-4000-8000-000000000026</flowNodeRef>
+      </lane>
+    </laneSet>
+    <startEvent id="_a6400000-1000-4000-8000-000000000023" name="Anmeldung eingegangen">
+      <outgoing>_a6400000-1000-4000-8000-000000000041</outgoing>
+      <messageEventDefinition id="_a6400000-1000-4000-8000-000000000030" messageRef="_a6400000-1000-4000-8000-000000000002"/>
+    </startEvent>
+    <task id="_a6400000-1000-4000-8000-000000000024" name="Anmeldung erfassen" isForCompensation="false">
+      <documentation textFormat="text/plain">Das Schulsekretariat nimmt die eingegangene Anmeldung in Bearbeitung, erfasst die Anmeldedaten und ordnet die Nachweise dem Kind zu. Ergebnis ist eine erfasste Anmeldung mit zugeordneten Unterlagen.</documentation>
+      <incoming>_a6400000-1000-4000-8000-000000000041</incoming>
+      <outgoing>_a6400000-1000-4000-8000-000000000042</outgoing>
+    </task>
+    <task id="_a6400000-1000-4000-8000-000000000025" name="Anmeldeunterlagen pruefen" isForCompensation="false">
+      <documentation textFormat="text/plain">Das Schulsekretariat prueft die Vollstaendigkeit der Unterlagen sowie die fuer die Aufnahme erforderlichen Angaben und Nachweise. Im betrachteten Happy Path sind diese vollstaendig und entsprechen den geltenden Vorgaben. Ergebnis sind die fuer die Aufnahme geprueften Unterlagen.</documentation>
+      <incoming>_a6400000-1000-4000-8000-000000000042</incoming>
+      <outgoing>_a6400000-1000-4000-8000-000000000043</outgoing>
+    </task>
+    <task id="_a6400000-1000-4000-8000-000000000026" name="Aufnahme festlegen" isForCompensation="false">
+      <documentation textFormat="text/plain">Die Schulleitung legt die Aufnahme im Rahmen ihrer Zustaendigkeit anhand der geprueften Unterlagen, der geltenden Aufnahmevorgaben und der verfuegbaren Kapazitaet fest. Im betrachteten Happy Path wird das Kind aufgenommen.</documentation>
+      <incoming>_a6400000-1000-4000-8000-000000000043</incoming>
+      <outgoing>_a6400000-1000-4000-8000-000000000044</outgoing>
+    </task>
+    <task id="_a6400000-1000-4000-8000-000000000027" name="Aufnahme dokumentieren" isForCompensation="false">
+      <documentation textFormat="text/plain">Das Schulsekretariat dokumentiert die festgelegte Aufnahme und aktualisiert den Status der Anmeldung in der schulischen Verwaltung. Ergebnis ist eine nachvollziehbar dokumentierte Aufnahme.</documentation>
+      <incoming>_a6400000-1000-4000-8000-000000000044</incoming>
+      <outgoing>_a6400000-1000-4000-8000-000000000045</outgoing>
+    </task>
+    <sendTask id="_a6400000-1000-4000-8000-000000000028" name="Aufnahmebestaetigung uebermitteln" isForCompensation="false" messageRef="_a6400000-1000-4000-8000-000000000003">
+      <documentation textFormat="text/plain">Das Schulsekretariat erstellt und versendet die Aufnahmebestaetigung mit den fuer den Schulbeginn erforderlichen Informationen. Nachricht vom Schulsekretariat an die Sorgeberechtigten: Aufnahmebestaetigung mit Informationen zum Schulbeginn.</documentation>
+      <incoming>_a6400000-1000-4000-8000-000000000045</incoming>
+      <outgoing>_a6400000-1000-4000-8000-000000000046</outgoing>
+    </sendTask>
+    <endEvent id="_a6400000-1000-4000-8000-000000000029" name="Aufnahmebestaetigung versandt">
+      <incoming>_a6400000-1000-4000-8000-000000000046</incoming>
+    </endEvent>
+    <sequenceFlow id="_a6400000-1000-4000-8000-000000000041" sourceRef="_a6400000-1000-4000-8000-000000000023" targetRef="_a6400000-1000-4000-8000-000000000024"/>
+    <sequenceFlow id="_a6400000-1000-4000-8000-000000000042" sourceRef="_a6400000-1000-4000-8000-000000000024" targetRef="_a6400000-1000-4000-8000-000000000025"/>
+    <sequenceFlow id="_a6400000-1000-4000-8000-000000000043" sourceRef="_a6400000-1000-4000-8000-000000000025" targetRef="_a6400000-1000-4000-8000-000000000026"/>
+    <sequenceFlow id="_a6400000-1000-4000-8000-000000000044" sourceRef="_a6400000-1000-4000-8000-000000000026" targetRef="_a6400000-1000-4000-8000-000000000027"/>
+    <sequenceFlow id="_a6400000-1000-4000-8000-000000000045" sourceRef="_a6400000-1000-4000-8000-000000000027" targetRef="_a6400000-1000-4000-8000-000000000028"/>
+    <sequenceFlow id="_a6400000-1000-4000-8000-000000000046" sourceRef="_a6400000-1000-4000-8000-000000000028" targetRef="_a6400000-1000-4000-8000-000000000029"/>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_a6400000-1000-4000-8000-000000000050" name="Kind fuer weiterfuehrende Schule anmelden">
+    <bpmndi:BPMNPlane id="BPMNPlane_a6400000-1000-4000-8000-000000000051" bpmnElement="Collaboration_a6400000-1000-4000-8000-000000000004">
+      <bpmndi:BPMNShape id="_a6400000-1000-4000-8000-000000000005_di" bpmnElement="_a6400000-1000-4000-8000-000000000005" isHorizontal="true"><omgdc:Bounds x="10" y="0" width="2530" height="300"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_a6400000-1000-4000-8000-000000000011_di" bpmnElement="_a6400000-1000-4000-8000-000000000011" isHorizontal="true"><omgdc:Bounds x="40" y="0" width="2500" height="300"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_a6400000-1000-4000-8000-000000000006_di" bpmnElement="_a6400000-1000-4000-8000-000000000006" isHorizontal="true"><omgdc:Bounds x="10" y="340" width="2530" height="300"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_a6400000-1000-4000-8000-000000000021_di" bpmnElement="_a6400000-1000-4000-8000-000000000021" isHorizontal="true"><omgdc:Bounds x="40" y="340" width="2500" height="150"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_a6400000-1000-4000-8000-000000000022_di" bpmnElement="_a6400000-1000-4000-8000-000000000022" isHorizontal="true"><omgdc:Bounds x="40" y="490" width="2500" height="150"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_a6400000-1000-4000-8000-000000000012_di" bpmnElement="_a6400000-1000-4000-8000-000000000012">
+        <omgdc:Bounds x="120" y="132" width="36" height="36"/>
+        <bpmndi:BPMNLabel><omgdc:Bounds x="78" y="178" width="120" height="70"/></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_a6400000-1000-4000-8000-000000000013_di" bpmnElement="_a6400000-1000-4000-8000-000000000013"><omgdc:Bounds x="220" y="112" width="151" height="76"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_a6400000-1000-4000-8000-000000000014_di" bpmnElement="_a6400000-1000-4000-8000-000000000014"><omgdc:Bounds x="440" y="112" width="151" height="76"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_a6400000-1000-4000-8000-000000000015_di" bpmnElement="_a6400000-1000-4000-8000-000000000015"><omgdc:Bounds x="660" y="112" width="151" height="76"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_a6400000-1000-4000-8000-000000000016_di" bpmnElement="_a6400000-1000-4000-8000-000000000016"><omgdc:Bounds x="2200" y="112" width="151" height="76"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_a6400000-1000-4000-8000-000000000017_di" bpmnElement="_a6400000-1000-4000-8000-000000000017">
+        <omgdc:Bounds x="2420" y="132" width="36" height="36"/>
+        <bpmndi:BPMNLabel><omgdc:Bounds x="2378" y="178" width="120" height="56"/></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_a6400000-1000-4000-8000-000000000023_di" bpmnElement="_a6400000-1000-4000-8000-000000000023">
+        <omgdc:Bounds x="880" y="397" width="36" height="36"/>
+        <bpmndi:BPMNLabel><omgdc:Bounds x="838" y="443" width="120" height="28"/></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_a6400000-1000-4000-8000-000000000024_di" bpmnElement="_a6400000-1000-4000-8000-000000000024"><omgdc:Bounds x="980" y="377" width="151" height="76"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_a6400000-1000-4000-8000-000000000025_di" bpmnElement="_a6400000-1000-4000-8000-000000000025"><omgdc:Bounds x="1200" y="377" width="151" height="76"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_a6400000-1000-4000-8000-000000000026_di" bpmnElement="_a6400000-1000-4000-8000-000000000026"><omgdc:Bounds x="1420" y="527" width="151" height="76"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_a6400000-1000-4000-8000-000000000027_di" bpmnElement="_a6400000-1000-4000-8000-000000000027"><omgdc:Bounds x="1640" y="377" width="151" height="76"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_a6400000-1000-4000-8000-000000000028_di" bpmnElement="_a6400000-1000-4000-8000-000000000028"><omgdc:Bounds x="1860" y="377" width="151" height="76"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_a6400000-1000-4000-8000-000000000029_di" bpmnElement="_a6400000-1000-4000-8000-000000000029">
+        <omgdc:Bounds x="2080" y="397" width="36" height="36"/>
+        <bpmndi:BPMNLabel><omgdc:Bounds x="2038" y="443" width="120" height="42"/></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="_a6400000-1000-4000-8000-000000000031_di" bpmnElement="_a6400000-1000-4000-8000-000000000031"><omgdi:waypoint x="156" y="150"/><omgdi:waypoint x="220" y="150"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="_a6400000-1000-4000-8000-000000000032_di" bpmnElement="_a6400000-1000-4000-8000-000000000032"><omgdi:waypoint x="371" y="150"/><omgdi:waypoint x="440" y="150"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="_a6400000-1000-4000-8000-000000000033_di" bpmnElement="_a6400000-1000-4000-8000-000000000033"><omgdi:waypoint x="591" y="150"/><omgdi:waypoint x="660" y="150"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="_a6400000-1000-4000-8000-000000000034_di" bpmnElement="_a6400000-1000-4000-8000-000000000034"><omgdi:waypoint x="811" y="150"/><omgdi:waypoint x="2200" y="150"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="_a6400000-1000-4000-8000-000000000035_di" bpmnElement="_a6400000-1000-4000-8000-000000000035"><omgdi:waypoint x="2351" y="150"/><omgdi:waypoint x="2420" y="150"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="_a6400000-1000-4000-8000-000000000041_di" bpmnElement="_a6400000-1000-4000-8000-000000000041"><omgdi:waypoint x="916" y="415"/><omgdi:waypoint x="980" y="415"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="_a6400000-1000-4000-8000-000000000042_di" bpmnElement="_a6400000-1000-4000-8000-000000000042"><omgdi:waypoint x="1131" y="415"/><omgdi:waypoint x="1200" y="415"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="_a6400000-1000-4000-8000-000000000043_di" bpmnElement="_a6400000-1000-4000-8000-000000000043"><omgdi:waypoint x="1351" y="415"/><omgdi:waypoint x="1380" y="415"/><omgdi:waypoint x="1380" y="565"/><omgdi:waypoint x="1420" y="565"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="_a6400000-1000-4000-8000-000000000044_di" bpmnElement="_a6400000-1000-4000-8000-000000000044"><omgdi:waypoint x="1571" y="565"/><omgdi:waypoint x="1600" y="565"/><omgdi:waypoint x="1600" y="415"/><omgdi:waypoint x="1640" y="415"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="_a6400000-1000-4000-8000-000000000045_di" bpmnElement="_a6400000-1000-4000-8000-000000000045"><omgdi:waypoint x="1791" y="415"/><omgdi:waypoint x="1860" y="415"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="_a6400000-1000-4000-8000-000000000046_di" bpmnElement="_a6400000-1000-4000-8000-000000000046"><omgdi:waypoint x="2011" y="415"/><omgdi:waypoint x="2080" y="415"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="_a6400000-1000-4000-8000-000000000007_di" bpmnElement="_a6400000-1000-4000-8000-000000000007">
+        <omgdi:waypoint x="735.5" y="188"/><omgdi:waypoint x="735.5" y="305"/><omgdi:waypoint x="898" y="305"/><omgdi:waypoint x="898" y="335"/><omgdi:waypoint x="898" y="397"/>
+        <bpmndi:BPMNLabel><omgdc:Bounds x="940" y="305" width="420" height="28"/></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="_a6400000-1000-4000-8000-000000000008_di" bpmnElement="_a6400000-1000-4000-8000-000000000008">
+        <omgdi:waypoint x="1935.5" y="377"/><omgdi:waypoint x="1935.5" y="335"/><omgdi:waypoint x="1935.5" y="305"/><omgdi:waypoint x="2275.5" y="305"/><omgdi:waypoint x="2275.5" y="188"/>
+        <bpmndi:BPMNLabel><omgdc:Bounds x="1960" y="310" width="350" height="28"/></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

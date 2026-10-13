@@ -57,7 +57,8 @@ Wenn der Nutzer die Erstellung eines BPMN-Modells bestaetigt:
 #### Vorbereitung: Referenzdokumente lesen
 **WICHTIG**: Vor der Erstellung des BPMN-Modells MUESSEN die folgenden Referenzdokumente gelesen werden:
 1. `BPMN_ADONIS/BPMN_ADONIS_Template.xml` - ADONIS-kompatibles KOI-Template mit 3-Pool-Struktur
-3. `BPMN-DI_Guidelines.md` - Technische BPMN-DI Standards und Layout-Regeln (als ergaenzende Referenz)
+2. `BPMN-DI_Guidelines.md` - Technische BPMN-DI Standards und Layout-Regeln (als ergaenzende Referenz)
+3. `.github/instructions/BPMN_Documentation.instructions.md` - Verbindliche Regel fuer Taskinformationen in Documentation - Element documentation
 
 #### BPMN-Modell-Struktur (ADONIS-kompatibel):
 - **Basis**: Verwende die Struktur aus `BPMN_ADONIS/BPMN_ADONIS_Template.xml`
@@ -139,3 +140,7 @@ Diese Dokumente MUESSEN vor der BPMN-Modell-Erstellung gelesen werden:
 - Technische Standards fuer BPMN Diagram Interchange
 - Layout-Regeln und Koordinaten-Standards
 - Ergaenzende Referenz fuer horizontale Task-Anordnung
+
+## Qualitaetssicherung
+
+Vor Abschluss die Taskdokumentation gemaess `.github/instructions/BPMN_Documentation.instructions.md` pruefen. Eine nicht durchgefuehrte ADONIS-Import-/Exportpruefung der UI-Zuordnung ausdruecklich als unbestaetigt ausweisen.

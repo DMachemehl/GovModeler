@@ -75,6 +75,7 @@
     
     <!-- User Task: Antrag stellen -->
     <bpmn:userTask id="Task_Antrag_stellen" name="[ANTRAG] stellen">
+      <bpmn:documentation textFormat="text/plain">[FACHLICHE_BESCHREIBUNG_ANTRAG_STELLEN]</bpmn:documentation>
       <bpmn:incoming>Flow_Start_Antrag</bpmn:incoming>
       <bpmn:outgoing>Flow_Antrag_Warten</bpmn:outgoing>
     </bpmn:userTask>

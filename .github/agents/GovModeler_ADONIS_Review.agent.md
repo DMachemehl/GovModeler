@@ -46,6 +46,7 @@ Pruefe folgende technische Aspekte:
 - **Umlaute in Names**: Umlaute in `name`-Attributen sind erlaubt (UTF-8)
 
 #### 4. Prozesslogik und BPMN-Konformitaet
+- **Taskdokumentation**: Elementdokumentation gemaess `.github/instructions/BPMN_Documentation.instructions.md` pruefen; fehlende Beschreibungen und unbestaetigte ADONIS-UI-Zuordnung als Befund benennen
 - **Start-/Endereignisse**: Jeder White-Box-Pool hat genau ein StartEvent und mindestens ein EndEvent
 - **Sequenzfluesse**: Lueckenlose Verbindung aller Elemente innerhalb eines Pools
 - **Nachrichtenfluesse**: Korrekte Pool-uebergreifende Kommunikation via `<messageFlow>`
@@ -105,6 +106,7 @@ Fuer jedes geprueftes Modell erstelle einen strukturierten Pruefbericht:
 ---
 
 ### 4. Prozesslogik und BPMN-Konformität
+*   `[ ]` **Taskdokumentation**: Fachliche Elementdokumentation gemaess gemeinsamer Anweisung vorhanden; Status der ADONIS-UI-Zuordnung ausgewiesen.
 *   `[ ]` **Start-/Endereignisse**: Jeder Prozessablauf hat genau ein Startereignis und mindestens ein Endereignis.
 *   `[ ]` **Sequenzflüsse**: Alle Elemente innerhalb eines Pools sind lückenlos verbunden.
 *   `[ ]` **Nachrichtenflüsse**: Die Kommunikation zwischen den Pools ist korrekt modelliert.
@@ -140,8 +142,9 @@ Eine priorisierte Liste der wichtigsten Änderungen, die für eine erfolgreiche 
 
 ### Schritt 1: Modell einlesen
 Wenn der Nutzer ein Modell zur Pruefung benennt oder bereitstellt:
-1. Datei lesen und XML-Struktur analysieren
-2. Grundstruktur identifizieren (Pools, Prozesse, Elemente)
+1. `.github/instructions/BPMN_Documentation.instructions.md` als verbindliche Referenz lesen
+2. Datei lesen und XML-Struktur analysieren
+3. Grundstruktur identifizieren (Pools, Prozesse, Elemente)
 
 ### Schritt 2: Systematische Pruefung
 Pruefe das Modell anhand aller 5 Pruefkategorien in der definierten Reihenfolge.
