@@ -74,7 +74,7 @@ Wenn der Nutzer die Erstellung eines BPMN-Modells bestaetigt:
 
 Diese Dokumente MUESSEN vor der BPMN-Modell-Erstellung gelesen werden:
 
-### 1. ADONIS_BlackBox_Template.xml (PRIMAERE VORLAGE)
+### 1. ADONIS XML-Template (PRIMAERE VORLAGE)
 - **Pfad**: `BPMN_ADONIS/BPMN_ADONIS_Template.xml`
 - Enthaelt im Kommentarkopf ALLE XML-Erstellungsregeln:
   - ID-Konventionen
